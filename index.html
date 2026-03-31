@@ -406,8 +406,16 @@
     /* ── iOS / Mobile optimizations ─────────────────────────── */
     #bottom-nav{display:none}
     @media(max-width:700px),(pointer:coarse){
-      /* iOS system background + larger base font for iframe */
-      :root{--bg:#F2F2F7;--surface:#ffffff;--border:rgba(60,60,67,0.12);--radius:14px;--radius-lg:20px}
+      /* iOS system background + HIG system colors */
+      :root{
+        --bg:#F2F2F7;--surface:#ffffff;--border:rgba(60,60,67,0.12);--radius:14px;--radius-lg:20px;
+        /* Apple system colors (UIColor semantic) */
+        --ios-green:#30D158;--ios-red:#FF3B30;--ios-amber:#FF9F0A;
+        --ios-blue:#007AFF;--ios-indigo:#5856D6;--ios-purple:#AF52DE;
+        --ios-label:rgba(0,0,0,1);--ios-secondary:rgba(60,60,67,0.6);
+        --ios-tertiary:rgba(60,60,67,0.3);--ios-separator:rgba(60,60,67,0.29);
+        --ios-fill:rgba(120,120,128,0.12);--ios-fill2:rgba(120,120,128,0.08);
+      }
       html{font-size:19px;-webkit-text-size-adjust:100%;height:100%;overflow:hidden}
       body{background:#F2F2F7;overscroll-behavior-y:none;font-size:19px;line-height:1.5;height:100%;overflow:hidden}
       #app{height:100vh;overflow:hidden;display:flex;flex-direction:column}
@@ -455,11 +463,12 @@
         min-height:44px;
       }
       #bottom-nav button.active{color:var(--primary)}
-      #bottom-nav button.active .bnav-icon{transform:scale(1.12)}
-      #bottom-nav button.active .bnav-label{font-weight:700}
-      .bnav-icon{line-height:1;transition:transform .25s cubic-bezier(0.34,1.56,0.64,1)}
-      .bnav-icon svg{width:26px;height:26px}
-      .bnav-label{font-size:13px;font-weight:500;letter-spacing:.01em;margin-top:2px}
+      #bottom-nav button.active .bnav-icon{transform:scale(1.08)}
+      #bottom-nav button.active .bnav-icon::after{content:'';position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--primary)}
+      #bottom-nav button.active .bnav-label{font-weight:700;color:var(--primary)}
+      .bnav-icon{line-height:1;transition:transform .2s cubic-bezier(0.34,1.56,0.64,1);position:relative}
+      .bnav-icon svg{width:25px;height:25px}
+      .bnav-label{font-size:10px;font-weight:500;letter-spacing:.02em;margin-top:3px}
 
       /* Main layout — iOS grouped inset padding */
       main{padding:12px 16px}
@@ -580,7 +589,7 @@
       .ov-carousel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;gap:0;padding:0;margin:0 -12px;flex:1}
       .ov-carousel::-webkit-scrollbar{display:none}
       .ov-slide{flex:0 0 100%;width:100%;scroll-snap-align:start;padding:0 8px;box-sizing:border-box;display:flex}
-      .ov-slide-inner{background:white;border-radius:18px;padding:0;display:flex;flex-direction:column;overflow:hidden;position:relative;flex:1}
+      .ov-slide-inner{background:white;border-radius:20px;padding:0;display:flex;flex-direction:column;overflow:hidden;position:relative;flex:1;box-shadow:0 2px 8px rgba(0,0,0,0.07),0 0 0 0.5px rgba(0,0,0,0.04)}
       .ov-slide-inner.income-card{padding:0}
       .ov-dots{display:flex;justify-content:center;gap:6px;padding:8px 0 2px}
       .ov-dot{width:6px;height:6px;border-radius:50%;background:var(--border);transition:all .2s}
@@ -591,30 +600,30 @@
       .ov-person-card .income-title{padding:12px 14px 0;font-size:14px;font-weight:700;margin-bottom:0;letter-spacing:.07em;text-transform:uppercase;color:var(--text-3)}
       .ov-card-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;flex:1}
       .ov-card-cell{display:flex;flex-direction:column;justify-content:flex-start;padding:14px 14px 14px;position:relative;overflow:hidden}
-      .ov-card-cell:nth-child(1){border-right:1px solid rgba(0,0,0,.06);border-bottom:1px solid rgba(0,0,0,.06)}
-      .ov-card-cell:nth-child(2){border-bottom:1px solid rgba(0,0,0,.06)}
-      .ov-card-cell:nth-child(3){border-right:1px solid rgba(0,0,0,.06)}
+      .ov-card-cell:nth-child(1){border-right:0.5px solid var(--ios-separator);border-bottom:0.5px solid var(--ios-separator)}
+      .ov-card-cell:nth-child(2){border-bottom:0.5px solid var(--ios-separator)}
+      .ov-card-cell:nth-child(3){border-right:0.5px solid var(--ios-separator)}
 
       /* Cell labels */
       .ov-cell-label{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:4px}
       .ov-cell-value{font-size:36px;font-weight:700;line-height:1;letter-spacing:-0.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       .ov-cell-sub{font-size:16px;color:var(--text-3);margin-top:6px;font-weight:500}
 
-      /* Earned vs spent proportional bar with end labels */
-      .ov-ep-bar-wrap{margin:4px 12px 0;display:flex;flex-direction:column;gap:3px}
-      .ov-ep-bar{display:flex;height:10px;border-radius:5px;overflow:hidden}
-      .ov-ep-bar-earn{background:rgba(52,199,89,0.7);transition:width .5s ease}
-      .ov-ep-bar-spend{flex:1;background:rgba(255,59,48,0.5)}
+      /* Earned vs spent proportional bar — Apple capsule style */
+      .ov-ep-bar-wrap{margin:4px 12px 0;display:flex;flex-direction:column;gap:4px}
+      .ov-ep-bar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:rgba(255,59,48,0.18)}
+      .ov-ep-bar-earn{background:var(--ios-green);transition:width .6s cubic-bezier(0.34,1.56,0.64,1)}
+      .ov-ep-bar-spend{display:none}
       .ov-ep-bar-labels{display:flex;justify-content:space-between;font-size:12px;font-weight:600;padding:0 2px}
 
-      /* Ring chart — fills the cell */
-      .ov-ring{position:relative;width:calc(100% - 8px);aspect-ratio:1;margin:auto}
+      /* Ring chart — Apple Watch-style activity ring */
+      .ov-ring{position:relative;width:calc(100% - 12px);aspect-ratio:1;margin:auto}
       .ov-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
-      .ov-ring-bg{fill:none;stroke:rgba(0,0,0,0.06);stroke-width:3}
-      .ov-ring-fill{fill:none;stroke-width:3;stroke-linecap:round;transition:stroke-dashoffset .6s ease}
+      .ov-ring-bg{fill:none;stroke:rgba(0,0,0,0.08);stroke-width:4}
+      .ov-ring-fill{fill:none;stroke-width:4;stroke-linecap:round;transition:stroke-dashoffset .8s cubic-bezier(0.34,1.56,0.64,1)}
       .ov-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-      .ov-ring-pct{font-size:2.4rem;font-weight:700;line-height:1}
-      .ov-ring-lbl{font-size:12px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
+      .ov-ring-pct{font-size:2.6rem;font-weight:700;line-height:1;letter-spacing:-0.02em}
+      .ov-ring-lbl{font-size:11px;font-weight:600;color:var(--ios-secondary);text-transform:uppercase;letter-spacing:.08em;margin-top:4px}
 
       /* Breakdown lines in bottom cells */
       .ov-breakdown{margin-top:8px}
@@ -1617,7 +1626,7 @@ function renderOverview() {
   // ── Range toggle row ────────────────────────────────────────────────────────
   const shortMo = new Date(S.currentMonth + '-02').toLocaleDateString('en-US', {month:'short'});
   const pill = (label, active, fn) =>
-    `<button onclick="${fn}" style="height:40px;padding:0 20px;border-radius:20px;font-size:16px;font-weight:600;cursor:pointer;border:1.5px solid ${active?'var(--primary)':'var(--border)'};background:${active?'var(--primary)':'white'};color:${active?'white':'var(--text-2)'};white-space:nowrap">${label}</button>`;
+    `<button onclick="${fn}" style="height:38px;padding:0 18px;border-radius:19px;font-size:16px;font-weight:600;cursor:pointer;border:none;background:${active?'var(--primary)':'rgba(120,120,128,0.14)'};color:${active?'white':'var(--text-2)'};white-space:nowrap;-webkit-tap-highlight-color:transparent;transition:transform .12s,opacity .12s">${label}</button>`;
   const r = S.overviewRange;
 
   // In multi-month mode, contextual nav arrows live in the top-right of this row.
@@ -1686,9 +1695,9 @@ function renderOverview() {
       const tSaved = inc - spend;
       const sRate = normalInc > 0 ? Math.round(tSaved / normalInc * 100) : 0;
       const isDeficit = tSaved < 0;
-      // Ring: muted gold for savings, red for deficit
-      const ringColor = isDeficit ? '#ef4444' : '#B8935A';
-      const heroColor = isDeficit ? '#dc2626' : sRate >= 20 ? '#16a34a' : sRate >= 10 ? '#ca8a04' : '#6b7280';
+      // Apple system colors: green=great, amber=ok, red=deficit
+      const ringColor = isDeficit ? '#FF3B30' : sRate >= 20 ? '#30D158' : '#FF9F0A';
+      const heroColor = isDeficit ? '#FF3B30' : sRate >= 20 ? '#30D158' : sRate >= 10 ? '#FF9F0A' : '#8E8E93';
       const heroLabel = isDeficit ? 'Deficit' : 'Saved';
 
       // SVG ring chart
@@ -1733,16 +1742,16 @@ function renderOverview() {
               </div>
             </div>
           </div>
-          <div class="ov-card-cell" style="background:rgba(52,199,89,0.06);border-radius:0 0 0 18px">
-            <div class="ov-cell-label" style="color:#16a34a">Earned</div>
-            <div class="ov-cell-value" style="color:#15803d">+${fc0(inc)}</div>
+          <div class="ov-card-cell" style="background:rgba(48,209,88,0.07);border-radius:0 0 0 20px">
+            <div class="ov-cell-label" style="color:#30D158">Earned</div>
+            <div class="ov-cell-value" style="color:#30D158">+${fc0(inc)}</div>
             <div class="ov-breakdown">
               ${earnedRows.map(r => `<div class="ov-breakdown-row"><span class="ov-breakdown-label">${r.l}</span><span class="ov-breakdown-value" style="color:${r.c}">${r.v}</span></div>`).join('')}
             </div>
           </div>
-          <div class="ov-card-cell" style="background:rgba(255,59,48,0.06);border-radius:0 0 18px 0">
-            <div class="ov-cell-label" style="color:#dc2626">Spent</div>
-            <div class="ov-cell-value" style="color:#b91c1c">${fc0(spend)}</div>
+          <div class="ov-card-cell" style="background:rgba(255,59,48,0.07);border-radius:0 0 20px 0">
+            <div class="ov-cell-label" style="color:#FF3B30">Spent</div>
+            <div class="ov-cell-value" style="color:#FF3B30">${fc0(spend)}</div>
             <div class="ov-breakdown">
               <div class="ov-breakdown-row"><span class="ov-breakdown-label">Fixed</span><span class="ov-breakdown-value" style="color:#6366f1">${fc0(fixed)}</span></div>
               <div class="ov-breakdown-row"><span class="ov-breakdown-label">Variable</span><span class="ov-breakdown-value" style="color:#f59e0b">${fc0(variable)}</span></div>
