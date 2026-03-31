@@ -3190,8 +3190,56 @@ function saveGoogleConfig() {
   loadData();
 }
 
+function getDemoData() {
+  const m = '2026-03';
+  return {
+    settings: { person1:'Jack', person2:'Jordan' },
+    budgets: { groceries:600, dining:400, transport:200, entertain:150, subs:80, shopping:300, health:100, housing:2200, utilities:120 },
+    rules: {}, customCategories: [], catSplits: {}, excludedFromAvg: [], recurringIncome: [], gamblingData: {}, incomeData: {}, incomeTypeRules: {},
+    transactions: [
+      {id:'d1',date:m+'-01',amount:4500,description:'Paycheck',category:'income',person:'p1',note:'',shared:false,settled:false,splitRatio:0.5,excluded:false},
+      {id:'d2',date:m+'-01',amount:3800,description:'Paycheck',category:'income',person:'p2',note:'',shared:false,settled:false,splitRatio:0.5,excluded:false},
+      {id:'d3',date:m+'-02',amount:2200,description:'Rent',category:'housing',person:'p1',note:'',shared:true,settled:false,splitRatio:0.5,excluded:false},
+      {id:'d4',date:m+'-03',amount:87.42,description:'Whole Foods',category:'groceries',person:'p1',note:'',shared:true,settled:false,splitRatio:0.5,excluded:false},
+      {id:'d5',date:m+'-04',amount:34.50,description:'Chipotle',category:'dining',person:'p2',note:'',shared:true,settled:false,splitRatio:0.5,excluded:false},
+      {id:'d6',date:m+'-05',amount:15.99,description:'Netflix',category:'subs',person:'p1',note:'',shared:true,settled:false,splitRatio:0.5,excluded:false},
+      {id:'d7',date:m+'-06',amount:120,description:'Electric Bill',category:'utilities',person:'p1',note:'',shared:true,settled:false,splitRatio:0.5,excluded:false},
+      {id:'d8',date:m+'-07',amount:62.10,description:'Trader Joes',category:'groceries',person:'p2',note:'',shared:true,settled:false,splitRatio:0.5,excluded:false},
+      {id:'d9',date:m+'-08',amount:45,description:'Uber',category:'transport',person:'p2',note:'',shared:false,settled:false,splitRatio:0.5,excluded:false},
+      {id:'d10',date:m+'-09',amount:89.99,description:'Nike',category:'shopping',person:'p2',note:'',shared:false,settled:false,splitRatio:0.5,excluded:false},
+      {id:'d11',date:m+'-10',amount:55.20,description:'Date Night',category:'dining',person:'p1',note:'',shared:true,settled:false,splitRatio:0.5,excluded:false},
+      {id:'d12',date:m+'-11',amount:9.99,description:'Spotify',category:'subs',person:'p2',note:'',shared:true,settled:false,splitRatio:0.5,excluded:false},
+      {id:'d13',date:m+'-12',amount:113.40,description:'Costco',category:'groceries',person:'p1',note:'',shared:true,settled:false,splitRatio:0.5,excluded:false},
+      {id:'d14',date:m+'-13',amount:28,description:'Shell Gas',category:'transport',person:'p1',note:'',shared:false,settled:false,splitRatio:0.5,excluded:false},
+      {id:'d15',date:m+'-14',amount:140,description:'Doctor Visit',category:'health',person:'p2',note:'',shared:false,settled:false,splitRatio:0.5,excluded:false},
+      {id:'d16',date:m+'-15',amount:75.60,description:'AMC + Dinner',category:'entertain',person:'p1',note:'',shared:true,settled:false,splitRatio:0.5,excluded:false},
+      {id:'d17',date:m+'-17',amount:210,description:'Flight to NYC',category:'travel',person:'p2',note:'',shared:true,settled:false,splitRatio:0.5,excluded:false},
+      {id:'d18',date:m+'-18',amount:44.30,description:'Trader Joes',category:'groceries',person:'p2',note:'',shared:true,settled:false,splitRatio:0.5,excluded:false},
+      {id:'d19',date:m+'-20',amount:19.99,description:'Amazon Prime',category:'subs',person:'p1',note:'',shared:true,settled:false,splitRatio:0.5,excluded:false},
+      {id:'d20',date:m+'-22',amount:67,description:'Dinner Out',category:'dining',person:'p1',note:'',shared:true,settled:false,splitRatio:0.5,excluded:false},
+    ]
+  };
+}
+
 function loadData() {
   $('loading').innerHTML = `<div style="font-size:2rem">💕</div><div class="spinner"></div><p>Loading your budget…</p>`;
+  // Demo mode: no Google connection available (preview / localhost without credentials)
+  if (!USE_GAS() && !localStorage.getItem('bt_client_id')) {
+    setTimeout(() => {
+      const data = getDemoData();
+      Object.assign(S.settings, data.settings);
+      S.transactions = data.transactions; S.budgets = data.budgets; S.rules = data.rules;
+      S.customCategories = data.customCategories; S.catSplits = data.catSplits;
+      S.excludedFromAvg = data.excludedFromAvg; S.recurringIncome = data.recurringIncome;
+      S.gamblingData = data.gamblingData; S.incomeData = data.incomeData; S.incomeTypeRules = data.incomeTypeRules;
+      $('loading').style.display = 'none';
+      $('app').style.display = 'flex';
+      _initLongPress();
+      render();
+      updateReviewBadge();
+    }, 600);
+    return;
+  }
   const loadTimeout = setTimeout(() => {
     $('loading').innerHTML = `
       <div style="text-align:center;padding:20px">
@@ -3307,7 +3355,7 @@ function init() {
   if (USE_GAS()) {
     loadData();
   } else if (!CFG.clientId || !CFG.sheetId) {
-    showGoogleSetup();
+    loadData(); // demo mode — getDemoData() fires since no credentials
   } else if (getToken()) {
     // Token already cached in sessionStorage — load with no popup
     loadData();
