@@ -122,7 +122,7 @@
     .income-card.ic-p1::before{background:var(--p1)}
     .income-card.ic-p2::before{background:var(--p2)}
     .income-card.ic-combined::before{background:linear-gradient(90deg,var(--primary),#F59E6A)}
-    .income-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:10px}
+    .income-title{font-size:.8125rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:12px}
     .income-line{display:flex;justify-content:space-between;align-items:baseline;padding:3px 0}
     .income-line+.income-line{border-top:1px solid var(--border)}
     .income-line.net-line{margin-top:4px;padding-top:7px;border-top:2px solid var(--border) !important}
@@ -255,21 +255,21 @@
     .bud-input:focus{outline:none;border-color:var(--primary)}
 
     /* Split */
-    .split-hero{text-align:center;padding:30px;background:white;border-radius:var(--radius-lg);box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:20px}
-    .split-big{font-size:3.2rem;font-weight:800;margin:12px 0}
-    .split-lbl{font-size:1.1rem;color:var(--text-2)}
+    .split-hero{text-align:center;padding:32px;background:white;border-radius:var(--radius-lg);box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:24px}
+    .split-big{font-size:3.4rem;font-weight:800;margin:14px 0}
+    .split-lbl{font-size:1.15rem;color:var(--text-2)}
     .scc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:16px}
-    .scc{background:white;border-radius:var(--radius-lg);box-shadow:var(--shadow);border:1px solid var(--border);padding:16px}
-    .scc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-    .scc-total{font-size:1.25rem;font-weight:700;color:var(--text)}
-    .scc-modes{display:flex;gap:5px;margin-bottom:10px}
-    .scc-mode{flex:1;padding:5px 0;font-size:.78rem;font-weight:600;border:1px solid var(--border);border-radius:8px;background:var(--bg-2);color:var(--text-2);cursor:pointer;transition:all .15s}
+    .scc{background:white;border-radius:var(--radius-lg);box-shadow:var(--shadow);border:1px solid var(--border);padding:20px}
+    .scc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+    .scc-total{font-size:1.35rem;font-weight:700;color:var(--text)}
+    .scc-modes{display:flex;gap:6px;margin-bottom:12px}
+    .scc-mode{flex:1;padding:8px 0;font-size:.875rem;font-weight:600;border:1px solid var(--border);border-radius:10px;background:var(--bg-2);color:var(--text-2);cursor:pointer;transition:all .15s;min-height:44px}
     .scc-mode.active{background:var(--p1);border-color:var(--p1);color:white}
-    .scc-custom{display:flex;align-items:center;gap:6px;font-size:.83rem;margin-bottom:8px;flex-wrap:wrap}
-    .scc-input{width:60px;padding:3px 6px;border:1px solid var(--border);border-radius:6px;font-size:.83rem;text-align:center}
-    .split-track{display:flex;border-radius:20px;overflow:hidden;height:32px;width:100%}
-    .split-track-seg{display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;color:rgba(255,255,255,.9);transition:width .3s;overflow:hidden;white-space:nowrap;padding:0 8px}
-    .scc-amts{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-top:12px;font-size:.95rem}
+    .scc-custom{display:flex;align-items:center;gap:8px;font-size:.9375rem;margin-bottom:10px;flex-wrap:wrap}
+    .scc-input{width:64px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;font-size:.9375rem;text-align:center}
+    .split-track{display:flex;border-radius:22px;overflow:hidden;height:36px;width:100%}
+    .split-track-seg{display:flex;align-items:center;justify-content:center;font-size:.9375rem;font-weight:700;color:rgba(255,255,255,.9);transition:width .3s;overflow:hidden;white-space:nowrap;padding:0 10px}
+    .scc-amts{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;margin-top:14px;font-size:1rem}
     .scc-sub{font-size:.82rem;color:var(--text-3);margin-top:3px}
     .split-p2{color:var(--p2)}
     .split-p1{color:var(--p1)}
@@ -289,8 +289,8 @@
     /* Modals — bottom sheet on mobile, centered on desktop */
     .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;justify-content:center;z-index:1000;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);animation:overlayIn .22s ease}
     @keyframes overlayIn{from{opacity:0}to{opacity:1}}
-    .modal{background:white;border-radius:24px 24px 0 0;padding:28px 24px calc(28px + env(safe-area-inset-bottom));width:100%;max-width:560px;box-shadow:0 -4px 40px rgba(0,0,0,.18);max-height:92vh;overflow-y:auto;animation:sheetUp .32s cubic-bezier(0.32,0.72,0,1)}
-    .modal::before{content:'';display:block;width:36px;height:5px;background:#e0e0e0;border-radius:3px;margin:0 auto 20px;flex-shrink:0}
+    .modal{background:white;border-radius:24px 24px 0 0;padding:28px 24px calc(32px + env(safe-area-inset-bottom));width:100%;max-width:560px;box-shadow:0 -4px 40px rgba(0,0,0,.15);max-height:92vh;overflow-y:auto;animation:sheetUp .32s cubic-bezier(0.32,0.72,0,1)}
+    .modal::before{content:'';display:block;width:40px;height:5px;background:#e0e0e0;border-radius:3px;margin:0 auto 22px;flex-shrink:0}
     @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
     @media(min-width:700px){
       .overlay{align-items:center}
@@ -298,19 +298,19 @@
       .modal::before{display:none}
       @keyframes modalIn{from{opacity:0;transform:scale(0.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
     }
-    .modal h2{font-size:1.45rem;font-weight:700;margin-bottom:8px}
-    .modal p{color:var(--text-2);font-size:0.95rem;margin-bottom:22px}
-    .form-row{margin-bottom:14px}
-    .form-row label{display:block;font-size:0.82rem;font-weight:600;color:var(--text-2);margin-bottom:5px}
-    .form-input{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.92rem;outline:none;transition:border-color .15s}
+    .modal h2{font-size:1.5rem;font-weight:700;margin-bottom:10px}
+    .modal p{color:var(--text-2);font-size:1rem;margin-bottom:24px;line-height:1.5}
+    .form-row{margin-bottom:16px}
+    .form-row label{display:block;font-size:0.875rem;font-weight:600;color:var(--text-2);margin-bottom:6px}
+    .form-input{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;font-size:1rem;outline:none;transition:border-color .15s}
     .form-input:focus{border-color:var(--primary)}
-    .form-sel{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.92rem;outline:none;background:white}
+    .form-sel{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;font-size:1rem;outline:none;background:white}
     .form-sel:focus{border-color:var(--primary);outline:none}
-    .btn-pri{width:100%;padding:14px;background:var(--primary);color:white;border:none;border-radius:12px;font-size:1.05rem;font-weight:700;cursor:pointer;transition:background .15s}
+    .btn-pri{width:100%;padding:16px;background:var(--primary);color:white;border:none;border-radius:14px;font-size:1.05rem;font-weight:700;cursor:pointer;transition:background .15s;min-height:52px}
     .btn-pri:hover{background:var(--primary-hover)}
-    .btn-sec{padding:8px 16px;background:white;color:var(--text-2);border:1px solid var(--border);border-radius:8px;font-size:0.88rem;font-weight:500;cursor:pointer;transition:all .15s}
+    .btn-sec{padding:12px 20px;background:white;color:var(--text-2);border:1px solid var(--border);border-radius:12px;font-size:0.95rem;font-weight:500;cursor:pointer;transition:all .15s;min-height:44px}
     .btn-sec:hover{background:var(--bg)}
-    .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+    .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}
     .col-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
 
     /* Toast */
@@ -329,9 +329,9 @@
     .hist-hero-card.hh-avg::before{background:linear-gradient(90deg,#3b82f6,#06b6d4)}
     .hist-hero-card.hh-income::before{background:linear-gradient(90deg,var(--green),#84cc16)}
     .hist-hero-card.hh-best::before{background:linear-gradient(90deg,#f59e0b,#f97316)}
-    .hist-hero-lbl{font-size:.92rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:8px}
-    .hist-hero-val{font-size:2.4rem;font-weight:800;line-height:1;margin-bottom:6px}
-    .hist-hero-sub{font-size:.95rem;color:var(--text-3)}
+    .hist-hero-lbl{font-size:.875rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:10px}
+    .hist-hero-val{font-size:2.5rem;font-weight:800;line-height:1;margin-bottom:8px;letter-spacing:-0.02em}
+    .hist-hero-sub{font-size:1rem;color:var(--text-3)}
     .hist-chart-scroll{overflow-x:auto;padding-bottom:4px}
     .hist-chart{display:flex;align-items:flex-end;gap:6px;height:230px;padding:10px 4px 0;padding-left:34px}
     .hist-bar-col{display:flex;flex-direction:column;align-items:center;cursor:pointer;flex:1;min-width:44px;max-width:80px;transition:opacity .15s}
@@ -360,23 +360,23 @@
 
     /* Card review */
     .card-modal{max-width:460px}
-    .card-progress{text-align:center;font-size:0.75rem;font-weight:600;color:var(--text-3);margin-bottom:16px;letter-spacing:.06em;text-transform:uppercase}
-    .card-txn{background:var(--bg);border-radius:var(--radius);padding:18px 20px;margin-bottom:20px;text-align:center}
-    .card-date{font-size:0.78rem;color:var(--text-3);margin-bottom:4px}
-    .card-desc{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:8px;word-break:break-word}
-    .card-amt{font-size:1.5rem;font-weight:800;color:var(--text)}
+    .card-progress{text-align:center;font-size:0.8125rem;font-weight:600;color:var(--text-3);margin-bottom:18px;letter-spacing:.06em;text-transform:uppercase}
+    .card-txn{background:var(--bg);border-radius:var(--radius);padding:20px 22px;margin-bottom:22px;text-align:center}
+    .card-date{font-size:0.875rem;color:var(--text-3);margin-bottom:5px}
+    .card-desc{font-size:1.0625rem;font-weight:700;color:var(--text);margin-bottom:10px;word-break:break-word}
+    .card-amt{font-size:1.625rem;font-weight:800;color:var(--text)}
     .card-amt.card-inc{color:var(--green)}
-    .card-label{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:10px}
-    .card-cats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:20px}
-    .card-cat-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;border:1.5px solid var(--border);border-radius:10px;background:white;cursor:pointer;font-size:1.1rem;transition:all .15s}
-    .card-cat-btn span{font-size:0.62rem;font-weight:600;color:var(--text-3);text-align:center;line-height:1.2}
+    .card-label{font-size:0.8125rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:12px}
+    .card-cats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:22px}
+    .card-cat-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;border:1.5px solid var(--border);border-radius:12px;background:white;cursor:pointer;font-size:1.2rem;transition:all .15s;min-height:44px}
+    .card-cat-btn span{font-size:0.75rem;font-weight:600;color:var(--text-3);text-align:center;line-height:1.2}
     .card-cat-btn:hover{border-color:var(--primary);background:var(--primary-light)}
-    .card-cat-btn.sel{transform:scale(1.06)}
+    .card-cat-btn.sel{transform:scale(1.04)}
     .card-cat-btn.sel span{font-weight:700}
-    .card-owners{display:flex;gap:8px;margin-bottom:4px}
-    .card-owner-btn{flex:1;padding:10px;border:1.5px solid var(--border);border-radius:10px;background:white;cursor:pointer;font-size:0.88rem;font-weight:600;color:var(--text-2);transition:all .15s}
+    .card-owners{display:flex;gap:10px;margin-bottom:6px}
+    .card-owner-btn{flex:1;padding:14px;border:1.5px solid var(--border);border-radius:12px;background:white;cursor:pointer;font-size:1rem;font-weight:600;color:var(--text-2);transition:all .15s;min-height:48px}
     .card-owner-btn:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
-    .card-hint{font-size:0.68rem;color:var(--text-3);text-align:center;margin-top:8px;margin-bottom:-4px}
+    .card-hint{font-size:0.8125rem;color:var(--text-3);text-align:center;margin-top:10px;margin-bottom:-2px}
 
     /* Group review modal */
     .grp-modal{max-width:560px}
@@ -412,7 +412,7 @@
     @media(max-width:700px),(pointer:coarse){
       /* iOS system + M3 tonal palette derived from brand orange #D4663A */
       :root{
-        --bg:#F2F2F7;--surface:#ffffff;--border:rgba(60,60,67,0.12);--radius:14px;--radius-lg:20px;
+        --bg:#F5F5F7;--surface:#ffffff;--border:rgba(60,60,67,0.12);--radius:16px;--radius-lg:22px;
         /* Apple system colors */
         --ios-green:#30D158;--ios-red:#FF3B30;--ios-amber:#FF9F0A;
         --ios-label:rgba(0,0,0,1);--ios-secondary:rgba(60,60,67,0.6);
@@ -423,60 +423,68 @@
         --m3-primary-container:#FFDBCB;
         --m3-state-layer:rgba(212,102,58,0.12);
         /* Design tokens: spacing grid (4px base) */
-        --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:20px;--sp-6:24px;
+        --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:20px;--sp-6:24px;--sp-7:28px;--sp-8:32px;
         /* Design tokens: semantic color (accessible contrast on white) */
-        --color-earned:#1A9E45;    /* darkened #30D158 → 4.6:1 on white */
+        --color-earned:#1A9E45;
         --color-earned-bg:rgba(48,209,88,0.08);
-        --color-spent:#C0392B;     /* darkened #FF3B30 → 5.1:1 on white */
+        --color-spent:#C0392B;
         --color-spent-bg:rgba(255,59,48,0.07);
-        --color-saved-pos:#1A9E45; /* same as earned */
+        --color-saved-pos:#1A9E45;
         --color-deficit:#C0392B;
-        --color-amber:#C07C00;     /* darkened #FF9F0A → 4.8:1 on white */
-        --color-fixed:#4338CA;     /* indigo — fixed/recurring expenses */
+        --color-amber:#C07C00;
+        --color-fixed:#4338CA;
         /* Easing tokens */
         --ease-spring:cubic-bezier(0.34,1.56,0.64,1);
         --ease-smooth:cubic-bezier(0.25,0.46,0.45,0.94);
         --ease-out:cubic-bezier(0,0,0.2,1);
+        /* Typography scale — clear hierarchy */
+        --fs-hero:36px;      /* key $ metrics */
+        --fs-title:24px;     /* section/card headers */
+        --fs-subtitle:20px;  /* secondary headers */
+        --fs-body:16px;      /* base readable text */
+        --fs-body-lg:18px;   /* prominent body */
+        --fs-caption:14px;   /* labels, meta */
+        --fs-micro:13px;     /* smallest allowed */
       }
-      html{font-size:19px;-webkit-text-size-adjust:100%;height:100%;overflow:hidden}
-      body{background:#F2F2F7;overscroll-behavior-y:none;font-size:19px;line-height:1.5;height:100%;overflow:hidden}
+      html{font-size:16px;-webkit-text-size-adjust:100%;height:100%;overflow:hidden}
+      body{background:#F5F5F7;overscroll-behavior-y:none;font-size:16px;line-height:1.5;height:100%;overflow:hidden}
       #app{height:100vh;overflow:hidden;display:flex;flex-direction:column}
-      main{flex:1;overflow:hidden;padding:4px 10px 0 !important;display:flex;flex-direction:column}
+      main{flex:1;overflow:hidden;padding:8px 16px 0 !important;display:flex;flex-direction:column}
 
       /* Safe area */
       body{padding-top:env(safe-area-inset-top)}
-      #app{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+      #app{padding-bottom:calc(92px + env(safe-area-inset-bottom))}
 
       /* Header — single compact row: logo | month-nav (flex:1) | icons */
       header{
-        padding:6px 12px 6px;gap:0 8px;height:auto;
+        padding:10px 16px 10px;gap:0 10px;height:auto;
         flex-wrap:nowrap;align-items:center;
-        background:rgba(242,242,247,0.92);
+        background:rgba(245,245,247,0.92);
         -webkit-backdrop-filter:saturate(180%) blur(20px);
         backdrop-filter:saturate(180%) blur(20px);
-        border-bottom:1px solid rgba(60,60,67,0.12);
+        border-bottom:0.5px solid rgba(60,60,67,0.15);
       }
       /* Logo becomes a compact wordmark on the left */
       .logo{font-size:18px;font-weight:800;letter-spacing:-0.03em;width:auto;margin-bottom:0;line-height:1;flex-shrink:0;color:var(--primary)}
       #nav{display:none}
       /* Month nav expands to fill between logo and icons */
-      .month-nav{flex:1;justify-content:center;gap:6px}
-      .month-nav button{width:28px;height:28px;border-radius:8px;border:none;background:rgba(120,120,128,0.12);font-size:1.15rem;min-width:44px;min-height:44px}
-      .month-nav span{font-size:22px;font-weight:800;letter-spacing:-0.02em}
+      .month-nav{flex:1;justify-content:center;gap:8px}
+      .month-nav button{width:44px;height:44px;border-radius:12px;border:none;background:rgba(120,120,128,0.12);font-size:1.25rem;min-width:44px;min-height:44px}
+      .month-nav span{font-size:var(--fs-subtitle);font-weight:800;letter-spacing:-0.02em}
       .save-status{display:none}
-      .icon-btn{width:30px;height:30px;border:none;background:rgba(120,120,128,0.12);border-radius:9px;font-size:.9rem;min-width:44px;min-height:44px}
-      #review-badge{padding:3px 8px;font-size:0;border:none;background:rgba(217,119,6,0.12);border-radius:9px}
-      #review-badge-count{font-size:0.72rem}
+      .icon-btn{width:44px;height:44px;border:none;background:rgba(120,120,128,0.12);border-radius:12px;font-size:1.1rem;min-width:44px;min-height:44px}
+      #review-badge{padding:6px 12px;font-size:0;border:none;background:rgba(217,119,6,0.12);border-radius:12px;min-width:44px;min-height:44px}
+      #review-badge-count{font-size:var(--fs-caption)}
       /* Lock buttons: hide on mobile (accessed via settings) */
       #lock-btns{display:none}
 
-      /* Bottom tab bar */
+      /* Bottom tab bar — iOS native feel with generous sizing */
       #bottom-nav{
         display:flex;position:fixed;
         bottom:0;left:0;right:0;
-        height:calc(84px + env(safe-area-inset-bottom));
+        height:calc(92px + env(safe-area-inset-bottom));
         padding-bottom:env(safe-area-inset-bottom);
-        background:rgba(242,242,247,0.85);
+        background:rgba(245,245,247,0.88);
         -webkit-backdrop-filter:saturate(180%) blur(20px);
         backdrop-filter:saturate(180%) blur(20px);
         border-top:0.5px solid rgba(0,0,0,0.12);
@@ -484,258 +492,264 @@
       }
       #bottom-nav button{
         flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-        gap:3px;border:none;background:none;cursor:pointer;
-        padding:6px 4px;color:var(--text-3);
+        gap:5px;border:none;background:none;cursor:pointer;
+        padding:10px 4px 8px;color:var(--text-3);
         -webkit-tap-highlight-color:transparent;
-        min-height:44px;
+        min-height:52px;
       }
       /* M3 navigation bar: indicator pill behind active icon */
       #bottom-nav button{position:relative}
       #bottom-nav button.active{color:var(--primary)}
       #bottom-nav button.active .bnav-icon{transform:scale(1.0)}
-      #bottom-nav button.active .bnav-icon::before{content:'';position:absolute;inset:-6px -20px;border-radius:16px;background:var(--m3-primary-container);z-index:-1;transition:opacity .2s}
-      #bottom-nav button:not(.active) .bnav-icon::before{content:'';position:absolute;inset:-6px -20px;border-radius:16px;background:var(--m3-state-layer);z-index:-1;opacity:0;transition:opacity .15s}
+      #bottom-nav button.active .bnav-icon::before{content:'';position:absolute;inset:-8px -22px;border-radius:18px;background:var(--m3-primary-container);z-index:-1;transition:opacity .2s}
+      #bottom-nav button:not(.active) .bnav-icon::before{content:'';position:absolute;inset:-8px -22px;border-radius:18px;background:var(--m3-state-layer);z-index:-1;opacity:0;transition:opacity .15s}
       #bottom-nav button:active .bnav-icon::before{opacity:1}
       #bottom-nav button.active .bnav-label{font-weight:700;color:var(--primary)}
       .bnav-icon{line-height:1;position:relative;z-index:0}
-      .bnav-icon svg{width:24px;height:24px}
-      .bnav-label{font-size:14px;font-weight:600;letter-spacing:.02em;margin-top:4px}
+      .bnav-icon svg{width:28px;height:28px}
+      .bnav-label{font-size:var(--fs-micro);font-weight:600;letter-spacing:.02em;margin-top:4px}
 
       /* Main layout — iOS grouped inset padding */
       main{padding:12px 16px}
 
-      /* Remove all card borders and shadows — background does the separating */
+      /* Remove all card borders — use subtle shadows for depth on iOS gray bg */
       .card,.stat-card,.income-card,.bud-card,.scc,.table-wrap,.hist-hero-card{
         border:none !important;
-        box-shadow:none !important;
-        border-radius:12px !important;
+        box-shadow:0 1px 3px rgba(0,0,0,0.04),0 0 0 0.5px rgba(0,0,0,0.03) !important;
+        border-radius:var(--radius) !important;
       }
 
       /* Inputs — iOS native feel: no border, filled background */
       .form-input,.form-sel,.search-input{
         background:rgba(120,120,128,0.08);
         border:none !important;
-        border-radius:10px;
+        border-radius:12px;
+        padding:14px 16px;
+        font-size:var(--fs-body) !important;
       }
-      input,select,textarea{font-size:16px !important}
-      .form-input,.form-sel,.search-input,.bud-input,.scc-input,.rev-sel{font-size:16px !important}
+      input,select,textarea{font-size:var(--fs-body) !important}
+      .form-input,.form-sel,.search-input,.bud-input,.scc-input,.rev-sel{font-size:var(--fs-body) !important}
 
       /* Section titles — iOS gray caps style */
       .section-title{
-        font-size:1rem;font-weight:700;
-        text-transform:uppercase;letter-spacing:.05em;
-        color:rgba(60,60,67,0.6);
-        margin-bottom:12px;margin-top:8px;
+        font-size:var(--fs-caption);font-weight:700;
+        text-transform:uppercase;letter-spacing:.06em;
+        color:rgba(60,60,67,0.5);
+        margin-bottom:14px;margin-top:12px;
       }
 
-      /* Stats — 2 column, full width */
-      .stats-grid{grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
-      .stat-card{padding:24px}
-      .stat-label{font-size:1.05rem;letter-spacing:.04em}
-      .stat-value{font-size:2.8rem}
+      /* Stats — 2 column, full width, generous padding */
+      .stats-grid{grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
+      .stat-card{padding:20px 18px}
+      .stat-label{font-size:var(--fs-caption);letter-spacing:.05em;font-weight:700;margin-bottom:8px}
+      .stat-value{font-size:var(--fs-hero);letter-spacing:-0.02em}
 
       /* Income cards — horizontal scroll strip */
       .income-row{
         grid-template-columns:1fr;
-        display:flex;overflow-x:auto;gap:10px;
+        display:flex;overflow-x:auto;gap:12px;
         -webkit-overflow-scrolling:touch;
         scroll-snap-type:x mandatory;
-        padding-bottom:4px;
-        margin-bottom:14px;
+        padding-bottom:8px;
+        margin-bottom:20px;
       }
-      .income-card{min-width:72vw;scroll-snap-align:start;flex-shrink:0}
+      .income-card{min-width:78vw;scroll-snap-align:start;flex-shrink:0;padding:20px}
 
-      /* Table rows — more breathing room for fingers */
-      td{padding:13px 14px}
-      th{padding:10px 14px}
+      /* Table rows — generous touch targets */
+      td{padding:16px;font-size:var(--fs-body)}
+      th{padding:12px 16px;font-size:var(--fs-micro)}
 
-      /* Budget cards */
-      .budget-grid{grid-template-columns:1fr;gap:10px}
+      /* Budget cards — full width stacked */
+      .budget-grid{grid-template-columns:1fr;gap:14px}
+      .bud-card{padding:20px}
+      .bud-cat{font-size:var(--fs-body-lg)}
+      .bud-spent{font-size:var(--fs-subtitle);font-weight:800}
+      .prog-track{height:10px;border-radius:5px}
 
       /* Prevent horizontal scroll on page */
       main{touch-action:pan-y}
       .rev-wrap,.vert-chart,.hist-chart-scroll,.table-wrap{-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 
-      /* Toggles */
-      .toggle{width:40px;height:24px}
-      .toggle::after{width:16px;height:16px;top:4px;left:4px}
-      .toggle.on::after{transform:translateX(16px)}
+      /* Toggles — larger for finger tapping */
+      .toggle{width:48px;height:28px}
+      .toggle::after{width:20px;height:20px;top:4px;left:4px}
+      .toggle.on::after{transform:translateX(20px)}
 
       /* Toast above bottom nav */
-      .toast{bottom:calc(72px + env(safe-area-inset-bottom))}
+      .toast{bottom:calc(100px + env(safe-area-inset-bottom));font-size:var(--fs-body);padding:14px 24px;border-radius:24px}
 
       /* No selection on chrome */
       header,#bottom-nav,.stat-card,.income-card,.bud-card,.scc,.card-txn{user-select:none;-webkit-user-select:none}
 
       /* ── iOS PWA: Transaction card list ──────────────── */
-      .txn-card-list{display:flex;flex-direction:column;gap:0;background:white;border-radius:12px;overflow:visible;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+      .txn-card-list{display:flex;flex-direction:column;gap:0;background:white;border-radius:var(--radius);overflow:visible;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,0.05)}
       @keyframes txnCardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-      .txn-card{display:flex;align-items:center;gap:16px;padding:16px 18px 16px 20px;background:white;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s,transform .1s cubic-bezier(0.34,1.56,0.64,1);animation:txnCardIn .22s var(--ease-out) calc(var(--i,0) * 30ms) both}
-      .txn-card:active{background:rgba(212,102,58,0.08);transform:scale(0.985)}
+      .txn-card{display:flex;align-items:center;gap:14px;padding:18px 18px 18px 20px;background:white;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s,transform .1s var(--ease-spring);animation:txnCardIn .22s var(--ease-out) calc(var(--i,0) * 30ms) both;min-height:72px}
+      .txn-card:active{background:rgba(212,102,58,0.06);transform:scale(0.985)}
       .txn-card+.txn-card{border-top:0.5px solid rgba(60,60,67,0.08)}
-      /* First/last card gets matching border-radius */
-      .txn-card:first-child{border-radius:12px 12px 0 0}
-      .txn-card:last-child{border-radius:0 0 12px 12px}
-      .txn-card:only-child{border-radius:12px}
-      .txn-card.excluded{opacity:.4}
+      .txn-card:first-child{border-radius:var(--radius) var(--radius) 0 0}
+      .txn-card:last-child{border-radius:0 0 var(--radius) var(--radius)}
+      .txn-card:only-child{border-radius:var(--radius)}
+      .txn-card.excluded{opacity:.35}
       /* Owner accent: 3px left border for instant person identification */
-      .txn-card.txn-p1{border-left:3px solid var(--p1);padding-left:13px}
-      .txn-card.txn-p2{border-left:3px solid var(--p2);padding-left:13px}
-      .txn-card.txn-shared{border-left:3px solid var(--green);padding-left:13px}
-      .txn-card-emoji{font-size:1.8rem;width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:rgba(120,120,128,0.08);border-radius:14px;flex-shrink:0}
+      .txn-card.txn-p1{border-left:3.5px solid var(--p1);padding-left:16px}
+      .txn-card.txn-p2{border-left:3.5px solid var(--p2);padding-left:16px}
+      .txn-card.txn-shared{border-left:3.5px solid var(--green);padding-left:16px}
+      .txn-card-emoji{font-size:1.6rem;width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:rgba(120,120,128,0.06);border-radius:14px;flex-shrink:0}
       .txn-card-body{flex:1;min-width:0}
-      .txn-card-desc{font-size:1.18rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-      .txn-card-meta{font-size:.95rem;color:var(--text-3);margin-top:4px;display:flex;align-items:center;gap:7px}
-      .txn-card-meta .owner-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-      .txn-card-amt{font-size:1.3rem;font-weight:800;text-align:right;flex-shrink:0;white-space:nowrap}
+      .txn-card-desc{font-size:var(--fs-body);font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .txn-card-meta{font-size:var(--fs-caption);color:var(--text-3);margin-top:5px;display:flex;align-items:center;gap:8px}
+      .txn-card-meta .owner-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+      .txn-card-amt{font-size:var(--fs-body-lg);font-weight:800;text-align:right;flex-shrink:0;white-space:nowrap}
       .txn-card-amt.inc{color:var(--color-earned)}
-      .txn-card-chevron{color:var(--text-3);font-size:.85rem;margin-left:2px;flex-shrink:0;opacity:.25}
-      /* Date group header — tighter spacing */
-      .txn-date-header{font-size:.92rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:rgba(60,60,67,0.5);padding:20px 4px 8px;background:transparent;flex-shrink:0}
-      .txn-date-header:first-child{padding-top:4px}
+      .txn-card-chevron{color:var(--text-3);font-size:.85rem;margin-left:2px;flex-shrink:0;opacity:.2}
+      /* Date group header */
+      .txn-date-header{font-size:var(--fs-caption);font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(60,60,67,0.45);padding:24px 4px 10px;background:transparent;flex-shrink:0}
+      .txn-date-header:first-child{padding-top:8px}
 
       /* ── iOS PWA: Filters mobile ─────────────────────── */
-      .filters-bar-mobile{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;flex-shrink:0}
-      .filter-pill{padding:10px 20px;border-radius:24px;font-size:1rem;font-weight:600;border:1.5px solid var(--border);background:white;color:var(--text-2);white-space:nowrap;cursor:pointer;flex-shrink:0;transition:all .15s}
-      /* M3 filter chip active: primary-container bg + primary text (not filled primary) */
+      .filters-bar-mobile{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;flex-shrink:0}
+      .filter-pill{padding:12px 22px;border-radius:24px;font-size:var(--fs-body);font-weight:600;border:1.5px solid var(--border);background:white;color:var(--text-2);white-space:nowrap;cursor:pointer;flex-shrink:0;transition:all .15s;min-height:44px;display:flex;align-items:center}
+      /* M3 filter chip active: primary-container bg + primary text */
       .filter-pill.active{border-color:var(--primary);background:var(--m3-primary-container);color:var(--primary)}
 
       /* ── iOS PWA: History month cards ─────────────────── */
-      .month-card-list{display:flex;flex-direction:column;gap:2px;background:var(--m3-surface-container);border-radius:12px;overflow:visible;flex-shrink:0}
-      .month-card{padding:13px 16px;background:white;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s,transform .1s cubic-bezier(0.34,1.56,0.64,1)}
-      .month-card:active{background:rgba(212,102,58,0.08);transform:scale(0.985)}
+      .month-card-list{display:flex;flex-direction:column;gap:2px;background:var(--m3-surface-container);border-radius:var(--radius);overflow:visible;flex-shrink:0}
+      .month-card{padding:16px 18px;background:white;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s,transform .1s var(--ease-spring);min-height:60px}
+      .month-card:active{background:rgba(212,102,58,0.06);transform:scale(0.985)}
       .month-card+.month-card{border-top:0.5px solid rgba(60,60,67,0.08)}
       .month-card-top{display:flex;justify-content:space-between;align-items:baseline}
-      .month-card-title{font-size:1.15rem;font-weight:700;color:var(--text)}
-      .month-card-title .cur-badge{font-size:.65rem;background:var(--primary-light);color:var(--primary);padding:2px 7px;border-radius:10px;font-weight:600;margin-left:6px;vertical-align:middle}
-      .month-card-amt{font-size:1.35rem;font-weight:800;color:var(--text)}
-      .month-card-row2{display:flex;align-items:center;gap:10px;margin-top:6px;font-size:.98rem;color:var(--text-3)}
-      .month-card-detail{padding:10px 16px 16px;border-top:1px solid rgba(60,60,67,0.08);background:rgba(120,120,128,0.03)}
-      .month-card-detail-row{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;font-size:.82rem}
-      .month-card-expand{font-size:.75rem;color:var(--primary);font-weight:600;margin-top:6px;display:flex;align-items:center;gap:3px}
+      .month-card-title{font-size:var(--fs-body-lg);font-weight:700;color:var(--text)}
+      .month-card-title .cur-badge{font-size:var(--fs-micro);background:var(--primary-light);color:var(--primary);padding:3px 8px;border-radius:10px;font-weight:600;margin-left:8px;vertical-align:middle}
+      .month-card-amt{font-size:var(--fs-subtitle);font-weight:800;color:var(--text)}
+      .month-card-row2{display:flex;align-items:center;gap:12px;margin-top:8px;font-size:var(--fs-body);color:var(--text-3)}
+      .month-card-detail{padding:12px 18px 18px;border-top:1px solid rgba(60,60,67,0.08);background:rgba(120,120,128,0.02)}
+      .month-card-detail-row{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;font-size:var(--fs-caption)}
+      .month-card-expand{font-size:var(--fs-caption);color:var(--primary);font-weight:600;margin-top:8px;display:flex;align-items:center;gap:4px}
 
       /* ── iOS PWA: Heatmap mobile (vertical category list) ── */
-      .hm-mobile-list{display:flex;flex-direction:column;gap:2px;background:white;border-radius:12px;overflow:visible;flex-shrink:0}
-      .hm-mobile-row{display:flex;align-items:center;gap:12px;padding:13px 16px;background:white}
-      .hm-mobile-row+.hm-mobile-row{border-top:1px solid rgba(60,60,67,0.08)}
-      .hm-mobile-cat{font-size:1.12rem;font-weight:600;display:flex;align-items:center;gap:10px;flex:1;min-width:0}
-      .hm-mobile-vals{display:flex;align-items:center;gap:12px;flex-shrink:0}
-      .hm-mobile-amt{font-size:1.12rem;font-weight:700;color:var(--text)}
-      .hm-mobile-trend{font-size:.95rem;font-weight:700}
+      .hm-mobile-list{display:flex;flex-direction:column;gap:2px;background:white;border-radius:var(--radius);overflow:visible;flex-shrink:0}
+      .hm-mobile-row{display:flex;align-items:center;gap:14px;padding:16px 18px;background:white;min-height:56px}
+      .hm-mobile-row+.hm-mobile-row{border-top:1px solid rgba(60,60,67,0.06)}
+      .hm-mobile-cat{font-size:var(--fs-body);font-weight:600;display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+      .hm-mobile-vals{display:flex;align-items:center;gap:14px;flex-shrink:0}
+      .hm-mobile-amt{font-size:var(--fs-body);font-weight:700;color:var(--text)}
+      .hm-mobile-trend{font-size:var(--fs-body);font-weight:700}
 
       /* ── iOS PWA: Section styling ────────────────────── */
-      .ios-section-header{font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:rgba(60,60,67,0.6);padding:20px 16px 8px}
-      .ios-grouped{background:white;border-radius:12px;overflow:hidden}
+      .ios-section-header{font-size:var(--fs-micro);font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(60,60,67,0.5);padding:24px 18px 10px}
+      .ios-grouped{background:white;border-radius:var(--radius);overflow:hidden}
 
       /* ── iOS PWA: Overview carousel ──────────────────── */
-      .ov-carousel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;gap:0;padding:0;margin:0 -12px;flex:1}
+      .ov-carousel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;gap:0;padding:0;margin:0 -16px;flex:1}
       .ov-carousel::-webkit-scrollbar{display:none}
-      /* Peek effect: 95% width shows sliver of next slide, hinting at swipe */
-      .ov-slide{flex:0 0 95%;width:95%;scroll-snap-align:start;padding:0 6px 0 8px;box-sizing:border-box;display:flex}
-      .ov-slide:last-child{flex:0 0 100%;width:100%;padding:0 8px}
-      /* Clean white card with subtle warm shadow for depth over gray background */
-      .ov-slide-inner{background:#ffffff;border-radius:20px;padding:0;display:flex;flex-direction:column;overflow:hidden;position:relative;flex:1;box-shadow:0 2px 20px rgba(212,102,58,0.06),0 0 0 0.5px rgba(0,0,0,0.05)}
-      /* Combined slide: warm brand tint to feel like the authoritative summary */
-      .ic-combined .ov-slide-inner{background:linear-gradient(160deg,#fff 55%,rgba(212,102,58,0.04) 100%)}
-      /* M3 tonal surfaces for person slides — p1 blue tint, p2 pink tint */
-      /* Meta-style identity stripe: 2px solid color along top of card */
-      .ic-p1 .ov-slide-inner{background:linear-gradient(160deg,#fff 55%,rgba(37,99,235,0.04) 100%);border-top:2.5px solid var(--p1)}
-      .ic-p2 .ov-slide-inner{background:linear-gradient(160deg,#fff 55%,rgba(219,39,119,0.04) 100%);border-top:2.5px solid var(--p2)}
-      .ic-combined .ov-slide-inner{border-top:2.5px solid var(--primary)}
+      /* Peek effect: 94% width shows sliver of next slide */
+      .ov-slide{flex:0 0 94%;width:94%;scroll-snap-align:start;padding:0 6px 0 10px;box-sizing:border-box;display:flex}
+      .ov-slide:last-child{flex:0 0 100%;width:100%;padding:0 10px}
+      /* Clean white card with soft shadow */
+      .ov-slide-inner{background:#ffffff;border-radius:var(--radius-lg);padding:0;display:flex;flex-direction:column;overflow:hidden;position:relative;flex:1;box-shadow:0 2px 16px rgba(0,0,0,0.06),0 0 0 0.5px rgba(0,0,0,0.04)}
+      /* Combined slide: warm brand tint */
+      .ic-combined .ov-slide-inner{background:linear-gradient(160deg,#fff 55%,rgba(212,102,58,0.03) 100%)}
+      /* Person slides with identity stripe */
+      .ic-p1 .ov-slide-inner{background:linear-gradient(160deg,#fff 55%,rgba(37,99,235,0.03) 100%);border-top:3px solid var(--p1)}
+      .ic-p2 .ov-slide-inner{background:linear-gradient(160deg,#fff 55%,rgba(219,39,119,0.03) 100%);border-top:3px solid var(--p2)}
+      .ic-combined .ov-slide-inner{border-top:3px solid var(--primary)}
       .ov-slide-inner.income-card{padding:0}
-      /* Named slide tabs — pill/chip style, no underline */
-      .ov-tabs{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:7px 8px 7px;scrollbar-width:none;background:transparent;flex-shrink:0}
+      /* Named slide tabs — pill/chip style */
+      .ov-tabs{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:10px 10px 10px;scrollbar-width:none;background:transparent;flex-shrink:0}
       .ov-tabs::-webkit-scrollbar{display:none}
-      .ov-tab{flex-shrink:0;padding:9px 20px;font-size:16px;font-weight:600;color:var(--ios-secondary);border-radius:22px;background:transparent;transition:color .18s,background .18s;cursor:pointer;-webkit-tap-highlight-color:transparent;white-space:nowrap;min-height:40px;display:flex;align-items:center}
-      .ov-tab.active{color:var(--primary);background:var(--m3-primary-container)}
+      .ov-tab{flex-shrink:0;padding:11px 22px;font-size:var(--fs-body);font-weight:600;color:var(--ios-secondary);border-radius:24px;background:transparent;transition:color .18s,background .18s;cursor:pointer;-webkit-tap-highlight-color:transparent;white-space:nowrap;min-height:44px;display:flex;align-items:center}
+      .ov-tab.active{color:var(--primary);background:var(--m3-primary-container);font-weight:700}
 
       /* ── iOS PWA: 2x2 income card ────────────────────── */
       .ov-person-card{display:flex;flex-direction:column;flex:1;padding:0}
-      /* Compact header — saves vertical real estate for the data grid */
-      .ov-person-card .income-title{padding:16px 18px 6px;font-size:24px;font-weight:800;margin-bottom:0;letter-spacing:-.03em;text-transform:none;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      /* Card header — bold name anchors each slide */
+      .ov-person-card .income-title{padding:18px 20px 8px;font-size:var(--fs-title);font-weight:800;margin-bottom:0;letter-spacing:-.03em;text-transform:none;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .ov-card-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;flex:1}
-      /* Tighter cell padding — 36px number + label + chip all need room */
-      .ov-card-cell{display:flex;flex-direction:column;justify-content:flex-start;padding:14px 16px;position:relative;overflow:hidden}
-      .ov-card-cell:nth-child(1){border-right:0.5px solid rgba(60,60,67,0.1);border-bottom:0.5px solid rgba(60,60,67,0.1)}
-      .ov-card-cell:nth-child(2){border-bottom:0.5px solid rgba(60,60,67,0.1)}
-      .ov-card-cell:nth-child(3){border-right:0.5px solid rgba(60,60,67,0.1)}
+      /* Generous cell padding for readability */
+      .ov-card-cell{display:flex;flex-direction:column;justify-content:flex-start;padding:16px 18px;position:relative;overflow:hidden}
+      .ov-card-cell:nth-child(1){border-right:0.5px solid rgba(60,60,67,0.08);border-bottom:0.5px solid rgba(60,60,67,0.08)}
+      .ov-card-cell:nth-child(2){border-bottom:0.5px solid rgba(60,60,67,0.08)}
+      .ov-card-cell:nth-child(3){border-right:0.5px solid rgba(60,60,67,0.08)}
 
-      /* Meta: category labels bold, values heavy (Instagram stats style) */
-      .ov-cell-label{font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ios-secondary);margin-bottom:6px}
-      .ov-cell-value{font-size:42px;font-weight:800;line-height:1;letter-spacing:-0.03em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-variant-numeric:tabular-nums}
-      .ov-cell-sub{font-size:14px;color:var(--text-3);margin-top:5px;font-weight:400}
+      /* Labels and values — clear hierarchy */
+      .ov-cell-label{font-size:var(--fs-micro);font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ios-secondary);margin-bottom:8px}
+      .ov-cell-value{font-size:var(--fs-hero);font-weight:800;line-height:1;letter-spacing:-0.03em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-variant-numeric:tabular-nums}
+      .ov-cell-sub{font-size:var(--fs-caption);color:var(--text-3);margin-top:6px;font-weight:400}
 
       /* Earned vs spent proportional bar — Apple capsule style */
-      .ov-ep-bar-wrap{margin:4px 12px 0;display:flex;flex-direction:column;gap:4px}
-      .ov-ep-bar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:rgba(255,59,48,0.18)}
-      .ov-ep-bar-earn{background:var(--ios-green);transition:width .6s cubic-bezier(0.34,1.56,0.64,1)}
+      .ov-ep-bar-wrap{margin:6px 16px 0;display:flex;flex-direction:column;gap:6px}
+      .ov-ep-bar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:rgba(255,59,48,0.15)}
+      .ov-ep-bar-earn{background:var(--ios-green);transition:width .6s var(--ease-spring)}
       .ov-ep-bar-spend{display:none}
-      .ov-ep-bar-labels{display:flex;justify-content:space-between;font-size:16px;font-weight:700;padding:0 1px;font-variant-numeric:tabular-nums}
+      .ov-ep-bar-labels{display:flex;justify-content:space-between;font-size:var(--fs-caption);font-weight:700;padding:0 2px;font-variant-numeric:tabular-nums}
 
-      /* Ring chart — fills cell vertically, heavy numeral center */
-      .ov-ring{position:relative;width:calc(100% - 8px);aspect-ratio:1;margin:auto}
+      /* Ring chart — DOMINANT: fills cell, thick stroke, bold center */
+      .ov-ring{position:relative;width:calc(100% - 4px);aspect-ratio:1;margin:auto}
       .ov-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
-      .ov-ring-bg{fill:none;stroke:rgba(0,0,0,0.07);stroke-width:8}
-      /* M3 emphasized decelerate easing for ring animation */
-      .ov-ring-fill{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .6s cubic-bezier(0.05,0.7,0.1,1.0)}
+      .ov-ring-bg{fill:none;stroke:rgba(0,0,0,0.06);stroke-width:10}
+      .ov-ring-fill{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .6s cubic-bezier(0.05,0.7,0.1,1.0)}
       .ov-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-      .ov-ring-pct{font-size:3.8rem;font-weight:800;line-height:1;letter-spacing:-0.03em;font-variant-numeric:tabular-nums}
-      .ov-ring-lbl{font-size:15px;font-weight:700;color:var(--ios-secondary);text-transform:uppercase;letter-spacing:.07em;margin-top:4px}
+      .ov-ring-pct{font-size:2.8rem;font-weight:800;line-height:1;letter-spacing:-0.03em;font-variant-numeric:tabular-nums}
+      .ov-ring-lbl{font-size:var(--fs-micro);font-weight:700;color:var(--ios-secondary);text-transform:uppercase;letter-spacing:.07em;margin-top:5px}
 
       /* Cash flow chip in SAVED cell */
-      .ov-cashflow-chip{display:inline-flex;align-items:center;gap:5px;margin-top:10px;padding:6px 14px;border-radius:22px;font-size:16px;font-weight:700}
+      .ov-cashflow-chip{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:8px 16px;border-radius:24px;font-size:var(--fs-caption);font-weight:700}
 
-      /* Meta Insights-style breakdown rows */
-      .ov-breakdown{margin-top:4px}
-      .ov-breakdown-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;position:relative}
-      .ov-breakdown-row+.ov-breakdown-row{border-top:0.5px solid rgba(0,0,0,.06)}
-      .ov-breakdown-label{color:var(--ios-secondary);font-weight:600;letter-spacing:.01em;display:flex;align-items:center;gap:7px;font-size:15px}
+      /* Breakdown rows */
+      .ov-breakdown{margin-top:6px}
+      .ov-breakdown-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;position:relative}
+      .ov-breakdown-row+.ov-breakdown-row{border-top:0.5px solid rgba(0,0,0,.05)}
+      .ov-breakdown-label{color:var(--ios-secondary);font-weight:600;letter-spacing:.01em;display:flex;align-items:center;gap:8px;font-size:var(--fs-caption)}
       .ov-breakdown-label .ov-dot{width:8px;height:8px;border-radius:3px;flex-shrink:0}
-      .ov-breakdown-value{font-weight:700;font-size:16px}
+      .ov-breakdown-value{font-weight:700;font-size:var(--fs-body)}
 
       /* Slide 4 & 5: scrollable content within fixed-height card */
-      .ov-slide-title{font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ios-secondary);padding:14px 18px 10px;border-bottom:0.5px solid var(--ios-separator);flex-shrink:0}
+      .ov-slide-title{font-size:var(--fs-caption);font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ios-secondary);padding:16px 20px 12px;border-bottom:0.5px solid var(--ios-separator);flex-shrink:0}
       .ov-slide-inner.ov-scrollable{overflow-y:auto;-webkit-overflow-scrolling:touch}
-      .ov-slide-inner.ov-scrollable .cat-row,.ov-slide-inner.ov-scrollable .merchant-row{padding-left:14px;padding-right:14px}
+      .ov-slide-inner.ov-scrollable .cat-row,.ov-slide-inner.ov-scrollable .merchant-row{padding-left:16px;padding-right:16px}
 
       /* ── iOS PWA: Settled history mobile ──────────────── */
-      .settled-card-list{display:flex;flex-direction:column;gap:2px;background:white;border-radius:12px;overflow:visible;flex-shrink:0}
-      .settled-card{display:flex;align-items:center;gap:12px;padding:13px 16px;background:white}
-      .settled-card+.settled-card{border-top:1px solid rgba(60,60,67,0.08)}
+      .settled-card-list{display:flex;flex-direction:column;gap:2px;background:white;border-radius:var(--radius);overflow:visible;flex-shrink:0}
+      .settled-card{display:flex;align-items:center;gap:14px;padding:16px 18px;background:white;min-height:56px}
+      .settled-card+.settled-card{border-top:1px solid rgba(60,60,67,0.06)}
 
       /* ── iOS PWA: Income cards mobile ────────────────── */
-      .income-row-mobile{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+      .income-row-mobile{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
       .income-row-mobile .income-card{min-width:unset;flex-shrink:unset;scroll-snap-align:unset}
       .income-card-collapse .income-detail{display:none}
       .income-card-collapse.expanded .income-detail{display:block}
-      .income-toggle-btn{font-size:.75rem;color:var(--primary);font-weight:600;cursor:pointer;border:none;background:none;padding:6px 0;display:flex;align-items:center;gap:3px;-webkit-tap-highlight-color:transparent}
+      .income-toggle-btn{font-size:var(--fs-caption);color:var(--primary);font-weight:600;cursor:pointer;border:none;background:none;padding:8px 0;display:flex;align-items:center;gap:4px;-webkit-tap-highlight-color:transparent;min-height:44px}
 
       /* ── iOS PWA: Upload section mobile ──────────────── */
-      .upload-grid-mobile{display:flex;gap:8px;margin-bottom:14px}
-      .upload-zone-mini{flex:1;padding:14px 10px;border:2px dashed var(--border);border-radius:12px;text-align:center;cursor:pointer;background:white;transition:all .2s}
+      .upload-grid-mobile{display:flex;gap:10px;margin-bottom:18px}
+      .upload-zone-mini{flex:1;padding:18px 14px;border:2px dashed var(--border);border-radius:var(--radius);text-align:center;cursor:pointer;background:white;transition:all .2s;min-height:56px}
       .upload-zone-mini:active{transform:scale(0.96);opacity:.7}
 
-      /* ── iOS PWA: Larger text for iframe rendering ───── */
-      /* cat-name: wider column + ellipsis so "Entertainment" doesn't wrap */
-      .cat-name{font-size:1.1rem;width:125px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-      .cat-amt{font-size:1.12rem;width:85px;font-weight:700}
-      .cat-track{height:12px;border-radius:6px}
-      .merchant-name{font-size:1.12rem}
-      .merchant-amt{font-size:1.2rem;font-weight:800}
-      .merchant-rank{font-size:.95rem}
-      .section-title{font-size:1rem}
-      .month-card-title{font-size:1.2rem}
-      .month-card-amt{font-size:1.45rem}
-      .hm-mobile-cat{font-size:1.12rem}
-      .hm-mobile-amt{font-size:1.12rem}
-      .split-big{font-size:4.2rem}
-      .split-lbl{font-size:1.35rem}
-      .filter-sel,.search-input{font-size:18px !important}
+      /* ── iOS PWA: Polished text sizing ───────────────── */
+      .cat-name{font-size:var(--fs-body);width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .cat-amt{font-size:var(--fs-body);width:88px;font-weight:700}
+      .cat-track{height:10px;border-radius:5px}
+      .cat-row{margin-bottom:12px;gap:12px}
+      .merchant-name{font-size:var(--fs-body)}
+      .merchant-amt{font-size:var(--fs-body-lg);font-weight:800}
+      .merchant-rank{font-size:var(--fs-caption);width:22px}
+      .merchant-row{padding:12px 0;gap:12px;min-height:48px}
+      .merchant-meta{font-size:var(--fs-micro)}
+      .section-title{font-size:var(--fs-caption)}
+      .month-card-title{font-size:var(--fs-body-lg)}
+      .month-card-amt{font-size:var(--fs-subtitle)}
+      .hm-mobile-cat{font-size:var(--fs-body)}
+      .hm-mobile-amt{font-size:var(--fs-body)}
+      .split-big{font-size:var(--fs-hero);font-size:clamp(36px, 10vw, 52px)}
+      .split-lbl{font-size:var(--fs-body-lg)}
+      .split-hero{padding:32px 24px;margin-bottom:24px}
+      .filter-sel,.search-input{font-size:var(--fs-body) !important}
 
       /* ── iOS PWA: Edit modal cat grid ────────────────── */
-      .txe-cat-grid{grid-template-columns:repeat(4,1fr) !important;gap:6px !important}
-      .txe-cat-grid .card-cat-btn{padding:8px 2px}
-      .txe-cat-grid .card-cat-btn span{font-size:.68rem}
+      .txe-cat-grid{grid-template-columns:repeat(4,1fr) !important;gap:8px !important}
+      .txe-cat-grid .card-cat-btn{padding:10px 4px;min-height:44px}
+      .txe-cat-grid .card-cat-btn span{font-size:var(--fs-micro)}
 
       /* ── iOS PWA: Accessible focus ring ──────────────── */
       *:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:4px}
@@ -1578,15 +1592,15 @@ function renderOverview() {
     const barColor = isDeficit ? '#ef4444' : sRate >= 20 ? '#22c55e' : sRate >= 10 ? '#f59e0b' : '#f59e0b';
     const barFill  = Math.max(0, Math.min(sRate, 100));
     const bar = inc > 0 ? `
-      <div style="margin:8px 0 14px">
-        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
-          <span style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3)">Savings rate</span>
-          <span style="font-size:.85rem;font-weight:700;color:${barColor}">${sRate}% of income</span>
+      <div style="margin:10px 0 16px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+          <span style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3)">Savings rate</span>
+          <span style="font-size:14px;font-weight:700;color:${barColor}">${sRate}% of income</span>
         </div>
-        <div style="background:#f3f4f6;border-radius:5px;height:7px;overflow:hidden">
-          <div style="width:${barFill}%;height:100%;background:${barColor};border-radius:4px"></div>
+        <div style="background:#f3f4f6;border-radius:6px;height:10px;overflow:hidden">
+          <div style="width:${barFill}%;height:100%;background:${barColor};border-radius:5px"></div>
         </div>
-      </div>` : '<div style="height:14px"></div>';
+      </div>` : '<div style="height:16px"></div>';
 
     // Hero: the outcome. Lead with what actually happened to your money.
     const heroColor  = isDeficit ? '#dc2626' : sRate >= 20 ? '#16a34a' : sRate >= 10 ? '#ca8a04' : '#6b7280';
@@ -1621,15 +1635,15 @@ function renderOverview() {
       : '';
 
     const chips = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div style="background:#f0fdf4;border-radius:8px;padding:8px 10px">
-          <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#16a34a;margin-bottom:3px">Earned</div>
-          <div style="font-size:1.1rem;font-weight:800;color:#15803d">+${fc(inc)}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="background:#f0fdf4;border-radius:12px;padding:12px 14px">
+          <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#16a34a;margin-bottom:4px">Earned</div>
+          <div style="font-size:1.15rem;font-weight:800;color:#15803d">+${fc(inc)}</div>
           ${earnedSubs}
         </div>
-        <div style="background:#fef2f2;border-radius:8px;padding:8px 10px">
-          <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#dc2626;margin-bottom:3px">Spent</div>
-          <div style="font-size:1.1rem;font-weight:800;color:#b91c1c">${fc(spend)}</div>
+        <div style="background:#fef2f2;border-radius:12px;padding:12px 14px">
+          <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#dc2626;margin-bottom:4px">Spent</div>
+          <div style="font-size:1.15rem;font-weight:800;color:#b91c1c">${fc(spend)}</div>
           ${spentSubs}
         </div>
       </div>`;
@@ -1637,10 +1651,10 @@ function renderOverview() {
     const detail = '';
 
     return `
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
         <div>
-          <div style="font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:3px">${heroLabel}</div>
-          <div style="font-size:1.6rem;font-weight:800;color:${heroColor};line-height:1.1">${heroAmt}</div>
+          <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:4px">${heroLabel}</div>
+          <div style="font-size:1.75rem;font-weight:800;color:${heroColor};line-height:1.1">${heroAmt}</div>
         </div>
         <div style="margin-top:4px">${rateBadge}</div>
       </div>
@@ -1702,7 +1716,7 @@ function renderOverview() {
   // ── Range toggle row ────────────────────────────────────────────────────────
   const shortMo = new Date(S.currentMonth + '-02').toLocaleDateString('en-US', {month:'short'});
   const pill = (label, active, fn) =>
-    `<button onclick="${fn}" style="height:44px;padding:0 20px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;border:${active?'none':'1.5px solid rgba(120,120,128,0.28)'};background:${active?'var(--primary)':'transparent'};color:${active?'white':'var(--text-2)'};white-space:nowrap;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s,border-color .15s;min-width:44px">${active?'✓ ':''}${label}</button>`;
+    `<button onclick="${fn}" style="height:48px;padding:0 22px;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;border:${active?'none':'1.5px solid rgba(120,120,128,0.22)'};background:${active?'var(--primary)':'rgba(120,120,128,0.06)'};color:${active?'white':'var(--text-2)'};white-space:nowrap;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s,border-color .15s;min-width:48px">${active?'✓ ':''}${label}</button>`;
   const r = S.overviewRange;
 
   // In multi-month mode, contextual nav arrows live in the top-right of this row.
@@ -1721,8 +1735,8 @@ function renderOverview() {
     ? `<div style="display:flex;align-items:center;gap:2px">${multiNav}</div>`
     : '';
 
-  const rangeToggle = `<div style="display:flex;align-items:center;gap:5px;margin-bottom:14px">
-    <div style="display:flex;gap:5px;flex:1">
+  const rangeToggle = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+    <div style="display:flex;gap:8px;flex:1;flex-wrap:wrap">
       ${pill(shortMo, r==='1mo', 'setOverviewRange(&quot;1mo&quot;)')}
       ${pill(activeYear, r==='ytd', 'setOverviewRange(&quot;ytd&quot;)')}
       ${pill('All',    r==='all', 'setOverviewRange(&quot;all&quot;)')}
