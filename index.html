@@ -587,7 +587,7 @@
 
       /* Cell labels — Hermès tag style */
       .ov-cell-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);margin-bottom:8px}
-      .ov-cell-value{font-size:36px;font-weight:300;line-height:1.05;letter-spacing:-0.02em}
+      .ov-cell-value{font-size:clamp(16px,5.2vw,32px);font-weight:300;line-height:1.05;letter-spacing:-0.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       .ov-cell-sub{font-size:.78rem;color:var(--text-3);margin-top:6px}
 
       /* Earned vs spent proportional bar */
