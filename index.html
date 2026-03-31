@@ -605,14 +605,14 @@
       .ov-ep-bar-earn{background:rgba(52,199,89,0.55);transition:width .5s ease}
       .ov-ep-bar-spend{flex:1;background:rgba(255,59,48,0.35)}
 
-      /* Ring chart — thin arc */
-      .ov-ring{position:relative;width:90px;height:90px;margin:0 auto}
+      /* Ring chart — fills the cell */
+      .ov-ring{position:relative;width:calc(100% - 8px);aspect-ratio:1;margin:auto}
       .ov-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
       .ov-ring-bg{fill:none;stroke:rgba(0,0,0,0.06);stroke-width:3}
       .ov-ring-fill{fill:none;stroke-width:3;stroke-linecap:round;transition:stroke-dashoffset .6s ease}
       .ov-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-      .ov-ring-pct{font-size:1.5rem;font-weight:600;line-height:1}
-      .ov-ring-lbl{font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+      .ov-ring-pct{font-size:2.2rem;font-weight:600;line-height:1}
+      .ov-ring-lbl{font-size:13px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
 
       /* Breakdown lines in bottom cells */
       .ov-breakdown{margin-top:8px}
@@ -1715,7 +1715,7 @@ function renderOverview() {
             <div class="ov-cell-value">${moneyEl(isDeficit?'−':'+', Math.abs(tSaved), heroColor)}</div>
             <div class="ov-cell-sub" style="color:${cashFlowColor};font-weight:600">Cash flow ${(normalInc-spend)>=0?'+':'−'}${fc(Math.abs(normalInc-spend))}</div>
           </div>
-          <div class="ov-card-cell" style="align-items:center;justify-content:center">
+          <div class="ov-card-cell" style="align-items:center;justify-content:center;padding:8px">
             <div class="ov-ring">
               <svg viewBox="0 0 100 100">
                 <circle class="ov-ring-bg" cx="50" cy="50" r="36"/>
@@ -1904,20 +1904,7 @@ function renderTxns() {
       return `<div class="txn-date-header">${dateLabel}</div><div class="txn-card-list">${cards}</div>`;
     }).join('');
 
-    const uploadMobile = `<div class="upload-grid-mobile">
-      <div class="upload-zone-mini p1-zone" onclick="$('fp1').click()">
-        <div style="font-size:1.3rem;margin-bottom:4px">⬆️</div>
-        <div style="font-size:.82rem;font-weight:700;color:var(--p1)">${esc(S.settings.person1)}</div>
-        <div style="font-size:.68rem;color:var(--text-3);margin-top:2px">CSV / PDF</div>
-        <input type="file" id="fp1" accept=".csv,.pdf" multiple onchange="onFile(event,'p1')">
-      </div>
-      <div class="upload-zone-mini p2-zone" onclick="$('fp2').click()">
-        <div style="font-size:1.3rem;margin-bottom:4px">⬆️</div>
-        <div style="font-size:.82rem;font-weight:700;color:var(--p2)">${esc(S.settings.person2)}</div>
-        <div style="font-size:.68rem;color:var(--text-3);margin-top:2px">CSV / PDF</div>
-        <input type="file" id="fp2" accept=".csv,.pdf" multiple onchange="onFile(event,'p2')">
-      </div>
-    </div>`;
+    const uploadMobile = ``; // upload hidden on mobile — use desktop to import CSVs
 
     const filterPills = `<div class="filters-bar-mobile">
       <input class="search-input" type="text" placeholder="🔍 Search…" value="${esc(search)}" oninput="setFilter('search',this.value)" style="flex:1;min-width:120px">
@@ -2428,7 +2415,7 @@ function renderHistory() {
       return `<div class="hm-mobile-row">
         <div class="hm-mobile-cat">${cat.emoji} ${esc(cat.label)}</div>
         <div class="hm-mobile-vals">
-          <div class="hm-mobile-amt">${fc(lastAmt)}</div>
+          <div class="hm-mobile-amt">${fc0(lastAmt)}</div>
           ${trend}
         </div>
       </div>`;
@@ -2455,18 +2442,18 @@ function renderHistory() {
       return `<div class="month-card${isExcl?' excluded':''}" onclick="this.querySelector('.month-card-detail').style.display=this.querySelector('.month-card-detail').style.display==='none'?'block':'none'">
         <div class="month-card-top">
           <div class="month-card-title">${moLabel(s.mo)}${isCur?'<span class="cur-badge">current</span>':''}</div>
-          <div class="month-card-amt" style="${isExcl?'opacity:.5':''}">${fc(amt)}</div>
+          <div class="month-card-amt" style="${isExcl?'opacity:.5':''}">${fc0(amt)}</div>
         </div>
         <div class="month-card-row2">
           ${chipHtml}
           <span>${s.count} txn${s.count!==1?'s':''}</span>
-          ${inc>0?`<span>· Net: <span style="color:${net>=0?'var(--green)':'var(--red)'};font-weight:600">${net>=0?'+':''}${fc(Math.abs(net))}</span></span>`:''}
+          ${inc>0?`<span>· Net: <span style="color:${net>=0?'var(--green)':'var(--red)'};font-weight:600">${net>=0?'+':'−'}${fc0(Math.abs(net))}</span></span>`:''}
         </div>
         <div class="month-card-detail" style="display:none">
-          <div class="month-card-detail-row"><span style="color:var(--p1)">${esc(S.settings.person1)}</span><span style="font-weight:700;color:var(--p1)">${fc(s.p1total)}</span></div>
-          <div class="month-card-detail-row"><span style="color:var(--p2)">${esc(S.settings.person2)}</span><span style="font-weight:700;color:var(--p2)">${fc(s.p2total)}</span></div>
-          <div class="month-card-detail-row"><span style="color:var(--green)">Shared</span><span style="font-weight:700;color:var(--green)">${fc(hvShared(s))}</span></div>
-          ${inc>0?`<div class="month-card-detail-row"><span>Income</span><span style="font-weight:700;color:var(--green)">+${fc(inc)}</span></div>`:''}
+          <div class="month-card-detail-row"><span style="color:var(--p1)">${esc(S.settings.person1)}</span><span style="font-weight:700;color:var(--p1)">${fc0(s.p1total)}</span></div>
+          <div class="month-card-detail-row"><span style="color:var(--p2)">${esc(S.settings.person2)}</span><span style="font-weight:700;color:var(--p2)">${fc0(s.p2total)}</span></div>
+          <div class="month-card-detail-row"><span style="color:var(--green)">Shared</span><span style="font-weight:700;color:var(--green)">${fc0(hvShared(s))}</span></div>
+          ${inc>0?`<div class="month-card-detail-row"><span>Income</span><span style="font-weight:700;color:var(--green)">+${fc0(inc)}</span></div>`:''}
           <div style="display:flex;gap:6px;margin-top:8px">
             <button class="btn-sm" onclick="event.stopPropagation();S.currentMonth='${s.mo}';S.activeTab='overview';render()">View month</button>
             <button class="btn-sm" onclick="event.stopPropagation();toggleAvgExclude('${s.mo}')">${isExcl?'+ Include':'⊘ Exclude'}</button>
