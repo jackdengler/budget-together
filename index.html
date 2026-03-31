@@ -628,6 +628,8 @@
       .ov-slide:last-child{flex:0 0 100%;width:100%;padding:0 8px}
       /* Clean white card with subtle shadow for depth over gray background */
       .ov-slide-inner{background:#ffffff;border-radius:20px;padding:0;display:flex;flex-direction:column;overflow:hidden;position:relative;flex:1;box-shadow:0 2px 16px rgba(0,0,0,0.07),0 0 0 0.5px rgba(0,0,0,0.06)}
+      /* Combined slide: warm brand tint to feel like the authoritative summary */
+      .ic-combined .ov-slide-inner{background:linear-gradient(160deg,#fff 55%,rgba(212,102,58,0.04) 100%)}
       .ov-slide-inner.income-card{padding:0}
       /* Named slide tabs — pill/chip style, no underline */
       .ov-tabs{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:7px 8px 7px;scrollbar-width:none;background:transparent;flex-shrink:0}
@@ -649,7 +651,7 @@
       /* Meta: category labels bold, values heavy (Instagram stats style) */
       .ov-cell-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--ios-secondary);margin-bottom:3px}
       /* 30px prevents overflow for values like -$11,718 in a half-width cell */
-      .ov-cell-value{font-size:30px;font-weight:800;line-height:1;letter-spacing:-0.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .ov-cell-value{font-size:30px;font-weight:800;line-height:1;letter-spacing:-0.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-variant-numeric:tabular-nums}
       .ov-cell-sub{font-size:13px;color:var(--text-3);margin-top:4px;font-weight:400}
 
       /* Earned vs spent proportional bar — Apple capsule style */
@@ -657,7 +659,7 @@
       .ov-ep-bar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:rgba(255,59,48,0.18)}
       .ov-ep-bar-earn{background:var(--ios-green);transition:width .6s cubic-bezier(0.34,1.56,0.64,1)}
       .ov-ep-bar-spend{display:none}
-      .ov-ep-bar-labels{display:flex;justify-content:space-between;font-size:11px;font-weight:600;padding:0 1px}
+      .ov-ep-bar-labels{display:flex;justify-content:space-between;font-size:12px;font-weight:600;padding:0 1px;font-variant-numeric:tabular-nums}
 
       /* Ring chart — fills cell vertically, heavy numeral center */
       .ov-ring{position:relative;width:calc(100% - 8px);aspect-ratio:1;margin:auto}
@@ -665,7 +667,7 @@
       .ov-ring-bg{fill:none;stroke:rgba(0,0,0,0.07);stroke-width:8}
       .ov-ring-fill{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .7s cubic-bezier(0.25,0.46,0.45,0.94)}
       .ov-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-      .ov-ring-pct{font-size:2.6rem;font-weight:800;line-height:1;letter-spacing:-0.03em}
+      .ov-ring-pct{font-size:2.6rem;font-weight:800;line-height:1;letter-spacing:-0.03em;font-variant-numeric:tabular-nums}
       .ov-ring-lbl{font-size:11px;font-weight:700;color:var(--ios-secondary);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
 
       /* Cash flow chip in SAVED cell */
@@ -1780,12 +1782,18 @@ function renderOverview() {
 
       const cashFlowColor = (normalInc-spend)>=0?'var(--color-earned)':'var(--color-spent)';
       const cashFlowAmt = fc0(Math.abs(normalInc-spend));
+      // Only show the take-home chip when retirement/family income is present —
+      // otherwise tSaved === cashFlow and the chip would be redundant.
+      const hasSpecialInc = (ret||0) > 0 || fam > 0;
+      const cashFlowChip = hasSpecialInc
+        ? `<div class="ov-cashflow-chip" style="background:${(normalInc-spend)>=0?'rgba(48,209,88,0.12)':'rgba(255,59,48,0.1)'};color:${cashFlowColor}">${(normalInc-spend)>=0?'+':'−'}${cashFlowAmt} take-home</div>`
+        : '';
 
       return `<div class="ov-slide"><div class="ov-slide-inner income-card ${cls}"><div class="ov-person-card">
         <div class="income-title" style="${titleColor?'color:'+titleColor:''}">${title}</div>
         <div class="ov-ep-bar-wrap">
           <div class="ov-ep-bar"><div class="ov-ep-bar-earn" style="width:${earnPct}%"></div><div class="ov-ep-bar-spend"></div></div>
-          <div class="ov-ep-bar-labels"><span style="color:var(--color-earned)">↑ ${fc0(inc)}</span><span style="color:var(--color-spent)">↓ ${fc0(spend)}</span></div>
+          <div class="ov-ep-bar-labels"><span style="color:var(--color-earned)">▲ Earned ${fc0(inc)}</span><span style="color:var(--color-spent)">▼ Spent ${fc0(spend)}</span></div>
         </div>
         <div class="ov-card-grid">
           <div class="ov-card-cell" style="justify-content:space-between">
@@ -1793,9 +1801,7 @@ function renderOverview() {
               <div class="ov-cell-label">${heroLabel}</div>
               <div class="ov-cell-value" style="color:${heroColor}">${(isDeficit?'−':'+')}${fc0(Math.abs(tSaved))}</div>
             </div>
-            <div class="ov-cashflow-chip" style="background:${(normalInc-spend)>=0?'rgba(48,209,88,0.12)':'rgba(255,59,48,0.1)'};color:${cashFlowColor}">
-              ${(normalInc-spend)>=0?'▲':'▼'} Cash flow ${(normalInc-spend)>=0?'+':'−'}${cashFlowAmt}
-            </div>
+            ${cashFlowChip}
           </div>
           <div class="ov-card-cell" style="align-items:center;justify-content:flex-start;padding:10px 6px 6px">
             <div class="ov-cell-label" style="text-align:center;width:100%">Savings Rate</div>
@@ -1834,7 +1840,7 @@ function renderOverview() {
     }
 
     const totalSpend = scaleNum(total);
-    const slide1 = mobilePersonSlide('Combined', '', 'ic-combined', scaleNum(totalInc), totalSpend, false, scaleNum(retTot), scaleNum(famTot), fixedTotal, varTotal);
+    const slide1 = mobilePersonSlide('Combined', 'var(--primary)', 'ic-combined', scaleNum(totalInc), totalSpend, false, scaleNum(retTot), scaleNum(famTot), fixedTotal, varTotal);
     const slide2 = mobilePersonSlide(esc(S.settings.person1), 'var(--p1)', 'ic-p1', scaleNum(p1inc), scaleNum(p1sp+sharedP1), p1Locked, scaleNum(p1ret), scaleNum(p1fam), p1Fixed, p1Var);
     const slide3 = mobilePersonSlide(esc(S.settings.person2), 'var(--p2)', 'ic-p2', scaleNum(p2inc), scaleNum(p2sp+sharedP2), p2Locked, scaleNum(p2ret), scaleNum(p2fam), p2Fixed, p2Var);
 
@@ -1879,11 +1885,25 @@ function renderOverview() {
           if (i === clampedIdx) d.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
         });
       }, {passive: true});
-      // Tap tabs to navigate
+      // Tap tabs to navigate and re-animate ring for person slides
       dotsEl.addEventListener('click', e => {
         const dot = e.target.closest('.ov-tab');
         if (!dot) return;
-        carousel.scrollTo({left: +dot.dataset.idx * carousel.offsetWidth, behavior: 'smooth'});
+        const idx = +dot.dataset.idx;
+        carousel.scrollTo({left: idx * carousel.offsetWidth, behavior: 'smooth'});
+        // Re-animate ring fill when navigating to a person slide (0-2)
+        if (idx <= 2) {
+          const rings = ['ic-combined','ic-p1','ic-p2'];
+          const ring = document.getElementById('ring-' + rings[idx]);
+          if (ring) {
+            ring.style.transition = 'none';
+            ring.style.strokeDashoffset = ring.getAttribute('stroke-dasharray');
+            requestAnimationFrame(() => {
+              ring.style.transition = '';
+              ring.style.strokeDashoffset = ring.dataset.to;
+            });
+          }
+        }
       });
     });
 
