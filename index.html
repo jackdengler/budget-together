@@ -411,27 +411,27 @@
       html{font-size:19px;-webkit-text-size-adjust:100%;height:100%;overflow:hidden}
       body{background:#F2F2F7;overscroll-behavior-y:none;font-size:19px;line-height:1.5;height:100%;overflow:hidden}
       #app{height:100vh;overflow:hidden;display:flex;flex-direction:column}
-      main{flex:1;overflow:hidden;padding:8px 16px !important;display:flex;flex-direction:column}
+      main{flex:1;overflow:hidden;padding:6px 12px !important;display:flex;flex-direction:column}
 
       /* Safe area */
       body{padding-top:env(safe-area-inset-top)}
       #app{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
 
-      /* Header — iOS large-title style */
+      /* Header — compact but readable */
       header{
-        padding:10px 16px 8px;gap:6px 8px;height:auto;
+        padding:8px 12px 6px;gap:4px 8px;height:auto;
         flex-wrap:wrap;
-        background:rgba(242,242,247,0.85);
+        background:rgba(242,242,247,0.92);
         -webkit-backdrop-filter:saturate(180%) blur(20px);
         backdrop-filter:saturate(180%) blur(20px);
         border-bottom:1px solid rgba(60,60,67,0.12);
       }
-      .logo{font-size:1.25rem;font-weight:800;letter-spacing:-0.03em;width:100%;margin-bottom:2px}
+      .logo{font-size:28px;font-weight:800;letter-spacing:-0.03em;width:100%;margin-bottom:0;line-height:1.2}
       #nav{display:none}
-      .month-nav button{width:30px;height:30px;border-radius:9px;border:none;background:rgba(120,120,128,0.12);font-size:1rem}
-      .month-nav span{font-size:.9rem;font-weight:700}
-      .save-status{font-size:.65rem;margin-left:auto}
-      .icon-btn{width:32px;height:32px;border:none;background:rgba(120,120,128,0.12);border-radius:10px;font-size:.95rem}
+      .month-nav button{width:32px;height:32px;border-radius:9px;border:none;background:rgba(120,120,128,0.12);font-size:1.1rem}
+      .month-nav span{font-size:22px;font-weight:700;letter-spacing:-0.01em}
+      .save-status{font-size:.6rem;margin-left:auto}
+      .icon-btn{width:34px;height:34px;border:none;background:rgba(120,120,128,0.12);border-radius:10px;font-size:1rem}
       #review-badge{padding:4px 10px;font-size:0;border:none;background:rgba(217,119,6,0.12);border-radius:10px}
       #review-badge-count{font-size:0.78rem}
 
@@ -459,7 +459,7 @@
       #bottom-nav button.active .bnav-label{font-weight:700}
       .bnav-icon{line-height:1;transition:transform .25s cubic-bezier(0.34,1.56,0.64,1)}
       .bnav-icon svg{width:26px;height:26px}
-      .bnav-label{font-size:0.72rem;font-weight:500;letter-spacing:.02em;margin-top:2px}
+      .bnav-label{font-size:13px;font-weight:500;letter-spacing:.01em;margin-top:2px}
 
       /* Main layout — iOS grouped inset padding */
       main{padding:12px 16px}
@@ -577,33 +577,35 @@
       .ios-grouped{background:white;border-radius:12px;overflow:hidden}
 
       /* ── iOS PWA: Overview carousel ──────────────────── */
-      .ov-carousel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;gap:0;padding:0;margin:0 -16px;flex:1}
+      .ov-carousel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;gap:0;padding:0;margin:0 -12px;flex:1}
       .ov-carousel::-webkit-scrollbar{display:none}
-      .ov-slide{flex:0 0 100%;width:100%;scroll-snap-align:start;padding:0 12px;box-sizing:border-box;display:flex}
-      .ov-slide-inner{background:white;border-radius:20px;padding:0;display:flex;flex-direction:column;overflow:hidden;position:relative;flex:1}
+      .ov-slide{flex:0 0 100%;width:100%;scroll-snap-align:start;padding:0 8px;box-sizing:border-box;display:flex}
+      .ov-slide-inner{background:white;border-radius:18px;padding:0;display:flex;flex-direction:column;overflow:hidden;position:relative;flex:1}
       .ov-slide-inner.income-card{padding:0}
-      .ov-dots{display:flex;justify-content:center;gap:8px;padding:12px 0 4px}
-      .ov-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:all .2s}
-      .ov-dot.active{background:var(--primary);width:24px;border-radius:4px}
+      .ov-dots{display:flex;justify-content:center;gap:6px;padding:8px 0 2px}
+      .ov-dot{width:6px;height:6px;border-radius:50%;background:var(--border);transition:all .2s}
+      .ov-dot.active{background:var(--primary);width:20px;border-radius:3px}
 
       /* ── iOS PWA: 2x2 income card ────────────────────── */
       .ov-person-card{display:flex;flex-direction:column;flex:1;padding:0}
-      .ov-person-card .income-title{padding:16px 20px 0;font-size:.95rem;margin-bottom:0;letter-spacing:.06em}
+      .ov-person-card .income-title{padding:12px 14px 0;font-size:14px;font-weight:700;margin-bottom:0;letter-spacing:.07em;text-transform:uppercase;color:var(--text-3)}
       .ov-card-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;flex:1}
-      .ov-card-cell{display:flex;flex-direction:column;justify-content:flex-end;padding:16px 18px 20px;position:relative;overflow:hidden}
+      .ov-card-cell{display:flex;flex-direction:column;justify-content:flex-start;padding:14px 14px 14px;position:relative;overflow:hidden}
       .ov-card-cell:nth-child(1){border-right:1px solid rgba(0,0,0,.06);border-bottom:1px solid rgba(0,0,0,.06)}
       .ov-card-cell:nth-child(2){border-bottom:1px solid rgba(0,0,0,.06)}
       .ov-card-cell:nth-child(3){border-right:1px solid rgba(0,0,0,.06)}
 
       /* Cell labels */
-      .ov-cell-label{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3);margin-bottom:6px}
-      .ov-cell-value{font-size:clamp(22px,6vw,34px);font-weight:300;line-height:1.05;letter-spacing:-0.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-      .ov-cell-sub{font-size:13px;color:var(--text-3);margin-top:5px}
+      .ov-cell-label{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:4px}
+      .ov-cell-value{font-size:36px;font-weight:700;line-height:1;letter-spacing:-0.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .ov-cell-sub{font-size:16px;color:var(--text-3);margin-top:6px;font-weight:500}
 
-      /* Earned vs spent proportional bar */
-      .ov-ep-bar{display:flex;height:3px;margin:0 20px 0;border-radius:2px;overflow:hidden}
-      .ov-ep-bar-earn{background:rgba(52,199,89,0.55);transition:width .5s ease}
-      .ov-ep-bar-spend{flex:1;background:rgba(255,59,48,0.35)}
+      /* Earned vs spent proportional bar with end labels */
+      .ov-ep-bar-wrap{margin:4px 12px 0;display:flex;flex-direction:column;gap:3px}
+      .ov-ep-bar{display:flex;height:10px;border-radius:5px;overflow:hidden}
+      .ov-ep-bar-earn{background:rgba(52,199,89,0.7);transition:width .5s ease}
+      .ov-ep-bar-spend{flex:1;background:rgba(255,59,48,0.5)}
+      .ov-ep-bar-labels{display:flex;justify-content:space-between;font-size:12px;font-weight:600;padding:0 2px}
 
       /* Ring chart — fills the cell */
       .ov-ring{position:relative;width:calc(100% - 8px);aspect-ratio:1;margin:auto}
@@ -611,15 +613,15 @@
       .ov-ring-bg{fill:none;stroke:rgba(0,0,0,0.06);stroke-width:3}
       .ov-ring-fill{fill:none;stroke-width:3;stroke-linecap:round;transition:stroke-dashoffset .6s ease}
       .ov-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-      .ov-ring-pct{font-size:2.2rem;font-weight:600;line-height:1}
-      .ov-ring-lbl{font-size:13px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+      .ov-ring-pct{font-size:2.4rem;font-weight:700;line-height:1}
+      .ov-ring-lbl{font-size:12px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
 
       /* Breakdown lines in bottom cells */
       .ov-breakdown{margin-top:8px}
-      .ov-breakdown-row{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;font-size:15px}
+      .ov-breakdown-row{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;font-size:16px}
       .ov-breakdown-row+.ov-breakdown-row{border-top:1px solid rgba(0,0,0,.05)}
       .ov-breakdown-label{color:var(--text-3);font-weight:400}
-      .ov-breakdown-value{font-weight:600}
+      .ov-breakdown-value{font-weight:700;font-size:16px}
 
       /* ── iOS PWA: Settled history mobile ──────────────── */
       .settled-card-list{display:flex;flex-direction:column;gap:2px;background:white;border-radius:12px;overflow:hidden}
@@ -1615,7 +1617,7 @@ function renderOverview() {
   // ── Range toggle row ────────────────────────────────────────────────────────
   const shortMo = new Date(S.currentMonth + '-02').toLocaleDateString('en-US', {month:'short'});
   const pill = (label, active, fn) =>
-    `<button onclick="${fn}" style="height:32px;padding:0 14px;border-radius:16px;font-size:.86rem;font-weight:600;cursor:pointer;border:1px solid ${active?'var(--primary)':'var(--border)'};background:${active?'var(--primary)':'white'};color:${active?'white':'var(--text-2)'};white-space:nowrap">${label}</button>`;
+    `<button onclick="${fn}" style="height:40px;padding:0 20px;border-radius:20px;font-size:16px;font-weight:600;cursor:pointer;border:1.5px solid ${active?'var(--primary)':'var(--border)'};background:${active?'var(--primary)':'white'};color:${active?'white':'var(--text-2)'};white-space:nowrap">${label}</button>`;
   const r = S.overviewRange;
 
   // In multi-month mode, contextual nav arrows live in the top-right of this row.
@@ -1698,24 +1700,28 @@ function renderOverview() {
       const total = inc + spend;
       const earnPct = total > 0 ? Math.round(inc / total * 100) : 50;
 
-      // Earned breakdown
+      // Earned breakdown — no decimals
       const earnedRows = [];
-      if ((ret||0) > 0) earnedRows.push({l:'Normal', v:fc(normalInc), c:'#15803d'});
-      if ((ret||0) > 0) earnedRows.push({l:'Retirement', v:fc(ret), c:'#D4663A'});
-      if (fam > 0) earnedRows.push({l:'Family', v:fc(fam), c:'#7c3aed'});
+      if ((ret||0) > 0) earnedRows.push({l:'Normal', v:fc0(normalInc), c:'#15803d'});
+      if ((ret||0) > 0) earnedRows.push({l:'Retirement', v:fc0(ret), c:'#D4663A'});
+      if (fam > 0) earnedRows.push({l:'Family', v:fc0(fam), c:'#7c3aed'});
 
       const cashFlowColor = (normalInc-spend)>=0?'#0369a1':'#dc2626';
+      const cashFlowAmt = fc0(Math.abs(normalInc-spend));
 
       return `<div class="ov-slide"><div class="ov-slide-inner income-card ${cls}"><div class="ov-person-card">
         <div class="income-title" style="${titleColor?'color:'+titleColor:''}">${title}</div>
-        <div class="ov-ep-bar"><div class="ov-ep-bar-earn" style="width:${earnPct}%"></div><div class="ov-ep-bar-spend"></div></div>
+        <div class="ov-ep-bar-wrap">
+          <div class="ov-ep-bar"><div class="ov-ep-bar-earn" style="width:${earnPct}%"></div><div class="ov-ep-bar-spend"></div></div>
+          <div class="ov-ep-bar-labels"><span style="color:#16a34a">${fc0(inc)}</span><span style="color:#b91c1c">${fc0(spend)}</span></div>
+        </div>
         <div class="ov-card-grid">
           <div class="ov-card-cell">
             <div class="ov-cell-label">${heroLabel}</div>
-            <div class="ov-cell-value">${moneyEl(isDeficit?'−':'+', Math.abs(tSaved), heroColor)}</div>
-            <div class="ov-cell-sub" style="color:${cashFlowColor};font-weight:600">Cash flow ${(normalInc-spend)>=0?'+':'−'}${fc(Math.abs(normalInc-spend))}</div>
+            <div class="ov-cell-value" style="color:${heroColor}">${(isDeficit?'−':'+')}${fc0(Math.abs(tSaved))}</div>
+            <div class="ov-cell-sub" style="color:${cashFlowColor}">Cash flow ${(normalInc-spend)>=0?'+':'−'}${cashFlowAmt}</div>
           </div>
-          <div class="ov-card-cell" style="align-items:center;justify-content:center;padding:8px">
+          <div class="ov-card-cell" style="align-items:center;justify-content:center;padding:6px">
             <div class="ov-ring">
               <svg viewBox="0 0 100 100">
                 <circle class="ov-ring-bg" cx="50" cy="50" r="36"/>
@@ -1727,19 +1733,19 @@ function renderOverview() {
               </div>
             </div>
           </div>
-          <div class="ov-card-cell" style="background:rgba(52,199,89,0.06);border-radius:0 0 0 20px">
+          <div class="ov-card-cell" style="background:rgba(52,199,89,0.06);border-radius:0 0 0 18px">
             <div class="ov-cell-label" style="color:#16a34a">Earned</div>
-            <div class="ov-cell-value">${moneyEl('+', inc, '#15803d')}</div>
+            <div class="ov-cell-value" style="color:#15803d">+${fc0(inc)}</div>
             <div class="ov-breakdown">
               ${earnedRows.map(r => `<div class="ov-breakdown-row"><span class="ov-breakdown-label">${r.l}</span><span class="ov-breakdown-value" style="color:${r.c}">${r.v}</span></div>`).join('')}
             </div>
           </div>
-          <div class="ov-card-cell" style="background:rgba(255,59,48,0.06);border-radius:0 0 20px 0">
+          <div class="ov-card-cell" style="background:rgba(255,59,48,0.06);border-radius:0 0 18px 0">
             <div class="ov-cell-label" style="color:#dc2626">Spent</div>
-            <div class="ov-cell-value">${moneyEl('', spend, '#b91c1c')}</div>
+            <div class="ov-cell-value" style="color:#b91c1c">${fc0(spend)}</div>
             <div class="ov-breakdown">
-              <div class="ov-breakdown-row"><span class="ov-breakdown-label">Fixed</span><span class="ov-breakdown-value" style="color:#6366f1">${fc(fixed)}</span></div>
-              <div class="ov-breakdown-row"><span class="ov-breakdown-label">Variable</span><span class="ov-breakdown-value" style="color:#f59e0b">${fc(variable)}</span></div>
+              <div class="ov-breakdown-row"><span class="ov-breakdown-label">Fixed</span><span class="ov-breakdown-value" style="color:#6366f1">${fc0(fixed)}</span></div>
+              <div class="ov-breakdown-row"><span class="ov-breakdown-label">Variable</span><span class="ov-breakdown-value" style="color:#f59e0b">${fc0(variable)}</span></div>
             </div>
           </div>
         </div>
