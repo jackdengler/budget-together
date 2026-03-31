@@ -398,8 +398,10 @@
     @media(max-width:700px),(pointer:coarse){
       /* iOS system background + larger base font for iframe */
       :root{--bg:#F2F2F7;--surface:#ffffff;--border:rgba(60,60,67,0.12);--radius:14px;--radius-lg:20px}
-      html{font-size:19px;-webkit-text-size-adjust:100%}
-      body{background:#F2F2F7;overscroll-behavior-y:none;font-size:19px;line-height:1.5}
+      html{font-size:19px;-webkit-text-size-adjust:100%;height:100%;overflow:hidden}
+      body{background:#F2F2F7;overscroll-behavior-y:none;font-size:19px;line-height:1.5;height:100%;overflow:hidden}
+      #app{height:100vh;overflow:hidden;display:flex;flex-direction:column}
+      main{flex:1;overflow:hidden;padding:8px 16px !important;display:flex;flex-direction:column}
 
       /* Safe area */
       body{padding-top:env(safe-area-inset-top)}
@@ -516,7 +518,7 @@
       header,#bottom-nav,.stat-card,.income-card,.bud-card,.scc,.card-txn{user-select:none;-webkit-user-select:none}
 
       /* ── iOS PWA: Transaction card list ──────────────── */
-      .txn-card-list{display:flex;flex-direction:column;gap:2px;background:white;border-radius:12px;overflow:hidden}
+      .txn-card-list{display:flex;flex-direction:column;gap:2px;background:white;border-radius:12px;overflow:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}
       .txn-card{display:flex;align-items:center;gap:12px;padding:13px 16px;background:white;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .1s}
       .txn-card:active{background:rgba(0,0,0,.04)}
       .txn-card+.txn-card{border-top:1px solid rgba(60,60,67,0.08)}
@@ -565,10 +567,10 @@
       .ios-grouped{background:white;border-radius:12px;overflow:hidden}
 
       /* ── iOS PWA: Overview carousel ──────────────────── */
-      .ov-carousel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;gap:0;padding:0;margin:0 -16px}
+      .ov-carousel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;gap:0;padding:0;margin:0 -16px;flex:1}
       .ov-carousel::-webkit-scrollbar{display:none}
-      .ov-slide{flex:0 0 100%;width:100%;scroll-snap-align:start;padding:0 12px;box-sizing:border-box}
-      .ov-slide-inner{background:white;border-radius:20px;padding:0;display:flex;flex-direction:column;overflow:hidden;position:relative}
+      .ov-slide{flex:0 0 100%;width:100%;scroll-snap-align:start;padding:0 12px;box-sizing:border-box;display:flex}
+      .ov-slide-inner{background:white;border-radius:20px;padding:0;display:flex;flex-direction:column;overflow:hidden;position:relative;flex:1}
       .ov-slide-inner.income-card{padding:0}
       .ov-dots{display:flex;justify-content:center;gap:8px;padding:12px 0 4px}
       .ov-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:all .2s}
@@ -577,7 +579,7 @@
       /* ── iOS PWA: 2x2 income card ────────────────────── */
       .ov-person-card{display:flex;flex-direction:column;flex:1;padding:0}
       .ov-person-card .income-title{padding:16px 20px 0;font-size:.95rem;margin-bottom:0;letter-spacing:.06em}
-      .ov-card-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;flex:1;min-height:calc(100vh - 240px)}
+      .ov-card-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;flex:1}
       .ov-card-cell{display:flex;flex-direction:column;justify-content:center;padding:20px;position:relative;overflow:hidden}
       .ov-card-cell:nth-child(1){border-right:1px solid rgba(0,0,0,.06);border-bottom:1px solid rgba(0,0,0,.06)}
       .ov-card-cell:nth-child(2){border-bottom:1px solid rgba(0,0,0,.06)}
@@ -1682,7 +1684,7 @@ function renderOverview() {
           <div class="ov-card-cell">
             <div class="ov-cell-label">${heroLabel}</div>
             <div class="ov-cell-value" style="color:${heroColor}">${heroAmt}</div>
-            <div class="ov-cell-sub">of ${fc(inc)} earned</div>
+            <div class="ov-cell-sub" style="color:${(normalInc-spend)>=0?'#0369a1':'#dc2626'};font-weight:600">Cash flow ${(normalInc-spend)>=0?'+':'−'}${fc(Math.abs(normalInc-spend))}</div>
           </div>
           <div class="ov-card-cell" style="align-items:center">
             <div class="ov-ring">
