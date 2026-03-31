@@ -9,9 +9,6 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#D4663A">
   <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='38' fill='%23D4663A'/%3E%3Ctext x='90' y='118' font-size='90' text-anchor='middle'%3E%F0%9F%92%95%3C/text%3E%3C/svg%3E">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <title>Budget Together 💕</title>
   <script>
     (function(){
@@ -49,17 +46,18 @@
       --radius-lg: 18px;
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.5;overscroll-behavior:none;-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased}
-    button,a,[role="button"]{touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+    body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Helvetica Neue',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.5;overscroll-behavior:none;-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased}
+    button,a,[role="button"]{touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;transition:transform 0.1s cubic-bezier(0.34,1.56,0.64,1),opacity 0.1s}
+    button:active,[role="button"]:active{transform:scale(0.94);opacity:0.8}
     #app{display:flex;flex-direction:column;min-height:100vh}
 
     /* Header */
-    header{background:white;border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;gap:16px;height:58px;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-sm)}
+    header{background:rgba(255,255,255,0.82);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid rgba(0,0,0,0.08);padding:0 20px;display:flex;align-items:center;gap:16px;height:58px;position:sticky;top:0;z-index:100;}
     .logo{font-size:1.15rem;font-weight:800;color:var(--primary);white-space:nowrap;letter-spacing:-0.02em}
-    nav{display:flex;gap:3px;flex:1}
-    nav button{padding:6px 14px;border:none;background:none;cursor:pointer;border-radius:20px;font-size:0.88rem;font-weight:500;color:var(--text-2);transition:all .15s}
-    nav button:hover{background:var(--primary-light);color:var(--primary)}
-    nav button.active{background:var(--primary);color:white}
+    nav{display:flex;gap:2px;flex:1;background:rgba(120,120,128,0.12);border-radius:10px;padding:2px}
+    nav button{padding:6px 14px;border:none;background:transparent;cursor:pointer;border-radius:8px;font-size:0.86rem;font-weight:500;color:var(--text-2);transition:all .2s cubic-bezier(0.34,1.56,0.64,1)}
+    nav button:hover{color:var(--text)}
+    nav button.active{background:white;color:var(--text);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.12)}
     .month-nav{display:flex;align-items:center;gap:8px;font-weight:600;font-size:0.88rem;color:var(--text-2);white-space:nowrap}
     .month-nav button{width:26px;height:26px;border:1px solid var(--border);background:white;border-radius:7px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
     .month-nav button:hover{background:var(--primary-light);border-color:var(--primary);color:var(--primary)}
@@ -80,14 +78,14 @@
     #loading p{color:var(--text-2);font-size:0.95rem}
 
     /* Cards */
-    .card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-sm);border:1px solid var(--border);padding:20px}
+    .card{background:var(--surface);border-radius:var(--radius-lg);box-shadow:0 2px 12px rgba(0,0,0,0.06);border:none;padding:20px}
     .section-title{font-size:0.95rem;font-weight:700;margin-bottom:16px;color:var(--text)}
     .text-muted{color:var(--text-3);font-size:0.83rem}
 
     /* Stats grid */
     .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
     @media(max-width:700px){.stats-grid{grid-template-columns:1fr 1fr}}
-    .stat-card{background:white;border-radius:var(--radius);box-shadow:var(--shadow-sm);border:1px solid var(--border);padding:16px 18px;position:relative;overflow:hidden}
+    .stat-card{background:white;border-radius:var(--radius-lg);box-shadow:0 2px 12px rgba(0,0,0,0.06);border:none;padding:16px 18px;position:relative;overflow:hidden}
     .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0}
     .stat-card.s-total::before{background:linear-gradient(90deg,var(--primary),#F59E6A)}
     .stat-card.s-p1::before{background:var(--p1)}
@@ -166,7 +164,7 @@
     select.filter-sel:focus{border-color:var(--primary);outline:none}
 
     /* Table */
-    .table-wrap{background:white;border-radius:var(--radius);box-shadow:var(--shadow-sm);border:1px solid var(--border);overflow:hidden}
+    .table-wrap{background:white;border-radius:var(--radius-lg);box-shadow:0 2px 12px rgba(0,0,0,0.06);border:none;overflow:hidden}
     table{width:100%;border-collapse:collapse}
     th{text-align:left;padding:10px 14px;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);background:#f9fafb;border-bottom:1px solid var(--border)}
     th.sortable{cursor:pointer;user-select:none}
@@ -267,9 +265,18 @@
     .hv-btn.hv-active.hv-p2{color:var(--p2)}
     select.split-sel{padding:3px 7px;border:1px solid var(--border);border-radius:6px;font-size:0.8rem;background:white}
 
-    /* Modals */
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(2px)}
-    .modal{background:white;border-radius:var(--radius-lg);padding:28px;width:90%;max-width:460px;box-shadow:0 20px 60px rgba(0,0,0,.15);max-height:90vh;overflow-y:auto}
+    /* Modals — bottom sheet on mobile, centered on desktop */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;justify-content:center;z-index:1000;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);animation:overlayIn .22s ease}
+    @keyframes overlayIn{from{opacity:0}to{opacity:1}}
+    .modal{background:white;border-radius:24px 24px 0 0;padding:28px 24px calc(28px + env(safe-area-inset-bottom));width:100%;max-width:560px;box-shadow:0 -4px 40px rgba(0,0,0,.18);max-height:92vh;overflow-y:auto;animation:sheetUp .32s cubic-bezier(0.32,0.72,0,1)}
+    .modal::before{content:'';display:block;width:36px;height:5px;background:#e0e0e0;border-radius:3px;margin:0 auto 20px;flex-shrink:0}
+    @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+    @media(min-width:700px){
+      .overlay{align-items:center}
+      .modal{border-radius:20px;padding:28px;width:90%;animation:modalIn .22s cubic-bezier(0.34,1.56,0.64,1)}
+      .modal::before{display:none}
+      @keyframes modalIn{from{opacity:0;transform:scale(0.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+    }
     .modal h2{font-size:1.3rem;font-weight:700;margin-bottom:6px}
     .modal p{color:var(--text-2);font-size:0.88rem;margin-bottom:20px}
     .form-row{margin-bottom:14px}
@@ -286,8 +293,8 @@
     .col-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
 
     /* Toast */
-    .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(16px);background:#1f2937;color:white;padding:9px 20px;border-radius:20px;font-size:0.88rem;font-weight:500;opacity:0;transition:all .28s;pointer-events:none;z-index:2000;white-space:nowrap}
-    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px) scale(0.92);background:rgba(30,30,30,0.92);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:white;padding:10px 22px;border-radius:20px;font-size:0.88rem;font-weight:500;opacity:0;transition:all .32s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;z-index:2000;white-space:nowrap}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
 
     ::-webkit-scrollbar{width:5px;height:5px}
     ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
@@ -405,9 +412,10 @@
         bottom:0;left:0;right:0;
         height:calc(60px + env(safe-area-inset-bottom));
         padding-bottom:env(safe-area-inset-bottom);
-        background:white;
-        border-top:1px solid var(--border);
-        box-shadow:0 -2px 12px rgba(0,0,0,.06);
+        background:rgba(255,255,255,0.82);
+        -webkit-backdrop-filter:saturate(180%) blur(20px);
+        backdrop-filter:saturate(180%) blur(20px);
+        border-top:1px solid rgba(0,0,0,0.08);
         z-index:200;
       }
       #bottom-nav button{
@@ -418,9 +426,10 @@
         min-height:44px;
       }
       #bottom-nav button.active{color:var(--primary)}
-      #bottom-nav button.active .bnav-icon{transform:scale(1.1)}
-      .bnav-icon{font-size:1.3rem;line-height:1;transition:transform .15s}
-      .bnav-label{font-size:0.62rem;font-weight:600;letter-spacing:.02em}
+      #bottom-nav button.active .bnav-icon{transform:scale(1.15)}
+      #bottom-nav button.active .bnav-label{font-weight:700}
+      .bnav-icon{font-size:1.35rem;line-height:1;transition:transform .25s cubic-bezier(0.34,1.56,0.64,1)}
+      .bnav-label{font-size:0.62rem;font-weight:500;letter-spacing:.01em;transition:font-weight .15s}
 
       /* Prevent iOS auto-zoom on form inputs (requires font-size >= 16px) */
       input,select,textarea{font-size:16px !important}
@@ -451,8 +460,8 @@
     }
 
     /* Tab content fade-in */
-    @keyframes tabFadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-    #main>*{animation:tabFadeIn .18s ease}
+    @keyframes tabFadeIn{from{opacity:0;transform:translateY(8px) scale(0.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+    #main>*{animation:tabFadeIn .24s cubic-bezier(0.25,0.46,0.45,0.94)}
   </style>
 </head>
 <body>
