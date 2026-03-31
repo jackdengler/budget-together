@@ -568,8 +568,8 @@
       .ov-carousel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;gap:0;padding:0;margin:0 -16px}
       .ov-carousel::-webkit-scrollbar{display:none}
       .ov-slide{flex:0 0 100%;width:100%;scroll-snap-align:start;padding:0 12px;box-sizing:border-box}
-      .ov-slide-inner{background:white;border-radius:20px;padding:0;min-height:calc(100vh - 230px);display:flex;flex-direction:column;overflow:hidden;position:relative}
-      .ov-slide-inner.income-card{padding:0;min-height:calc(100vh - 230px)}
+      .ov-slide-inner{background:white;border-radius:20px;padding:0;display:flex;flex-direction:column;overflow:hidden;position:relative}
+      .ov-slide-inner.income-card{padding:0}
       .ov-dots{display:flex;justify-content:center;gap:8px;padding:12px 0 4px}
       .ov-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:all .2s}
       .ov-dot.active{background:var(--primary);width:24px;border-radius:4px}
@@ -585,13 +585,13 @@
       .ov-hero-sub{font-size:.82rem;color:var(--text-3);margin-top:8px}
 
       /* Ring chart for savings rate */
-      .ov-ring-wrap{display:flex;align-items:center;justify-content:center;gap:20px;padding:0 24px 20px}
-      .ov-ring{position:relative;width:100px;height:100px;flex-shrink:0}
-      .ov-ring svg{width:100px;height:100px;transform:rotate(-90deg)}
+      .ov-ring-wrap{display:flex;align-items:center;justify-content:center;gap:20px;padding:0 24px 24px}
+      .ov-ring{position:relative;width:120px;height:120px;flex-shrink:0}
+      .ov-ring svg{width:120px;height:120px;transform:rotate(-90deg)}
       .ov-ring-bg{fill:none;stroke:#f3f4f6;stroke-width:10}
       .ov-ring-fill{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .6s ease}
       .ov-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-      .ov-ring-pct{font-size:1.5rem;font-weight:800;line-height:1}
+      .ov-ring-pct{font-size:1.7rem;font-weight:800;line-height:1}
       .ov-ring-lbl{font-size:.65rem;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
       .ov-ring-detail{flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px}
       .ov-ring-stat{display:flex;justify-content:space-between;align-items:baseline}
@@ -599,8 +599,8 @@
       .ov-ring-stat-value{font-size:.92rem;font-weight:700}
 
       /* Earned / Spent row — two side-by-side cards */
-      .ov-money-row{display:grid;grid-template-columns:1fr 1fr;gap:0;flex:1;margin-top:auto}
-      .ov-money-cell{padding:18px 20px;display:flex;flex-direction:column;justify-content:center}
+      .ov-money-row{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:auto}
+      .ov-money-cell{padding:22px 20px;display:flex;flex-direction:column;justify-content:center}
       .ov-money-cell:first-child{border-right:1px solid rgba(0,0,0,.05)}
       .ov-money-cell-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
       .ov-money-cell-value{font-size:1.5rem;font-weight:800;line-height:1;margin-bottom:8px}
