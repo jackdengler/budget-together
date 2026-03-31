@@ -399,18 +399,20 @@
 
       /* Header — iOS large-title style */
       header{
-        padding:0 16px;gap:10px;height:52px;
+        padding:10px 16px 8px;gap:6px 8px;height:auto;
+        flex-wrap:wrap;
         background:rgba(242,242,247,0.85);
         -webkit-backdrop-filter:saturate(180%) blur(20px);
         backdrop-filter:saturate(180%) blur(20px);
         border-bottom:1px solid rgba(60,60,67,0.12);
       }
-      .logo{font-size:1.05rem;font-weight:700;letter-spacing:-0.03em}
+      .logo{font-size:1.3rem;font-weight:800;letter-spacing:-0.03em;width:100%}
       #nav{display:none}
-      .month-nav{margin-left:auto}
-      .month-nav button{width:34px;height:34px;border-radius:10px;border:none;background:rgba(120,120,128,0.12);font-size:1.1rem}
-      .icon-btn{width:34px;height:34px;border:none;background:rgba(120,120,128,0.12);border-radius:10px}
-      #review-badge{padding:4px 10px;font-size:0;border:none;background:rgba(217,119,6,0.12)}
+      .month-nav button{width:32px;height:32px;border-radius:10px;border:none;background:rgba(120,120,128,0.12);font-size:1rem}
+      .month-nav span{font-size:.88rem}
+      .save-status{font-size:.7rem;margin-left:auto}
+      .icon-btn{width:32px;height:32px;border:none;background:rgba(120,120,128,0.12);border-radius:10px}
+      #review-badge{padding:4px 10px;font-size:0;border:none;background:rgba(217,119,6,0.12);border-radius:10px}
       #review-badge-count{font-size:0.78rem}
 
       /* Bottom tab bar */
@@ -501,6 +503,77 @@
 
       /* No selection on chrome */
       header,#bottom-nav,.stat-card,.income-card,.bud-card,.scc,.card-txn{user-select:none;-webkit-user-select:none}
+
+      /* ── iOS PWA: Transaction card list ──────────────── */
+      .txn-card-list{display:flex;flex-direction:column;gap:2px;background:white;border-radius:12px;overflow:hidden}
+      .txn-card{display:flex;align-items:center;gap:12px;padding:13px 16px;background:white;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .1s}
+      .txn-card:active{background:rgba(0,0,0,.04)}
+      .txn-card+.txn-card{border-top:1px solid rgba(60,60,67,0.08)}
+      .txn-card.excluded{opacity:.4}
+      .txn-card-emoji{font-size:1.5rem;width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:rgba(120,120,128,0.08);border-radius:10px;flex-shrink:0}
+      .txn-card-body{flex:1;min-width:0}
+      .txn-card-desc{font-size:.9rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .txn-card-meta{font-size:.75rem;color:var(--text-3);margin-top:2px;display:flex;align-items:center;gap:6px}
+      .txn-card-meta .owner-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+      .txn-card-amt{font-size:.95rem;font-weight:700;text-align:right;flex-shrink:0;white-space:nowrap}
+      .txn-card-amt.inc{color:var(--green)}
+      .txn-card-chevron{color:var(--text-3);font-size:.9rem;margin-left:4px;flex-shrink:0;opacity:.3}
+      .txn-date-header{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:rgba(60,60,67,0.6);padding:20px 16px 6px;background:transparent}
+      .txn-date-header:first-child{padding-top:8px}
+
+      /* ── iOS PWA: Filters mobile ─────────────────────── */
+      .filters-bar-mobile{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+      .filter-pill{padding:6px 14px;border-radius:20px;font-size:.8rem;font-weight:600;border:1.5px solid var(--border);background:white;color:var(--text-2);white-space:nowrap;cursor:pointer;flex-shrink:0;transition:all .15s}
+      .filter-pill.active{border-color:var(--primary);background:var(--primary);color:white}
+
+      /* ── iOS PWA: History month cards ─────────────────── */
+      .month-card-list{display:flex;flex-direction:column;gap:2px;background:white;border-radius:12px;overflow:hidden}
+      .month-card{padding:14px 16px;background:white;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .1s}
+      .month-card:active{background:rgba(0,0,0,.04)}
+      .month-card+.month-card{border-top:1px solid rgba(60,60,67,0.08)}
+      .month-card-top{display:flex;justify-content:space-between;align-items:baseline}
+      .month-card-title{font-size:.92rem;font-weight:700;color:var(--text)}
+      .month-card-title .cur-badge{font-size:.65rem;background:var(--primary-light);color:var(--primary);padding:2px 7px;border-radius:10px;font-weight:600;margin-left:6px;vertical-align:middle}
+      .month-card-amt{font-size:1rem;font-weight:800;color:var(--text)}
+      .month-card-row2{display:flex;align-items:center;gap:8px;margin-top:4px;font-size:.78rem;color:var(--text-3)}
+      .month-card-detail{padding:10px 16px 16px;border-top:1px solid rgba(60,60,67,0.08);background:rgba(120,120,128,0.03)}
+      .month-card-detail-row{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;font-size:.82rem}
+      .month-card-expand{font-size:.75rem;color:var(--primary);font-weight:600;margin-top:6px;display:flex;align-items:center;gap:3px}
+
+      /* ── iOS PWA: Heatmap mobile (vertical category list) ── */
+      .hm-mobile-list{display:flex;flex-direction:column;gap:2px;background:white;border-radius:12px;overflow:hidden}
+      .hm-mobile-row{display:flex;align-items:center;gap:12px;padding:13px 16px;background:white}
+      .hm-mobile-row+.hm-mobile-row{border-top:1px solid rgba(60,60,67,0.08)}
+      .hm-mobile-cat{font-size:.88rem;font-weight:600;display:flex;align-items:center;gap:6px;flex:1;min-width:0}
+      .hm-mobile-vals{display:flex;align-items:center;gap:8px;flex-shrink:0}
+      .hm-mobile-amt{font-size:.88rem;font-weight:700;color:var(--text)}
+      .hm-mobile-trend{font-size:.75rem;font-weight:700}
+
+      /* ── iOS PWA: Section styling ────────────────────── */
+      .ios-section-header{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:rgba(60,60,67,0.6);padding:20px 16px 6px}
+      .ios-grouped{background:white;border-radius:12px;overflow:hidden}
+
+      /* ── iOS PWA: Settled history mobile ──────────────── */
+      .settled-card-list{display:flex;flex-direction:column;gap:2px;background:white;border-radius:12px;overflow:hidden}
+      .settled-card{display:flex;align-items:center;gap:12px;padding:13px 16px;background:white}
+      .settled-card+.settled-card{border-top:1px solid rgba(60,60,67,0.08)}
+
+      /* ── iOS PWA: Income cards mobile ────────────────── */
+      .income-row-mobile{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+      .income-row-mobile .income-card{min-width:unset;flex-shrink:unset;scroll-snap-align:unset}
+      .income-card-collapse .income-detail{display:none}
+      .income-card-collapse.expanded .income-detail{display:block}
+      .income-toggle-btn{font-size:.75rem;color:var(--primary);font-weight:600;cursor:pointer;border:none;background:none;padding:6px 0;display:flex;align-items:center;gap:3px;-webkit-tap-highlight-color:transparent}
+
+      /* ── iOS PWA: Upload section mobile ──────────────── */
+      .upload-grid-mobile{display:flex;gap:8px;margin-bottom:14px}
+      .upload-zone-mini{flex:1;padding:14px 10px;border:2px dashed var(--border);border-radius:12px;text-align:center;cursor:pointer;background:white;transition:all .2s}
+      .upload-zone-mini:active{transform:scale(0.96);opacity:.7}
+
+      /* ── iOS PWA: Edit modal cat grid ────────────────── */
+      .txe-cat-grid{grid-template-columns:repeat(4,1fr) !important;gap:6px !important}
+      .txe-cat-grid .card-cat-btn{padding:8px 2px}
+      .txe-cat-grid .card-cat-btn span{font-size:.58rem}
     }
 
     /* Tab content fade-in */
@@ -845,6 +918,7 @@ function setSaveStatus(s) {
 let _uid = 0;
 const uid = () => Date.now().toString(36) + (++_uid).toString(36) + Math.random().toString(36).slice(2);
 const $ = id => document.getElementById(id);
+const isMobile = () => matchMedia('(max-width:700px),(pointer:coarse)').matches;
 const fc  = n => { const a = Math.abs(n); return '$' + a.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); };
 const fc0 = n => '$' + Math.round(Math.abs(n)).toLocaleString();
 function fmtDate(d) { if (!d) return ''; const [y,m,day] = d.split('-'); return `${m}/${day}/${y.slice(2)}`; }
@@ -1498,6 +1572,47 @@ function renderOverview() {
     else                     lbl.textContent = moLabel(S.currentMonth);
   });
 
+  // ── Mobile: iOS grouped overview ─────────────────────────
+  if (isMobile()) {
+    // Collapsible income cards — show hero number, tap to expand details
+    const mobileIncomeCard = (title, titleColor, summaryHtml, cls) => `
+      <div class="income-card ${cls} income-card-collapse" onclick="this.classList.toggle('expanded')">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="income-title" style="${titleColor?'color:'+titleColor:''}">${title}</div>
+          <span style="font-size:.8rem;color:var(--text-3);transition:transform .2s" class="expand-chevron">▸</span>
+        </div>
+        <div class="income-detail">${summaryHtml}</div>
+      </div>`;
+
+    const incomeSection = `
+      <div class="ios-section-header">Income & Savings</div>
+      <div class="income-row-mobile">
+        ${mobileIncomeCard('Combined', '', personSummaryHtml(scaleNum(totalInc), scaleNum(p1sp+p2sp), scaleNum(shared), false, scaleNum(retTot), false, scaleNum(famTot)), 'ic-combined')}
+        ${mobileIncomeCard(esc(S.settings.person1), 'var(--p1)', personSummaryHtml(scaleNum(p1inc), scaleNum(p1sp), scaleNum(sharedP1), p1Locked, scaleNum(p1ret), true, scaleNum(p1fam)), 'ic-p1')}
+        ${mobileIncomeCard(esc(S.settings.person2), 'var(--p2)', personSummaryHtml(scaleNum(p2inc), scaleNum(p2sp), scaleNum(sharedP2), p2Locked, scaleNum(p2ret), true, scaleNum(p2fam)), 'ic-p2')}
+      </div>`;
+
+    return `
+${rangeToggle}
+${viewToggle}
+${recSectionHtml}
+<div class="stats-grid">
+  <div class="stat-card s-total"><div class="stat-label">Total</div><div class="stat-value">${fc(scaleNum(total))}</div></div>
+  <div class="stat-card s-p1"><div class="stat-label">${esc(S.settings.person1)}</div><div class="stat-value">${fc(scaleNum(p1sp + sharedP1))}</div></div>
+  <div class="stat-card s-p2"><div class="stat-label">${esc(S.settings.person2)}</div><div class="stat-value">${fc(scaleNum(p2sp + sharedP2))}</div></div>
+  <div class="stat-card s-shared"><div class="stat-label">Shared</div><div class="stat-value">${fc(scaleNum(shared))}</div></div>
+</div>
+${incomeSection}
+<div class="ios-section-header">Spending by Category</div>
+<div class="card">${catBars}</div>
+${vCats.length?`
+<div class="ios-section-header">Spending vs. Average</div>
+<div class="card"><div class="vert-legend"><span><span class="vert-dot" style="background:var(--primary)"></span>${isMulti?'This range':'This month'}</span><span><span class="vert-dot" style="background:#d1d5db"></span>${pastMonths.length?`${pastMonths.length}-mo avg`:'Avg'}</span></div><div class="vert-chart">${vBars}</div></div>`:''}
+<div class="ios-section-header">Top Merchants</div>
+<div class="card">${topMerchants.length?`<div class="merchant-grid">${merchantRows}</div>`:'<p class="text-muted" style="text-align:center;padding:18px">No transactions yet</p>'}</div>`;
+  }
+
+  // ── Desktop: standard overview ──────────────────────────
   return `
 ${rangeToggle}
 ${viewToggle}
@@ -1546,6 +1661,7 @@ function renderTxns() {
   const lockedBanner = ['p1','p2'].filter(p => (S.settings[p==='p1'?'person1Pin':'person2Pin']||'').trim() && !canSeePrivate(p))
     .map(p => `🔒 ${esc(p==='p1'?S.settings.person1:S.settings.person2)}'s private transactions are hidden`);
   const privacyBanner = lockedBanner.length ? `<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:9px 16px;margin-bottom:12px;font-size:.82rem;color:#92400e">${lockedBanner.join(' &nbsp;·&nbsp; ')}</div>` : '';
+  // ── Desktop: table rows ──────────────────────────────────
   const rows = txns.map(t => {
     const ownerCls = t.shared ? 'b-shared' : (t.person==='p1' ? 'b-p1' : 'b-p2');
     const ownerVal = t.shared ? 'shared' : t.person;
@@ -1560,6 +1676,84 @@ function renderTxns() {
     })() : '<td></td>';
     return `<tr class="${t.excluded?'excluded':''}"><td style="white-space:nowrap"><input type="date" value="${t.date}" style="font-size:.78rem;color:var(--text-3);border:1px solid transparent;border-radius:6px;padding:2px 4px;background:transparent;cursor:pointer;width:118px" onchange="setDate('${t.id}',this.value)" onfocus="this.style.borderColor='var(--border)'" onblur="this.style.borderColor='transparent'"></td><td title="${esc(t.description)}" style="max-width:220px">${esc(t.description.slice(0,44))}${t.description.length>44?'…':''}</td><td><select class="cat-sel" onchange="setCat('${t.id}',this.value)">${getCats().map(c=>`<option value="${c.id}"${c.id===t.category?' selected':''}>${c.emoji} ${c.label}</option>`).join('')}</select></td><td><select class="owner-sel ${ownerCls}" onchange="setOwner('${t.id}',this.value)"><option value="p1"${ownerVal==='p1'?' selected':''}>${esc(S.settings.person1)}</option><option value="p2"${ownerVal==='p2'?' selected':''}>${esc(S.settings.person2)}</option><option value="shared"${ownerVal==='shared'?' selected':''}>⇄ Shared</option></select></td><td style="text-align:right"><span class="${t.amount<0?'amt-inc':'amt-exp'}">${t.amount<0?'+':''}${fc(t.amount)}</span></td>${incPills}<td style="white-space:nowrap"><button class="excl-btn${t.excluded?' on':''}" onclick="toggleExclude('${t.id}')" title="${t.excluded?'Include in summaries':'Exclude from summaries'}">⊘</button><button class="del-btn" onclick="delTxn('${t.id}')" title="Delete">🗑</button></td></tr>`;
   }).join('');
+
+  // ── Mobile: card list ──────────────────────────────────
+  if (isMobile()) {
+    // Group transactions by date for section headers
+    const grouped = {};
+    for (const t of txns) {
+      const dk = t.date || 'Unknown';
+      if (!grouped[dk]) grouped[dk] = [];
+      grouped[dk].push(t);
+    }
+    const dateKeys = Object.keys(grouped).sort((a,b) => sDir==='desc' ? b.localeCompare(a) : a.localeCompare(b));
+
+    const cardHtml = dateKeys.map(dk => {
+      const dayTxns = grouped[dk];
+      const [y,m,d] = dk.split('-');
+      const dateLabel = dk !== 'Unknown'
+        ? new Date(+y,+m-1,+d).toLocaleDateString('en-US',{weekday:'long', month:'short', day:'numeric'})
+        : 'Unknown Date';
+      const cards = dayTxns.map(t => {
+        const cat = getCat(t.category);
+        const ownerColor = t.shared ? 'var(--green)' : (t.person==='p1' ? 'var(--p1)' : 'var(--p2)');
+        const ownerLabel = t.shared ? 'Shared' : (t.person==='p1' ? esc(S.settings.person1) : esc(S.settings.person2));
+        const isInc = t.amount < 0;
+        return `<div class="txn-card${t.excluded?' excluded':''}" onclick="showTxnEditModal('${t.id}')">
+          <div class="txn-card-emoji">${cat.emoji}</div>
+          <div class="txn-card-body">
+            <div class="txn-card-desc">${esc(t.description)}</div>
+            <div class="txn-card-meta">
+              <span class="owner-dot" style="background:${ownerColor}"></span>
+              <span>${ownerLabel}</span>
+              ${t.shared?'<span>· ⇄</span>':''}
+              <span>· ${esc(cat.label)}</span>
+            </div>
+          </div>
+          <div class="txn-card-amt${isInc?' inc':''}">${isInc?'+':''}${fc(t.amount)}</div>
+          <div class="txn-card-chevron">›</div>
+        </div>`;
+      }).join('');
+      return `<div class="txn-date-header">${dateLabel}</div><div class="txn-card-list">${cards}</div>`;
+    }).join('');
+
+    const uploadMobile = `<div class="upload-grid-mobile">
+      <div class="upload-zone-mini p1-zone" onclick="$('fp1').click()">
+        <div style="font-size:1.3rem;margin-bottom:4px">⬆️</div>
+        <div style="font-size:.82rem;font-weight:700;color:var(--p1)">${esc(S.settings.person1)}</div>
+        <div style="font-size:.68rem;color:var(--text-3);margin-top:2px">CSV / PDF</div>
+        <input type="file" id="fp1" accept=".csv,.pdf" multiple onchange="onFile(event,'p1')">
+      </div>
+      <div class="upload-zone-mini p2-zone" onclick="$('fp2').click()">
+        <div style="font-size:1.3rem;margin-bottom:4px">⬆️</div>
+        <div style="font-size:.82rem;font-weight:700;color:var(--p2)">${esc(S.settings.person2)}</div>
+        <div style="font-size:.68rem;color:var(--text-3);margin-top:2px">CSV / PDF</div>
+        <input type="file" id="fp2" accept=".csv,.pdf" multiple onchange="onFile(event,'p2')">
+      </div>
+    </div>`;
+
+    const filterPills = `<div class="filters-bar-mobile">
+      <input class="search-input" type="text" placeholder="🔍 Search…" value="${esc(search)}" oninput="setFilter('search',this.value)" style="flex:1;min-width:120px">
+      <select class="filter-sel" onchange="setFilter('person',this.value)" style="border-radius:20px;padding:6px 12px;font-size:.8rem">
+        <option value="all">All people</option>
+        <option value="p1"${person==='p1'?' selected':''}>${esc(S.settings.person1)}</option>
+        <option value="p2"${person==='p2'?' selected':''}>${esc(S.settings.person2)}</option>
+        <option value="shared"${person==='shared'?' selected':''}>⇄ Shared</option>
+      </select>
+      <select class="filter-sel" onchange="setFilter('category',this.value)" style="border-radius:20px;padding:6px 12px;font-size:.8rem">
+        <option value="all">All cats</option>
+        ${getCats().map(c=>`<option value="${c.id}"${category===c.id?' selected':''}>${c.emoji} ${c.label}</option>`).join('')}
+      </select>
+    </div>`;
+
+    const countLabel = `<div style="font-size:.75rem;color:var(--text-3);text-align:center;margin-bottom:8px">${txns.length} transaction${txns.length!==1?'s':''}</div>`;
+
+    const emptyMobile = `<div style="text-align:center;padding:40px 20px;color:var(--text-3)"><div style="font-size:2.5rem;margin-bottom:10px">📂</div><p>No transactions for ${moLabel(S.currentMonth)}</p><p style="margin-top:5px;font-size:.85rem">Upload a CSV above!</p></div>`;
+
+    return `${uploadMobile}${privacyBanner}${filterPills}${countLabel}${txns.length ? cardHtml : emptyMobile}`;
+  }
+
+  // ── Desktop: table layout ──────────────────────────────
   return `
 <div class="upload-grid">
   <div class="upload-zone p1-zone" onclick="$('fp1').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="onDrop(event,'p1')">
@@ -1705,7 +1899,31 @@ function renderSplit() {
   // Settled history
   const settled = S.transactions.filter(t=>t.shared&&t.settled&&t.amount>0&&!getCat(t.category).ignored).sort((a,b)=>b.date.localeCompare(a.date));
   const srow = t=>{ const c=getCat(t.category); const pc=t.person==='p1'?'var(--p1)':'var(--p2)'; const payer=t.person==='p1'?pn1:pn2; return `<tr><td style="color:var(--text-3);font-size:.82rem">${fmtDate(t.date)}</td><td title="${esc(t.description)}">${esc(t.description.slice(0,42))}${t.description.length>42?'…':''}</td><td><span class="badge" style="background:${c.color}20;color:${c.color}">${c.emoji} ${c.label}</span></td><td><span style="color:${pc};font-weight:600">${esc(payer)} paid</span></td><td style="text-align:right;font-weight:600">${fc(t.amount)}</td><td style="text-align:right"><button class="btn-sm" onclick="unsettle('${t.id}')">↩ Unsettle</button></td></tr>`; };
-  const settledSection = settled.length ? `<div class="card" style="margin-top:16px"><div class="section-title" style="display:flex;justify-content:space-between;align-items:center">Previously Settled <button class="btn-sm" onclick="unsettleAll()">↩ Unsettle All</button></div><table><thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Paid by</th><th style="text-align:right">Total</th><th></th></tr></thead><tbody>${settled.map(srow).join('')}</tbody></table></div>` : '';
+  // ── Mobile: card-based settled history ───────────────────
+  let settledSection = '';
+  if (settled.length && isMobile()) {
+    const settledCards = settled.map(t => {
+      const c = getCat(t.category);
+      const pc = t.person==='p1' ? 'var(--p1)' : 'var(--p2)';
+      const payer = t.person==='p1' ? pn1 : pn2;
+      return `<div class="settled-card">
+        <div style="font-size:1.2rem;flex-shrink:0">${c.emoji}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.88rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.description)}</div>
+          <div style="font-size:.75rem;color:var(--text-3);margin-top:2px">${fmtDate(t.date)} · <span style="color:${pc};font-weight:600">${esc(payer)}</span></div>
+        </div>
+        <div style="font-weight:700;font-size:.9rem;flex-shrink:0">${fc(t.amount)}</div>
+        <button class="btn-sm" onclick="unsettle('${t.id}')" style="flex-shrink:0">↩</button>
+      </div>`;
+    }).join('');
+    settledSection = `
+      <div class="ios-section-header" style="display:flex;justify-content:space-between;align-items:center;padding-right:16px">
+        Previously Settled <button class="btn-sm" onclick="unsettleAll()">↩ Unsettle All</button>
+      </div>
+      <div class="settled-card-list">${settledCards}</div>`;
+  } else if (settled.length) {
+    settledSection = `<div class="card" style="margin-top:16px"><div class="section-title" style="display:flex;justify-content:space-between;align-items:center">Previously Settled <button class="btn-sm" onclick="unsettleAll()">↩ Unsettle All</button></div><table><thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Paid by</th><th style="text-align:right">Total</th><th></th></tr></thead><tbody>${settled.map(srow).join('')}</tbody></table></div>`;
+  }
 
   return `${hero}${catSection}${settledSection}`;
 }
@@ -2004,7 +2222,81 @@ function renderHistory() {
     </table>
   </div>`;
 
-  return `${toggleHtml}${heroHtml}${chartHtml}${hmHtml}`;
+  // ── Mobile: simplified history view ─────────────────────
+  if (isMobile()) {
+    // Mobile heatmap: vertical category list with current month + trend
+    const hmMobileRows = topCats.map(cid => {
+      const cat = getCat(cid);
+      const monthAmts = recentMonths.map(mo =>
+        hmTxns.filter(t=>t.date.startsWith(mo)&&t.category===cid).reduce((s,t)=>s+hvTxnAmt(t),0)
+      );
+      const avg = monthAmts.reduce((s,a)=>s+a,0) / Math.max(monthAmts.length,1);
+      const lastAmt = monthAmts[monthAmts.length - 1] || 0;
+      let trend = '';
+      if (avg > 0) {
+        if (lastAmt > avg * 1.08) trend = `<span class="hm-mobile-trend" style="color:var(--red)">↑</span>`;
+        else if (lastAmt < avg * 0.92) trend = `<span class="hm-mobile-trend" style="color:var(--green)">↓</span>`;
+        else trend = `<span class="hm-mobile-trend" style="color:var(--text-3)">→</span>`;
+      }
+      return `<div class="hm-mobile-row">
+        <div class="hm-mobile-cat">${cat.emoji} ${esc(cat.label)}</div>
+        <div class="hm-mobile-vals">
+          <div class="hm-mobile-amt">${fc(lastAmt)}</div>
+          ${trend}
+        </div>
+      </div>`;
+    }).join('');
+
+    const hmMobileHtml = topCats.length ? `
+      <div class="ios-section-header">Category Breakdown${recentMonths.length?` · ${moLabel(recentMonths[recentMonths.length-1])}`:''}
+      </div>
+      <div class="hm-mobile-list">${hmMobileRows}</div>` : '';
+
+    // Mobile month cards with expandable details
+    const monthCards = monthStats.map((s, i) => {
+      const amt = hvAmt(s); const inc = hvInc(s); const net = inc - amt;
+      const isCur = s.mo === S.currentMonth;
+      const isExcl = S.excludedFromAvg.includes(s.mo);
+      const prev = monthStats[i + 1];
+      let chipHtml = '';
+      if (prev && hvAmt(prev) > 0) {
+        const pct = (amt - hvAmt(prev)) / hvAmt(prev) * 100;
+        if (pct > 3)       chipHtml = `<span class="chip-up">↑ ${Math.round(pct)}%</span>`;
+        else if (pct < -3) chipHtml = `<span class="chip-down">↓ ${Math.round(Math.abs(pct))}%</span>`;
+        else               chipHtml = `<span class="chip-flat">→ flat</span>`;
+      }
+      return `<div class="month-card${isExcl?' excluded':''}" onclick="this.querySelector('.month-card-detail').style.display=this.querySelector('.month-card-detail').style.display==='none'?'block':'none'">
+        <div class="month-card-top">
+          <div class="month-card-title">${moLabel(s.mo)}${isCur?'<span class="cur-badge">current</span>':''}</div>
+          <div class="month-card-amt" style="${isExcl?'opacity:.5':''}">${fc(amt)}</div>
+        </div>
+        <div class="month-card-row2">
+          ${chipHtml}
+          <span>${s.count} txn${s.count!==1?'s':''}</span>
+          ${inc>0?`<span>· Net: <span style="color:${net>=0?'var(--green)':'var(--red)'};font-weight:600">${net>=0?'+':''}${fc(Math.abs(net))}</span></span>`:''}
+        </div>
+        <div class="month-card-detail" style="display:none">
+          <div class="month-card-detail-row"><span style="color:var(--p1)">${esc(S.settings.person1)}</span><span style="font-weight:700;color:var(--p1)">${fc(s.p1total)}</span></div>
+          <div class="month-card-detail-row"><span style="color:var(--p2)">${esc(S.settings.person2)}</span><span style="font-weight:700;color:var(--p2)">${fc(s.p2total)}</span></div>
+          <div class="month-card-detail-row"><span style="color:var(--green)">Shared</span><span style="font-weight:700;color:var(--green)">${fc(hvShared(s))}</span></div>
+          ${inc>0?`<div class="month-card-detail-row"><span>Income</span><span style="font-weight:700;color:var(--green)">+${fc(inc)}</span></div>`:''}
+          <div style="display:flex;gap:6px;margin-top:8px">
+            <button class="btn-sm" onclick="event.stopPropagation();S.currentMonth='${s.mo}';S.activeTab='overview';render()">View month</button>
+            <button class="btn-sm" onclick="event.stopPropagation();toggleAvgExclude('${s.mo}')">${isExcl?'+ Include':'⊘ Exclude'}</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+    const monthCardHtml = `
+      <div class="ios-section-header">Monthly Detail <span style="font-weight:400;color:var(--text-3)">· tap to expand</span></div>
+      <div class="month-card-list">${monthCards}</div>`;
+
+    return `${toggleHtml}${heroHtml}${chartHtml}${hmMobileHtml}${monthCardHtml}`;
+  }
+
+  // ── Desktop: full table layout ─────────────────────────
+  return `${toggleHtml}${heroHtml}${chartHtml}${hmHtml}${detailHtml}`;
 }
 
 // ── Gambling Tracker ────────────────────────────────────────
@@ -2284,6 +2576,103 @@ function toggleHmCat(cid) { if (!S.hmCatFilter) return; if (S.hmCatFilter.has(ci
 function toggleShared(id) { const t=S.transactions.find(t=>t.id===id); if(t){t.shared=!t.shared; schedSave(); render();} }
 function delTxn(id) { S.transactions=S.transactions.filter(t=>t.id!==id); schedSave(); render(); toast('Deleted'); }
 function toggleExclude(id) { const t=S.transactions.find(t=>t.id===id); if(t){t.excluded=!t.excluded; schedSave(); render(); toast(t.excluded?'Excluded from summaries':'Included in summaries'); } }
+
+// ── Mobile transaction edit modal ──────────────────────────
+function showTxnEditModal(id) {
+  const t = S.transactions.find(x => x.id === id);
+  if (!t) return;
+  const cat = getCat(t.category);
+  const ownerVal = t.shared ? 'shared' : t.person;
+  const isIncome = t.amount < 0 && t.category === 'income';
+  const itype = isIncome ? getIncomeType(t.id, t.description) : null;
+  const pn1 = esc(S.settings.person1), pn2 = esc(S.settings.person2);
+
+  const catBtns = getCats().map(c => {
+    const sel = c.id === t.category;
+    return `<button class="card-cat-btn${sel?' sel':''}" style="${sel?`border-color:${c.color};background:${c.color}15`:''}" onclick="document.querySelectorAll('.txe-cat').forEach(b=>b.classList.remove('sel'));this.classList.add('sel');this.dataset.selected='1';document.getElementById('txe-cat-val').value='${c.id}'">
+      <span style="font-size:1.3rem">${c.emoji}</span><span>${esc(c.label)}</span>
+    </button>`;
+  }).join('');
+
+  const ownerBtns = [
+    {val:'p1', label:pn1, color:'var(--p1)', bg:'var(--p1-light)'},
+    {val:'p2', label:pn2, color:'var(--p2)', bg:'var(--p2-light)'},
+    {val:'shared', label:'Shared', color:'var(--green)', bg:'#d1fae5'},
+  ].map(o => {
+    const sel = ownerVal === o.val;
+    return `<button class="card-owner-btn" style="${sel?`border-color:${o.color};background:${o.bg};color:${o.color}`:''}" onclick="document.querySelectorAll('.txe-owner').forEach(b=>{b.style.borderColor='var(--border)';b.style.background='white';b.style.color='var(--text-2)'});this.style.borderColor='${o.color}';this.style.background='${o.bg}';this.style.color='${o.color}';document.getElementById('txe-owner-val').value='${o.val}'">${o.label}</button>`;
+  }).join('');
+
+  const incomeTypeBtns = isIncome ? `
+    <div style="margin-top:4px">
+      <label style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:8px;display:block">Income Type</label>
+      <div style="display:flex;gap:6px">
+        ${['normal','retirement','family'].map(tp => {
+          const sel = itype === tp;
+          const colors = {normal:['#0369a1','#e0f2fe'], retirement:['#D4663A','#ede9fe'], family:['#7c3aed','#f5f3ff']};
+          const [c,bg] = colors[tp];
+          return `<button class="txe-itype" style="flex:1;padding:8px;border-radius:10px;font-size:.82rem;font-weight:700;cursor:pointer;border:1.5px solid ${sel?c:'var(--border)'};background:${sel?bg:'white'};color:${sel?c:'var(--text-3)'}" onclick="document.querySelectorAll('.txe-itype').forEach(b=>{b.style.borderColor='var(--border)';b.style.background='white';b.style.color='var(--text-3)'});this.style.borderColor='${c}';this.style.background='${bg}';this.style.color='${c}';document.getElementById('txe-itype-val').value='${tp}'">${tp[0].toUpperCase()+tp.slice(1)}</button>`;
+        }).join('')}
+      </div>
+    </div>` : '';
+
+  showModal(`<div class="modal">
+    <h2>${cat.emoji} Edit Transaction</h2>
+    <input type="hidden" id="txe-cat-val" value="${t.category}">
+    <input type="hidden" id="txe-owner-val" value="${ownerVal}">
+    <input type="hidden" id="txe-itype-val" value="${itype||'normal'}">
+    <div style="background:var(--bg);border-radius:12px;padding:16px;text-align:center;margin-bottom:16px">
+      <div style="font-size:.78rem;color:var(--text-3);margin-bottom:2px">${fmtDate(t.date)}</div>
+      <div style="font-size:1rem;font-weight:700;margin-bottom:6px;word-break:break-word">${esc(t.description)}</div>
+      <div style="font-size:1.5rem;font-weight:800;color:${t.amount<0?'var(--green)':'var(--text)'}">${t.amount<0?'+':''}${fc(t.amount)}</div>
+    </div>
+    <div class="form-row">
+      <label>Date</label>
+      <input type="date" id="txe-date" class="form-input" value="${t.date}">
+    </div>
+    <div class="form-row">
+      <label>Description</label>
+      <input type="text" id="txe-desc" class="form-input" value="${esc(t.description)}">
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:8px;display:block">Category</label>
+      <div class="card-cats txe-cat-grid">${catBtns}</div>
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:8px;display:block">Who Pays</label>
+      <div class="card-owners txe-owner" style="display:flex;gap:8px">${ownerBtns}</div>
+    </div>
+    ${incomeTypeBtns}
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--border);margin-top:12px">
+      <span style="font-size:.88rem;font-weight:600;color:var(--text-2)">Exclude from summaries</span>
+      <button class="toggle${t.excluded?' on':''}" id="txe-excl" onclick="this.classList.toggle('on')"></button>
+    </div>
+    <button class="btn-pri" style="margin-top:12px" onclick="saveTxnEdit('${t.id}')">Save Changes</button>
+    <button style="width:100%;margin-top:8px;padding:11px;background:#fef2f2;color:#dc2626;border:none;border-radius:8px;font-size:.92rem;font-weight:600;cursor:pointer" onclick="if(confirm('Delete this transaction?')){delTxn('${t.id}');closeModal()}">Delete Transaction</button>
+  </div>`);
+}
+
+function saveTxnEdit(id) {
+  const t = S.transactions.find(x => x.id === id);
+  if (!t) return;
+  const newDate = document.getElementById('txe-date').value;
+  const newDesc = document.getElementById('txe-desc').value;
+  const newCat = document.getElementById('txe-cat-val').value;
+  const newOwner = document.getElementById('txe-owner-val').value;
+  const newExcl = document.getElementById('txe-excl').classList.contains('on');
+  if (newDate) t.date = newDate;
+  if (newDesc) t.description = newDesc;
+  if (newCat !== t.category) { t.category = newCat; learnRule(t.description, t.shared, newCat, t.person); }
+  if (newOwner === 'shared') { t.shared = true; }
+  else { t.shared = false; t.person = newOwner; }
+  t.excluded = newExcl;
+  // Income type
+  const itypeEl = document.getElementById('txe-itype-val');
+  if (itypeEl && t.amount < 0 && t.category === 'income') {
+    setIncomeType(t.id, itypeEl.value);
+  }
+  schedSave(); render(); closeModal(); toast('Updated');
+}
 function setSplitRatio(id,v) { const t=S.transactions.find(t=>t.id===id); if(t){t.splitRatio=parseFloat(v); schedSave(); render();} }
 function setCatSplitMode(catId, mode) { S.catSplits[catId] = {...(S.catSplits[catId]||{}), mode}; schedSave(); render(); }
 function setCatSplitPct(catId, pct)  { pct=Math.min(100,Math.max(0,pct)); S.catSplits[catId] = {...(S.catSplits[catId]||{}), mode:'pct', p1Pct:pct}; schedSave(); render(); }
