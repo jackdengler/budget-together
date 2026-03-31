@@ -574,25 +574,38 @@
       .ov-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:all .2s}
       .ov-dot.active{background:var(--primary);width:24px;border-radius:4px}
 
-      /* ── iOS PWA: Full-height income card sections ─── */
-      .ov-person-card{display:flex;flex-direction:column;flex:1;padding-top:3px}
-      .ov-person-card .income-title{padding:16px 20px 0;font-size:.85rem;margin-bottom:0}
-      .ov-card-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;flex:1}
-      .ov-card-section{display:flex;flex-direction:column;justify-content:center;padding:14px 18px;position:relative}
-      .ov-card-section:nth-child(1){border-right:1px solid rgba(0,0,0,.06);border-bottom:1px solid rgba(0,0,0,.06)}
-      .ov-card-section:nth-child(2){border-bottom:1px solid rgba(0,0,0,.06)}
-      .ov-card-section:nth-child(3){border-right:1px solid rgba(0,0,0,.06)}
-      .ov-card-hero-label{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:4px}
-      .ov-card-hero-value{font-size:1.8rem;font-weight:800;line-height:1.1}
-      .ov-card-hero-sub{font-size:.78rem;color:var(--text-3);margin-top:8px}
-      .ov-card-rate-label{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:6px}
-      .ov-card-rate-pct{font-size:1.8rem;font-weight:800;margin-bottom:8px}
-      .ov-card-rate-bar{height:8px;background:#f3f4f6;border-radius:4px;overflow:hidden}
-      .ov-card-rate-fill{height:100%;border-radius:4px}
-      .ov-card-money-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
-      .ov-card-money-value{font-size:1.4rem;font-weight:800;line-height:1.1;margin-bottom:6px}
-      .ov-card-money-sub{display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;font-size:.78rem}
-      .ov-card-money-sub+.ov-card-money-sub{border-top:1px solid rgba(0,0,0,.06)}
+      /* ── iOS PWA: Apple Health-style income card ────── */
+      .ov-person-card{display:flex;flex-direction:column;flex:1;padding:0}
+      .ov-person-card .income-title{padding:20px 24px 0;font-size:.82rem;margin-bottom:0;letter-spacing:.06em}
+
+      /* Hero section — big number + label */
+      .ov-hero{padding:24px 24px 20px;text-align:center;flex:0 0 auto}
+      .ov-hero-label{font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:6px}
+      .ov-hero-value{font-size:2.6rem;font-weight:800;line-height:1;letter-spacing:-0.02em}
+      .ov-hero-sub{font-size:.82rem;color:var(--text-3);margin-top:8px}
+
+      /* Ring chart for savings rate */
+      .ov-ring-wrap{display:flex;align-items:center;justify-content:center;gap:20px;padding:0 24px 20px}
+      .ov-ring{position:relative;width:100px;height:100px;flex-shrink:0}
+      .ov-ring svg{width:100px;height:100px;transform:rotate(-90deg)}
+      .ov-ring-bg{fill:none;stroke:#f3f4f6;stroke-width:10}
+      .ov-ring-fill{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .6s ease}
+      .ov-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+      .ov-ring-pct{font-size:1.5rem;font-weight:800;line-height:1}
+      .ov-ring-lbl{font-size:.65rem;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+      .ov-ring-detail{flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px}
+      .ov-ring-stat{display:flex;justify-content:space-between;align-items:baseline}
+      .ov-ring-stat-label{font-size:.82rem;color:var(--text-3);font-weight:500}
+      .ov-ring-stat-value{font-size:.92rem;font-weight:700}
+
+      /* Earned / Spent row — two side-by-side cards */
+      .ov-money-row{display:grid;grid-template-columns:1fr 1fr;gap:0;flex:1;margin-top:auto}
+      .ov-money-cell{padding:18px 20px;display:flex;flex-direction:column;justify-content:center}
+      .ov-money-cell:first-child{border-right:1px solid rgba(0,0,0,.05)}
+      .ov-money-cell-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+      .ov-money-cell-value{font-size:1.5rem;font-weight:800;line-height:1;margin-bottom:8px}
+      .ov-money-cell-sub{font-size:.78rem;color:var(--text-3);display:flex;justify-content:space-between;padding:3px 0}
+      .ov-money-cell-sub+.ov-money-cell-sub{border-top:1px solid rgba(0,0,0,.05)}
 
       /* ── iOS PWA: Settled history mobile ──────────────── */
       .settled-card-list{display:flex;flex-direction:column;gap:2px;background:white;border-radius:12px;overflow:hidden}
@@ -1647,35 +1660,59 @@ function renderOverview() {
       const useRet = ret > 0, useFam = fam > 0;
 
       const earnedSubs = (useRet || useFam)
-        ? (useRet ? `<div class="ov-card-money-sub"><span style="color:var(--text-3)">Retirement</span><span style="font-weight:700;color:#D4663A">${fc(ret)}</span></div>` : '')
-          + (useFam ? `<div class="ov-card-money-sub"><span style="color:var(--text-3)">Family</span><span style="font-weight:700;color:#7c3aed">${fc(fam)}</span></div>` : '')
-          + `<div class="ov-card-money-sub"><span style="color:var(--text-3)">Normal</span><span style="font-weight:700;color:#15803d">${fc(inc - ret - fam)}</span></div>`
+        ? (useRet ? `<div class="ov-money-cell-sub"><span style="color:var(--text-3)">Retirement</span><span style="font-weight:700;color:#D4663A">${fc(ret)}</span></div>` : '')
+          + (useFam ? `<div class="ov-money-cell-sub"><span style="color:var(--text-3)">Family</span><span style="font-weight:700;color:#7c3aed">${fc(fam)}</span></div>` : '')
+          + `<div class="ov-money-cell-sub"><span style="color:var(--text-3)">Normal</span><span style="font-weight:700;color:#15803d">${fc(inc - ret - fam)}</span></div>`
         : '';
       const spentSubs = showSplit !== false
-        ? `<div class="ov-card-money-sub"><span style="color:var(--text-3)">Solo</span><span style="font-weight:700">${fc(solo)}</span></div><div class="ov-card-money-sub"><span style="color:var(--text-3)">Shared</span><span style="font-weight:700">${fc(sharedAmt)}</span></div>`
+        ? `<div class="ov-money-cell-sub"><span style="color:var(--text-3)">Solo</span><span style="font-weight:700">${fc(solo)}</span></div><div class="ov-money-cell-sub"><span style="color:var(--text-3)">Shared</span><span style="font-weight:700">${fc(sharedAmt)}</span></div>`
         : '';
+
+      // SVG ring chart
+      const circ = 2 * Math.PI * 40; // radius=40
+      const fillPct = Math.max(0, Math.min(sRate, 100));
+      const dashOffset = circ - (fillPct / 100) * circ;
+
+      const ringStats = [
+        inc > 0 ? {l:'Income', v:'+'+fc(inc), c:'#15803d'} : null,
+        spend > 0 ? {l:'Spent', v:fc(spend), c:'#b91c1c'} : null,
+        useRet ? {l:'Retirement', v:fc(ret), c:'#D4663A'} : null,
+      ].filter(Boolean);
 
       return `<div class="ov-slide"><div class="ov-slide-inner income-card ${cls}"><div class="ov-person-card">
         <div class="income-title" style="${titleColor?'color:'+titleColor:''}">${title}</div>
-        <div class="ov-card-grid">
-          <div class="ov-card-section">
-            <div class="ov-card-hero-label">${heroLabel}</div>
-            <div class="ov-card-hero-value" style="color:${heroColor}">${heroAmt}</div>
-            ${useRet?`<div class="ov-card-hero-sub">Cash flow: <span style="font-weight:700;color:${(normalInc-spend)>=0?'#0369a1':'#dc2626'}">${(normalInc-spend)>=0?'+':'−'}${fc(Math.abs(normalInc-spend))}</span></div>`:''}
+
+        <div class="ov-hero">
+          <div class="ov-hero-label">${heroLabel}</div>
+          <div class="ov-hero-value" style="color:${heroColor}">${heroAmt}</div>
+          ${useRet?`<div class="ov-hero-sub">Take-home cash flow <span style="font-weight:700;color:${(normalInc-spend)>=0?'#0369a1':'#dc2626'}">${(normalInc-spend)>=0?'+':'−'}${fc(Math.abs(normalInc-spend))}</span></div>`:''}
+        </div>
+
+        <div class="ov-ring-wrap">
+          <div class="ov-ring">
+            <svg viewBox="0 0 100 100">
+              <circle class="ov-ring-bg" cx="50" cy="50" r="40"/>
+              <circle class="ov-ring-fill" cx="50" cy="50" r="40" stroke="${barColor}" stroke-dasharray="${circ}" stroke-dashoffset="${dashOffset}"/>
+            </svg>
+            <div class="ov-ring-center">
+              <div class="ov-ring-pct" style="color:${barColor}">${sRate}%</div>
+              <div class="ov-ring-lbl">saved</div>
+            </div>
           </div>
-          <div class="ov-card-section">
-            <div class="ov-card-rate-label">Savings Rate</div>
-            <div class="ov-card-rate-pct" style="color:${barColor}">${sRate}%</div>
-            <div class="ov-card-rate-bar"><div class="ov-card-rate-fill" style="width:${Math.max(0,Math.min(sRate,100))}%;background:${barColor}"></div></div>
+          <div class="ov-ring-detail">
+            ${ringStats.map(s => `<div class="ov-ring-stat"><span class="ov-ring-stat-label">${s.l}</span><span class="ov-ring-stat-value" style="color:${s.c}">${s.v}</span></div>`).join('')}
           </div>
-          <div class="ov-card-section" style="background:#f0fdf4;border-radius:0 0 0 20px">
-            <div class="ov-card-money-label" style="color:#16a34a">Earned</div>
-            <div class="ov-card-money-value" style="color:#15803d">+${fc(inc)}</div>
+        </div>
+
+        <div class="ov-money-row">
+          <div class="ov-money-cell" style="background:#f0fdf4;border-radius:0 0 0 20px">
+            <div class="ov-money-cell-label" style="color:#16a34a">Earned</div>
+            <div class="ov-money-cell-value" style="color:#15803d">+${fc(inc)}</div>
             ${earnedSubs}
           </div>
-          <div class="ov-card-section" style="background:#fef2f2;border-radius:0 0 20px 0">
-            <div class="ov-card-money-label" style="color:#dc2626">Spent</div>
-            <div class="ov-card-money-value" style="color:#b91c1c">${fc(spend)}</div>
+          <div class="ov-money-cell" style="background:#fef2f2;border-radius:0 0 20px 0">
+            <div class="ov-money-cell-label" style="color:#dc2626">Spent</div>
+            <div class="ov-money-cell-value" style="color:#b91c1c">${fc(spend)}</div>
             ${spentSubs}
           </div>
         </div>
