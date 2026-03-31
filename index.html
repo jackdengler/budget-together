@@ -89,10 +89,14 @@
     main{flex:1;padding:22px;max-width:1100px;margin:0 auto;width:100%}
 
     /* Loading overlay */
-    #loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:500;gap:16px}
-    .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    #loading p{color:var(--text-2);font-size:0.95rem}
+    #loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:500;gap:0}
+    .load-logo{font-size:4.5rem;margin-bottom:8px;animation:loadPulse 2s ease-in-out infinite}
+    @keyframes loadPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.12);opacity:.85}}
+    .load-title{font-size:1.6rem;font-weight:800;letter-spacing:-0.03em;color:var(--primary);margin-bottom:6px}
+    .load-bar-track{width:180px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:14px}
+    .load-bar-fill{width:40%;height:100%;background:var(--primary);border-radius:2px;animation:loadSlide 1.2s ease-in-out infinite}
+    @keyframes loadSlide{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
+    #loading p{color:var(--text-3);font-size:1rem;font-weight:500;letter-spacing:0.01em}
 
     /* Cards */
     .card{background:var(--surface);border-radius:var(--radius-lg);box-shadow:0 2px 12px rgba(0,0,0,0.06);border:none;padding:20px}
@@ -325,9 +329,9 @@
     .hist-hero-card.hh-avg::before{background:linear-gradient(90deg,#3b82f6,#06b6d4)}
     .hist-hero-card.hh-income::before{background:linear-gradient(90deg,var(--green),#84cc16)}
     .hist-hero-card.hh-best::before{background:linear-gradient(90deg,#f59e0b,#f97316)}
-    .hist-hero-lbl{font-size:.82rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:7px}
-    .hist-hero-val{font-size:2rem;font-weight:800;line-height:1;margin-bottom:5px}
-    .hist-hero-sub{font-size:.85rem;color:var(--text-3)}
+    .hist-hero-lbl{font-size:.92rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:8px}
+    .hist-hero-val{font-size:2.4rem;font-weight:800;line-height:1;margin-bottom:6px}
+    .hist-hero-sub{font-size:.95rem;color:var(--text-3)}
     .hist-chart-scroll{overflow-x:auto;padding-bottom:4px}
     .hist-chart{display:flex;align-items:flex-end;gap:6px;height:230px;padding:10px 4px 0;padding-left:34px}
     .hist-bar-col{display:flex;flex-direction:column;align-items:center;cursor:pointer;flex:1;min-width:44px;max-width:80px;transition:opacity .15s}
@@ -458,7 +462,7 @@
       /* Month nav expands to fill between logo and icons */
       .month-nav{flex:1;justify-content:center;gap:6px}
       .month-nav button{width:28px;height:28px;border-radius:8px;border:none;background:rgba(120,120,128,0.12);font-size:1.15rem;min-width:44px;min-height:44px}
-      .month-nav span{font-size:19px;font-weight:800;letter-spacing:-0.02em}
+      .month-nav span{font-size:22px;font-weight:800;letter-spacing:-0.02em}
       .save-status{display:none}
       .icon-btn{width:30px;height:30px;border:none;background:rgba(120,120,128,0.12);border-radius:9px;font-size:.9rem;min-width:44px;min-height:44px}
       #review-badge{padding:3px 8px;font-size:0;border:none;background:rgba(217,119,6,0.12);border-radius:9px}
@@ -495,7 +499,7 @@
       #bottom-nav button.active .bnav-label{font-weight:700;color:var(--primary)}
       .bnav-icon{line-height:1;position:relative;z-index:0}
       .bnav-icon svg{width:24px;height:24px}
-      .bnav-label{font-size:13px;font-weight:600;letter-spacing:.02em;margin-top:4px}
+      .bnav-label{font-size:14px;font-weight:600;letter-spacing:.02em;margin-top:4px}
 
       /* Main layout — iOS grouped inset padding */
       main{padding:12px 16px}
@@ -518,17 +522,17 @@
 
       /* Section titles — iOS gray caps style */
       .section-title{
-        font-size:0.88rem;font-weight:600;
-        text-transform:uppercase;letter-spacing:.06em;
+        font-size:1rem;font-weight:700;
+        text-transform:uppercase;letter-spacing:.05em;
         color:rgba(60,60,67,0.6);
-        margin-bottom:10px;margin-top:6px;
+        margin-bottom:12px;margin-top:8px;
       }
 
       /* Stats — 2 column, full width */
       .stats-grid{grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
-      .stat-card{padding:22px}
-      .stat-label{font-size:0.95rem;letter-spacing:.04em}
-      .stat-value{font-size:2.4rem}
+      .stat-card{padding:24px}
+      .stat-label{font-size:1.05rem;letter-spacing:.04em}
+      .stat-value{font-size:2.8rem}
 
       /* Income cards — horizontal scroll strip */
       .income-row{
@@ -566,7 +570,7 @@
       /* ── iOS PWA: Transaction card list ──────────────── */
       .txn-card-list{display:flex;flex-direction:column;gap:0;background:white;border-radius:12px;overflow:visible;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
       @keyframes txnCardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-      .txn-card{display:flex;align-items:center;gap:14px;padding:15px 16px 15px 18px;background:white;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s,transform .1s cubic-bezier(0.34,1.56,0.64,1);animation:txnCardIn .22s var(--ease-out) calc(var(--i,0) * 30ms) both}
+      .txn-card{display:flex;align-items:center;gap:16px;padding:16px 18px 16px 20px;background:white;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s,transform .1s cubic-bezier(0.34,1.56,0.64,1);animation:txnCardIn .22s var(--ease-out) calc(var(--i,0) * 30ms) both}
       .txn-card:active{background:rgba(212,102,58,0.08);transform:scale(0.985)}
       .txn-card+.txn-card{border-top:0.5px solid rgba(60,60,67,0.08)}
       /* First/last card gets matching border-radius */
@@ -578,21 +582,21 @@
       .txn-card.txn-p1{border-left:3px solid var(--p1);padding-left:13px}
       .txn-card.txn-p2{border-left:3px solid var(--p2);padding-left:13px}
       .txn-card.txn-shared{border-left:3px solid var(--green);padding-left:13px}
-      .txn-card-emoji{font-size:1.6rem;width:42px;height:42px;display:flex;align-items:center;justify-content:center;background:rgba(120,120,128,0.08);border-radius:12px;flex-shrink:0}
+      .txn-card-emoji{font-size:1.8rem;width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:rgba(120,120,128,0.08);border-radius:14px;flex-shrink:0}
       .txn-card-body{flex:1;min-width:0}
-      .txn-card-desc{font-size:1.08rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-      .txn-card-meta{font-size:.85rem;color:var(--text-3);margin-top:3px;display:flex;align-items:center;gap:6px}
+      .txn-card-desc{font-size:1.18rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .txn-card-meta{font-size:.95rem;color:var(--text-3);margin-top:4px;display:flex;align-items:center;gap:7px}
       .txn-card-meta .owner-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-      .txn-card-amt{font-size:1.15rem;font-weight:800;text-align:right;flex-shrink:0;white-space:nowrap}
+      .txn-card-amt{font-size:1.3rem;font-weight:800;text-align:right;flex-shrink:0;white-space:nowrap}
       .txn-card-amt.inc{color:var(--color-earned)}
       .txn-card-chevron{color:var(--text-3);font-size:.85rem;margin-left:2px;flex-shrink:0;opacity:.25}
       /* Date group header — tighter spacing */
-      .txn-date-header{font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:rgba(60,60,67,0.5);padding:18px 4px 6px;background:transparent;flex-shrink:0}
+      .txn-date-header{font-size:.92rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:rgba(60,60,67,0.5);padding:20px 4px 8px;background:transparent;flex-shrink:0}
       .txn-date-header:first-child{padding-top:4px}
 
       /* ── iOS PWA: Filters mobile ─────────────────────── */
       .filters-bar-mobile{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;flex-shrink:0}
-      .filter-pill{padding:8px 18px;border-radius:22px;font-size:.92rem;font-weight:600;border:1.5px solid var(--border);background:white;color:var(--text-2);white-space:nowrap;cursor:pointer;flex-shrink:0;transition:all .15s}
+      .filter-pill{padding:10px 20px;border-radius:24px;font-size:1rem;font-weight:600;border:1.5px solid var(--border);background:white;color:var(--text-2);white-space:nowrap;cursor:pointer;flex-shrink:0;transition:all .15s}
       /* M3 filter chip active: primary-container bg + primary text (not filled primary) */
       .filter-pill.active{border-color:var(--primary);background:var(--m3-primary-container);color:var(--primary)}
 
@@ -602,10 +606,10 @@
       .month-card:active{background:rgba(212,102,58,0.08);transform:scale(0.985)}
       .month-card+.month-card{border-top:0.5px solid rgba(60,60,67,0.08)}
       .month-card-top{display:flex;justify-content:space-between;align-items:baseline}
-      .month-card-title{font-size:1.05rem;font-weight:700;color:var(--text)}
+      .month-card-title{font-size:1.15rem;font-weight:700;color:var(--text)}
       .month-card-title .cur-badge{font-size:.65rem;background:var(--primary-light);color:var(--primary);padding:2px 7px;border-radius:10px;font-weight:600;margin-left:6px;vertical-align:middle}
-      .month-card-amt{font-size:1.2rem;font-weight:800;color:var(--text)}
-      .month-card-row2{display:flex;align-items:center;gap:8px;margin-top:5px;font-size:.88rem;color:var(--text-3)}
+      .month-card-amt{font-size:1.35rem;font-weight:800;color:var(--text)}
+      .month-card-row2{display:flex;align-items:center;gap:10px;margin-top:6px;font-size:.98rem;color:var(--text-3)}
       .month-card-detail{padding:10px 16px 16px;border-top:1px solid rgba(60,60,67,0.08);background:rgba(120,120,128,0.03)}
       .month-card-detail-row{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;font-size:.82rem}
       .month-card-expand{font-size:.75rem;color:var(--primary);font-weight:600;margin-top:6px;display:flex;align-items:center;gap:3px}
@@ -614,10 +618,10 @@
       .hm-mobile-list{display:flex;flex-direction:column;gap:2px;background:white;border-radius:12px;overflow:visible;flex-shrink:0}
       .hm-mobile-row{display:flex;align-items:center;gap:12px;padding:13px 16px;background:white}
       .hm-mobile-row+.hm-mobile-row{border-top:1px solid rgba(60,60,67,0.08)}
-      .hm-mobile-cat{font-size:1.02rem;font-weight:600;display:flex;align-items:center;gap:8px;flex:1;min-width:0}
-      .hm-mobile-vals{display:flex;align-items:center;gap:10px;flex-shrink:0}
-      .hm-mobile-amt{font-size:1.02rem;font-weight:700;color:var(--text)}
-      .hm-mobile-trend{font-size:.85rem;font-weight:700}
+      .hm-mobile-cat{font-size:1.12rem;font-weight:600;display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+      .hm-mobile-vals{display:flex;align-items:center;gap:12px;flex-shrink:0}
+      .hm-mobile-amt{font-size:1.12rem;font-weight:700;color:var(--text)}
+      .hm-mobile-trend{font-size:.95rem;font-weight:700}
 
       /* ── iOS PWA: Section styling ────────────────────── */
       .ios-section-header{font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:rgba(60,60,67,0.6);padding:20px 16px 8px}
@@ -642,13 +646,13 @@
       /* Named slide tabs — pill/chip style, no underline */
       .ov-tabs{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:7px 8px 7px;scrollbar-width:none;background:transparent;flex-shrink:0}
       .ov-tabs::-webkit-scrollbar{display:none}
-      .ov-tab{flex-shrink:0;padding:8px 18px;font-size:15px;font-weight:600;color:var(--ios-secondary);border-radius:22px;background:transparent;transition:color .18s,background .18s;cursor:pointer;-webkit-tap-highlight-color:transparent;white-space:nowrap;min-height:36px;display:flex;align-items:center}
+      .ov-tab{flex-shrink:0;padding:9px 20px;font-size:16px;font-weight:600;color:var(--ios-secondary);border-radius:22px;background:transparent;transition:color .18s,background .18s;cursor:pointer;-webkit-tap-highlight-color:transparent;white-space:nowrap;min-height:40px;display:flex;align-items:center}
       .ov-tab.active{color:var(--primary);background:var(--m3-primary-container)}
 
       /* ── iOS PWA: 2x2 income card ────────────────────── */
       .ov-person-card{display:flex;flex-direction:column;flex:1;padding:0}
       /* Compact header — saves vertical real estate for the data grid */
-      .ov-person-card .income-title{padding:14px 16px 4px;font-size:20px;font-weight:800;margin-bottom:0;letter-spacing:-.02em;text-transform:none;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .ov-person-card .income-title{padding:16px 18px 6px;font-size:24px;font-weight:800;margin-bottom:0;letter-spacing:-.03em;text-transform:none;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .ov-card-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;flex:1}
       /* Tighter cell padding — 36px number + label + chip all need room */
       .ov-card-cell{display:flex;flex-direction:column;justify-content:flex-start;padding:14px 16px;position:relative;overflow:hidden}
@@ -657,8 +661,8 @@
       .ov-card-cell:nth-child(3){border-right:0.5px solid rgba(60,60,67,0.1)}
 
       /* Meta: category labels bold, values heavy (Instagram stats style) */
-      .ov-cell-label{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ios-secondary);margin-bottom:5px}
-      .ov-cell-value{font-size:36px;font-weight:800;line-height:1;letter-spacing:-0.03em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-variant-numeric:tabular-nums}
+      .ov-cell-label{font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ios-secondary);margin-bottom:6px}
+      .ov-cell-value{font-size:42px;font-weight:800;line-height:1;letter-spacing:-0.03em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-variant-numeric:tabular-nums}
       .ov-cell-sub{font-size:14px;color:var(--text-3);margin-top:5px;font-weight:400}
 
       /* Earned vs spent proportional bar — Apple capsule style */
@@ -666,7 +670,7 @@
       .ov-ep-bar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:rgba(255,59,48,0.18)}
       .ov-ep-bar-earn{background:var(--ios-green);transition:width .6s cubic-bezier(0.34,1.56,0.64,1)}
       .ov-ep-bar-spend{display:none}
-      .ov-ep-bar-labels{display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding:0 1px;font-variant-numeric:tabular-nums}
+      .ov-ep-bar-labels{display:flex;justify-content:space-between;font-size:16px;font-weight:700;padding:0 1px;font-variant-numeric:tabular-nums}
 
       /* Ring chart — fills cell vertically, heavy numeral center */
       .ov-ring{position:relative;width:calc(100% - 8px);aspect-ratio:1;margin:auto}
@@ -675,22 +679,22 @@
       /* M3 emphasized decelerate easing for ring animation */
       .ov-ring-fill{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .6s cubic-bezier(0.05,0.7,0.1,1.0)}
       .ov-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-      .ov-ring-pct{font-size:3.2rem;font-weight:800;line-height:1;letter-spacing:-0.03em;font-variant-numeric:tabular-nums}
-      .ov-ring-lbl{font-size:13px;font-weight:700;color:var(--ios-secondary);text-transform:uppercase;letter-spacing:.08em;margin-top:3px}
+      .ov-ring-pct{font-size:3.8rem;font-weight:800;line-height:1;letter-spacing:-0.03em;font-variant-numeric:tabular-nums}
+      .ov-ring-lbl{font-size:15px;font-weight:700;color:var(--ios-secondary);text-transform:uppercase;letter-spacing:.07em;margin-top:4px}
 
       /* Cash flow chip in SAVED cell */
-      .ov-cashflow-chip{display:inline-flex;align-items:center;gap:4px;margin-top:8px;padding:5px 12px;border-radius:20px;font-size:15px;font-weight:700}
+      .ov-cashflow-chip{display:inline-flex;align-items:center;gap:5px;margin-top:10px;padding:6px 14px;border-radius:22px;font-size:16px;font-weight:700}
 
       /* Meta Insights-style breakdown rows */
       .ov-breakdown{margin-top:4px}
       .ov-breakdown-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;position:relative}
       .ov-breakdown-row+.ov-breakdown-row{border-top:0.5px solid rgba(0,0,0,.06)}
-      .ov-breakdown-label{color:var(--ios-secondary);font-weight:600;letter-spacing:.01em;display:flex;align-items:center;gap:6px;font-size:14px}
-      .ov-breakdown-label .ov-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0}
-      .ov-breakdown-value{font-weight:700;font-size:14px}
+      .ov-breakdown-label{color:var(--ios-secondary);font-weight:600;letter-spacing:.01em;display:flex;align-items:center;gap:7px;font-size:15px}
+      .ov-breakdown-label .ov-dot{width:8px;height:8px;border-radius:3px;flex-shrink:0}
+      .ov-breakdown-value{font-weight:700;font-size:16px}
 
       /* Slide 4 & 5: scrollable content within fixed-height card */
-      .ov-slide-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ios-secondary);padding:12px 16px 8px;border-bottom:0.5px solid var(--ios-separator);flex-shrink:0}
+      .ov-slide-title{font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ios-secondary);padding:14px 18px 10px;border-bottom:0.5px solid var(--ios-separator);flex-shrink:0}
       .ov-slide-inner.ov-scrollable{overflow-y:auto;-webkit-overflow-scrolling:touch}
       .ov-slide-inner.ov-scrollable .cat-row,.ov-slide-inner.ov-scrollable .merchant-row{padding-left:14px;padding-right:14px}
 
@@ -713,20 +717,20 @@
 
       /* ── iOS PWA: Larger text for iframe rendering ───── */
       /* cat-name: wider column + ellipsis so "Entertainment" doesn't wrap */
-      .cat-name{font-size:1rem;width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-      .cat-amt{font-size:1rem;width:80px;font-weight:700}
-      .cat-track{height:10px}
-      .merchant-name{font-size:1.05rem}
-      .merchant-amt{font-size:1.12rem;font-weight:800}
-      .merchant-rank{font-size:.88rem}
-      .section-title{font-size:.92rem}
-      .month-card-title{font-size:1.12rem}
-      .month-card-amt{font-size:1.3rem}
-      .hm-mobile-cat{font-size:1.05rem}
-      .hm-mobile-amt{font-size:1.05rem}
-      .split-big{font-size:3.8rem}
-      .split-lbl{font-size:1.25rem}
-      .filter-sel,.search-input{font-size:17px !important}
+      .cat-name{font-size:1.1rem;width:125px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .cat-amt{font-size:1.12rem;width:85px;font-weight:700}
+      .cat-track{height:12px;border-radius:6px}
+      .merchant-name{font-size:1.12rem}
+      .merchant-amt{font-size:1.2rem;font-weight:800}
+      .merchant-rank{font-size:.95rem}
+      .section-title{font-size:1rem}
+      .month-card-title{font-size:1.2rem}
+      .month-card-amt{font-size:1.45rem}
+      .hm-mobile-cat{font-size:1.12rem}
+      .hm-mobile-amt{font-size:1.12rem}
+      .split-big{font-size:4.2rem}
+      .split-lbl{font-size:1.35rem}
+      .filter-sel,.search-input{font-size:18px !important}
 
       /* ── iOS PWA: Edit modal cat grid ────────────────── */
       .txe-cat-grid{grid-template-columns:repeat(4,1fr) !important;gap:6px !important}
@@ -748,8 +752,9 @@
 </head>
 <body>
 <div id="loading">
-  <div style="font-size:2rem">💕</div>
-  <div class="spinner"></div>
+  <div class="load-logo">💕</div>
+  <div class="load-title">Budget Together</div>
+  <div class="load-bar-track"><div class="load-bar-fill"></div></div>
   <p>Loading your budget…</p>
 </div>
 
@@ -926,10 +931,10 @@ function withToken(cb) {
           _pendingTokenCbs = [];
           $('loading').innerHTML = `
             <div style="text-align:center;padding:20px">
-              <div style="font-size:2.5rem;margin-bottom:12px">🔐</div>
-              <h2 style="font-size:1.1rem;font-weight:800;margin-bottom:8px">Sign in required</h2>
-              <p style="color:#6b7280;font-size:.85rem;margin-bottom:20px;max-width:300px;margin-left:auto;margin-right:auto">Tap the button below to sign in with Google.</p>
-              <button onclick="manualSignIn()" style="padding:11px 28px;background:#D4663A;color:white;border:none;border-radius:8px;font-size:.95rem;font-weight:600;cursor:pointer">Sign in with Google</button>
+              <div style="font-size:3.5rem;margin-bottom:16px">🔐</div>
+              <h2 style="font-size:1.4rem;font-weight:800;margin-bottom:10px">Sign in required</h2>
+              <p style="color:#6b7280;font-size:1rem;margin-bottom:24px;max-width:320px;margin-left:auto;margin-right:auto">Tap the button below to sign in with Google.</p>
+              <button onclick="manualSignIn()" style="padding:14px 32px;background:#D4663A;color:white;border:none;border-radius:12px;font-size:1.1rem;font-weight:700;cursor:pointer">Sign in with Google</button>
             </div>`;
           return;
         }
@@ -1758,7 +1763,7 @@ function renderOverview() {
     function moneyEl(sign, amount, color) {
       const isZero = Math.abs(amount) < 0.005;
       const num = fc(Math.abs(amount)).slice(1); // strip leading $
-      return `<span style="color:${color}"><sup style="font-size:0.55em;font-weight:600;vertical-align:super;line-height:0">${sign}$</sup><span style="font-weight:${isZero?300:700}">${num}</span></span>`;
+      return `<span style="color:${color}"><sup style="font-size:0.6em;font-weight:700;vertical-align:super;line-height:0">${sign}$</sup><span style="font-weight:${isZero?300:800}">${num}</span></span>`;
     }
 
     function mobilePersonSlide(title, titleColor, cls, inc, spend, locked, ret, fam, fixed, variable) {
@@ -3849,10 +3854,10 @@ function finishSetupWithSheet() {
 // ── Google Setup screen ─────────────────────────────────────
 function showGoogleSetup() {
   $('loading').innerHTML = `
-    <div style="background:white;border-radius:20px;padding:36px;width:90%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.12);text-align:center">
-      <div style="font-size:2.4rem;margin-bottom:8px">💕</div>
-      <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:6px">Connect to Google Sheets</h2>
-      <p style="color:#6b7280;font-size:0.88rem;margin-bottom:24px">Your budget data will sync to a Google Sheet so both of you can access it.</p>
+    <div style="background:white;border-radius:24px;padding:40px 36px;width:92%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.12);text-align:center">
+      <div style="font-size:3.5rem;margin-bottom:12px">💕</div>
+      <h2 style="font-size:1.6rem;font-weight:800;margin-bottom:8px;letter-spacing:-0.02em">Connect to Google Sheets</h2>
+      <p style="color:#6b7280;font-size:1.05rem;margin-bottom:28px">Your budget data will sync to a Google Sheet so both of you can access it.</p>
       <div style="text-align:left;margin-bottom:12px">
         <label style="display:block;font-size:.82rem;font-weight:600;color:#4b5563;margin-bottom:5px">Google OAuth Client ID</label>
         <input id="cfg-cid" placeholder="xxxx.apps.googleusercontent.com" style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:.88rem;outline:none">
@@ -3885,7 +3890,7 @@ function saveGoogleConfig() {
   if (!sid) { alert('Enter your Sheet ID'); return; }
   CFG.clientId = cid;
   CFG.sheetId = sid;
-  $('loading').innerHTML = `<div style="font-size:2rem">💕</div><div class="spinner"></div><p>Connecting…</p>`;
+  $('loading').innerHTML = `<div class="load-logo">💕</div><div class="load-title">Budget Together</div><div class="load-bar-track"><div class="load-bar-fill"></div></div><p>Connecting…</p>`;
   loadData();
 }
 
@@ -3921,7 +3926,7 @@ function getDemoData() {
 }
 
 function loadData() {
-  $('loading').innerHTML = `<div style="font-size:2rem">💕</div><div class="spinner"></div><p>Loading your budget…</p>`;
+  $('loading').innerHTML = `<div class="load-logo">💕</div><div class="load-title">Budget Together</div><div class="load-bar-track"><div class="load-bar-fill"></div></div><p>Loading your budget…</p>`;
   // Demo mode: no Google connection available (preview / localhost without credentials)
   if (!USE_GAS() && !localStorage.getItem('bt_client_id')) {
     setTimeout(() => {
@@ -3942,11 +3947,11 @@ function loadData() {
   const loadTimeout = setTimeout(() => {
     $('loading').innerHTML = `
       <div style="text-align:center;padding:20px">
-        <div style="font-size:2.5rem;margin-bottom:12px">⏱️</div>
-        <h2 style="font-size:1.1rem;font-weight:800;margin-bottom:8px">Taking too long</h2>
-        <p style="color:#6b7280;font-size:.85rem;margin-bottom:20px;max-width:300px;margin-left:auto;margin-right:auto">Check your internet connection and try again.</p>
-        <button onclick="location.reload()" style="padding:11px 28px;background:#D4663A;color:white;border:none;border-radius:8px;font-size:.95rem;font-weight:600;cursor:pointer;margin-right:8px">Retry</button>
-        <button onclick="manualSignIn()" style="padding:11px 28px;background:white;color:#D4663A;border:1px solid #D4663A;border-radius:8px;font-size:.95rem;font-weight:600;cursor:pointer">Re-sign in</button>
+        <div style="font-size:3.5rem;margin-bottom:16px">⏱️</div>
+        <h2 style="font-size:1.4rem;font-weight:800;margin-bottom:10px">Taking too long</h2>
+        <p style="color:#6b7280;font-size:1rem;margin-bottom:24px;max-width:320px;margin-left:auto;margin-right:auto">Check your internet connection and try again.</p>
+        <button onclick="location.reload()" style="padding:14px 32px;background:#D4663A;color:white;border:none;border-radius:12px;font-size:1.05rem;font-weight:700;cursor:pointer;margin-right:10px">Retry</button>
+        <button onclick="manualSignIn()" style="padding:14px 32px;background:white;color:#D4663A;border:1.5px solid #D4663A;border-radius:12px;font-size:1.05rem;font-weight:700;cursor:pointer">Re-sign in</button>
       </div>`;
   }, 15000);
   DB.load(
@@ -3982,13 +3987,13 @@ function loadData() {
         sessionStorage.removeItem('bt_token_exp');
         $('loading').innerHTML = `
           <div style="text-align:center;padding:20px">
-            <div style="font-size:2.5rem;margin-bottom:12px">🔐</div>
-            <h2 style="font-size:1.1rem;font-weight:800;margin-bottom:8px">Session expired</h2>
-            <p style="color:#6b7280;font-size:.85rem;margin-bottom:20px;max-width:300px;margin-left:auto;margin-right:auto">Your Google session expired. Tap below to sign back in.</p>
-            <button onclick="manualSignIn()" style="padding:11px 28px;background:#D4663A;color:white;border:none;border-radius:8px;font-size:.95rem;font-weight:600;cursor:pointer">Sign in again</button>
+            <div style="font-size:3.5rem;margin-bottom:16px">🔐</div>
+            <h2 style="font-size:1.4rem;font-weight:800;margin-bottom:10px">Session expired</h2>
+            <p style="color:#6b7280;font-size:1rem;margin-bottom:24px;max-width:320px;margin-left:auto;margin-right:auto">Your Google session expired. Tap below to sign back in.</p>
+            <button onclick="manualSignIn()" style="padding:14px 32px;background:#D4663A;color:white;border:none;border-radius:12px;font-size:1.1rem;font-weight:700;cursor:pointer">Sign in again</button>
           </div>`;
       } else {
-        $('loading').innerHTML = `<div style="font-size:2rem">⚠️</div><p style="color:#dc2626;margin:10px 20px">Failed to load: ${err.message}</p><button onclick="localStorage.removeItem('bt_client_id');localStorage.removeItem('bt_sheet_id');location.reload()" style="margin-top:12px;padding:8px 18px;background:#D4663A;color:white;border:none;border-radius:8px;cursor:pointer;font-size:.88rem">Reset config</button>`;
+        $('loading').innerHTML = `<div style="font-size:3.5rem;margin-bottom:12px">⚠️</div><p style="color:#dc2626;margin:12px 20px;font-size:1.05rem;font-weight:600">Failed to load: ${err.message}</p><button onclick="localStorage.removeItem('bt_client_id');localStorage.removeItem('bt_sheet_id');location.reload()" style="margin-top:16px;padding:14px 32px;background:#D4663A;color:white;border:none;border-radius:12px;cursor:pointer;font-size:1.05rem;font-weight:700">Reset config</button>`;
       }
     }
   );
@@ -4063,11 +4068,11 @@ function init() {
   } else {
     $('loading').innerHTML = `
       <div style="text-align:center">
-        <div style="font-size:2.5rem;margin-bottom:12px">💕</div>
-        <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:8px">Budget Together</h2>
-        <p style="color:#6b7280;font-size:.88rem;margin-bottom:20px">Sign in to load your budget</p>
-        <button onclick="loadData()" style="padding:11px 28px;background:#D4663A;color:white;border:none;border-radius:8px;font-size:.95rem;font-weight:600;cursor:pointer">Sign in with Google</button>
-        <p style="margin-top:16px;font-size:.75rem;color:#9ca3af"><a href="#" onclick="localStorage.removeItem('bt_client_id');localStorage.removeItem('bt_sheet_id');location.reload();return false" style="color:#9ca3af">Reset config</a></p>
+        <div style="font-size:4rem;margin-bottom:14px">💕</div>
+        <h2 style="font-size:1.6rem;font-weight:800;margin-bottom:10px;letter-spacing:-0.02em">Budget Together</h2>
+        <p style="color:#6b7280;font-size:1.05rem;margin-bottom:24px">Sign in to load your budget</p>
+        <button onclick="loadData()" style="padding:14px 32px;background:#D4663A;color:white;border:none;border-radius:12px;font-size:1.1rem;font-weight:700;cursor:pointer">Sign in with Google</button>
+        <p style="margin-top:20px;font-size:.88rem;color:#9ca3af"><a href="#" onclick="localStorage.removeItem('bt_client_id');localStorage.removeItem('bt_sheet_id');location.reload();return false" style="color:#9ca3af">Reset config</a></p>
       </div>`;
   }
 }
@@ -4078,10 +4083,10 @@ function waitForGIS(cb, attempts) {
   if (attempts > 160) { // ~8 seconds
     $('loading').innerHTML = `
       <div style="text-align:center;padding:20px">
-        <div style="font-size:2.5rem;margin-bottom:12px">⚠️</div>
-        <h2 style="font-size:1.1rem;font-weight:800;margin-bottom:8px">Couldn't connect to Google</h2>
-        <p style="color:#6b7280;font-size:.85rem;margin-bottom:20px;max-width:300px;margin-left:auto;margin-right:auto">Google's sign-in script failed to load. Check your internet connection and try again.</p>
-        <button onclick="location.reload()" style="padding:11px 28px;background:#D4663A;color:white;border:none;border-radius:8px;font-size:.95rem;font-weight:600;cursor:pointer">Retry</button>
+        <div style="font-size:3.5rem;margin-bottom:16px">⚠️</div>
+        <h2 style="font-size:1.4rem;font-weight:800;margin-bottom:10px">Couldn't connect to Google</h2>
+        <p style="color:#6b7280;font-size:1rem;margin-bottom:24px;max-width:320px;margin-left:auto;margin-right:auto">Google's sign-in script failed to load. Check your internet connection and try again.</p>
+        <button onclick="location.reload()" style="padding:14px 32px;background:#D4663A;color:white;border:none;border-radius:12px;font-size:1.1rem;font-weight:700;cursor:pointer">Retry</button>
       </div>`;
     return;
   }
