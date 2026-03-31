@@ -1608,33 +1608,19 @@ function renderOverview() {
 
   // ── Mobile: iOS grouped overview ─────────────────────────
   if (isMobile()) {
-    // ── Slide 1: Combined ──
-    const slide1 = `<div class="ov-slide"><div class="ov-slide-inner">
-      <div class="ov-slide-title">Combined</div>
-      <div class="stats-grid" style="margin-bottom:18px">
-        <div class="stat-card s-total"><div class="stat-label">Total Spent</div><div class="stat-value">${fc(scaleNum(total))}</div></div>
-        <div class="stat-card s-shared"><div class="stat-label">Shared</div><div class="stat-value">${fc(scaleNum(shared))}</div></div>
-      </div>
+    // ── Slides 1-3: Identical to desktop income cards ──
+    const slide1 = `<div class="ov-slide"><div class="ov-slide-inner income-card ic-combined" style="border:none;box-shadow:none;padding:20px;min-height:auto">
+      <div class="income-title">Combined</div>
       ${personSummaryHtml(scaleNum(totalInc), scaleNum(p1sp+p2sp), scaleNum(shared), false, scaleNum(retTot), false, scaleNum(famTot))}
     </div></div>`;
 
-    // ── Slide 2: Person 1 ──
-    const slide2 = `<div class="ov-slide"><div class="ov-slide-inner" style="border-top:3px solid var(--p1)">
-      <div class="ov-slide-title" style="color:var(--p1)">${esc(S.settings.person1)}</div>
-      <div class="stats-grid" style="margin-bottom:18px">
-        <div class="stat-card s-p1"><div class="stat-label">Solo</div><div class="stat-value">${fc(scaleNum(p1sp))}</div></div>
-        <div class="stat-card s-shared"><div class="stat-label">Shared</div><div class="stat-value">${fc(scaleNum(sharedP1))}</div></div>
-      </div>
+    const slide2 = `<div class="ov-slide"><div class="ov-slide-inner income-card ic-p1" style="border:none;box-shadow:none;padding:20px;min-height:auto">
+      <div class="income-title" style="color:var(--p1)">${esc(S.settings.person1)}</div>
       ${personSummaryHtml(scaleNum(p1inc), scaleNum(p1sp), scaleNum(sharedP1), p1Locked, scaleNum(p1ret), true, scaleNum(p1fam))}
     </div></div>`;
 
-    // ── Slide 3: Person 2 ──
-    const slide3 = `<div class="ov-slide"><div class="ov-slide-inner" style="border-top:3px solid var(--p2)">
-      <div class="ov-slide-title" style="color:var(--p2)">${esc(S.settings.person2)}</div>
-      <div class="stats-grid" style="margin-bottom:18px">
-        <div class="stat-card s-p2"><div class="stat-label">Solo</div><div class="stat-value">${fc(scaleNum(p2sp))}</div></div>
-        <div class="stat-card s-shared"><div class="stat-label">Shared</div><div class="stat-value">${fc(scaleNum(sharedP2))}</div></div>
-      </div>
+    const slide3 = `<div class="ov-slide"><div class="ov-slide-inner income-card ic-p2" style="border:none;box-shadow:none;padding:20px;min-height:auto">
+      <div class="income-title" style="color:var(--p2)">${esc(S.settings.person2)}</div>
       ${personSummaryHtml(scaleNum(p2inc), scaleNum(p2sp), scaleNum(sharedP2), p2Locked, scaleNum(p2ret), true, scaleNum(p2fam))}
     </div></div>`;
 
