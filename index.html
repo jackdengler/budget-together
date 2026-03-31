@@ -387,76 +387,120 @@
     }
 
     /* ── iOS / Mobile optimizations ─────────────────────────── */
-    /* Bottom tab bar */
     #bottom-nav{display:none}
     @media(max-width:700px){
-      /* Safe area padding for notched iPhones */
+      /* iOS system background */
+      :root{--bg:#F2F2F7;--surface:#ffffff;--border:rgba(60,60,67,0.12)}
+      html,body{background:#F2F2F7;overscroll-behavior-y:none}
+
+      /* Safe area */
       body{padding-top:env(safe-area-inset-top)}
       #app{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
 
-      /* Compact header */
-      header{padding:0 12px;gap:8px;height:52px}
-      .logo{font-size:1rem}
+      /* Header — iOS large-title style */
+      header{
+        padding:0 16px;gap:10px;height:52px;
+        background:rgba(242,242,247,0.85);
+        -webkit-backdrop-filter:saturate(180%) blur(20px);
+        backdrop-filter:saturate(180%) blur(20px);
+        border-bottom:1px solid rgba(60,60,67,0.12);
+      }
+      .logo{font-size:1.05rem;font-weight:700;letter-spacing:-0.03em}
       #nav{display:none}
       .month-nav{margin-left:auto}
-      .month-nav button{width:32px;height:32px}
-      .icon-btn{width:36px;height:36px}
-      /* Compact review badge on mobile: show count only */
-      #review-badge{padding:4px 9px;font-size:0}
+      .month-nav button{width:34px;height:34px;border-radius:10px;border:none;background:rgba(120,120,128,0.12);font-size:1.1rem}
+      .icon-btn{width:34px;height:34px;border:none;background:rgba(120,120,128,0.12);border-radius:10px}
+      #review-badge{padding:4px 10px;font-size:0;border:none;background:rgba(217,119,6,0.12)}
       #review-badge-count{font-size:0.78rem}
 
       /* Bottom tab bar */
       #bottom-nav{
-        display:flex;
-        position:fixed;
+        display:flex;position:fixed;
         bottom:0;left:0;right:0;
         height:calc(60px + env(safe-area-inset-bottom));
         padding-bottom:env(safe-area-inset-bottom);
-        background:rgba(255,255,255,0.82);
+        background:rgba(242,242,247,0.85);
         -webkit-backdrop-filter:saturate(180%) blur(20px);
         backdrop-filter:saturate(180%) blur(20px);
-        border-top:1px solid rgba(0,0,0,0.08);
+        border-top:1px solid rgba(60,60,67,0.12);
         z-index:200;
       }
       #bottom-nav button{
         flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
         gap:3px;border:none;background:none;cursor:pointer;
-        padding:6px 4px;color:var(--text-3);transition:color .15s;
+        padding:6px 4px;color:var(--text-3);
         -webkit-tap-highlight-color:transparent;
         min-height:44px;
       }
       #bottom-nav button.active{color:var(--primary)}
-      #bottom-nav button.active .bnav-icon{transform:scale(1.15)}
+      #bottom-nav button.active .bnav-icon{transform:scale(1.12)}
       #bottom-nav button.active .bnav-label{font-weight:700}
-      .bnav-icon{font-size:1.35rem;line-height:1;transition:transform .25s cubic-bezier(0.34,1.56,0.64,1)}
-      .bnav-label{font-size:0.62rem;font-weight:500;letter-spacing:.01em;transition:font-weight .15s}
+      .bnav-icon{font-size:1.4rem;line-height:1;transition:transform .25s cubic-bezier(0.34,1.56,0.64,1)}
+      .bnav-label{font-size:0.6rem;font-weight:500;letter-spacing:.01em}
 
-      /* Prevent iOS auto-zoom on form inputs (requires font-size >= 16px) */
+      /* Main layout — iOS grouped inset padding */
+      main{padding:12px 16px}
+
+      /* Remove all card borders and shadows — background does the separating */
+      .card,.stat-card,.income-card,.bud-card,.scc,.table-wrap,.hist-hero-card{
+        border:none !important;
+        box-shadow:none !important;
+        border-radius:12px !important;
+      }
+
+      /* Inputs — iOS native feel: no border, filled background */
+      .form-input,.form-sel,.search-input{
+        background:rgba(120,120,128,0.08);
+        border:none !important;
+        border-radius:10px;
+      }
       input,select,textarea{font-size:16px !important}
       .form-input,.form-sel,.search-input,.bud-input,.scc-input,.rev-sel{font-size:16px !important}
 
-      /* Toast above bottom nav */
-      .toast{bottom:calc(70px + env(safe-area-inset-bottom))}
+      /* Section titles — iOS gray caps style */
+      .section-title{
+        font-size:0.72rem;font-weight:600;
+        text-transform:uppercase;letter-spacing:.06em;
+        color:rgba(60,60,67,0.6);
+        margin-bottom:8px;margin-top:4px;
+      }
 
-      /* Better tap targets for toggles/buttons */
+      /* Stats — 2 column, full width */
+      .stats-grid{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+      .stat-value{font-size:1.4rem}
+
+      /* Income cards — horizontal scroll strip */
+      .income-row{
+        grid-template-columns:1fr;
+        display:flex;overflow-x:auto;gap:10px;
+        -webkit-overflow-scrolling:touch;
+        scroll-snap-type:x mandatory;
+        padding-bottom:4px;
+        margin-bottom:14px;
+      }
+      .income-card{min-width:72vw;scroll-snap-align:start;flex-shrink:0}
+
+      /* Table rows — more breathing room for fingers */
+      td{padding:13px 14px}
+      th{padding:10px 14px}
+
+      /* Budget cards */
+      .budget-grid{grid-template-columns:1fr;gap:10px}
+
+      /* Prevent horizontal scroll on page */
+      main{touch-action:pan-y}
+      .rev-wrap,.vert-chart,.hist-chart-scroll,.table-wrap{-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+
+      /* Toggles */
       .toggle{width:40px;height:24px}
       .toggle::after{width:16px;height:16px;top:4px;left:4px}
       .toggle.on::after{transform:translateX(16px)}
 
-      /* Expand main padding */
-      main{padding:14px 12px}
+      /* Toast above bottom nav */
+      .toast{bottom:calc(72px + env(safe-area-inset-bottom))}
 
-      /* Momentum scrolling on overflow containers */
-      .rev-wrap,.vert-chart,.hist-chart-scroll,.table-wrap{-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-
-      /* Suppress pull-to-refresh / overscroll glow inside the app shell */
-      html,body{overscroll-behavior-y:none}
-
-      /* No text selection on UI chrome */
+      /* No selection on chrome */
       header,#bottom-nav,.stat-card,.income-card,.bud-card,.scc,.card-txn{user-select:none;-webkit-user-select:none}
-
-      /* Allow horizontal swipe detection on main content */
-      main{touch-action:pan-y}
     }
 
     /* Tab content fade-in */
