@@ -456,10 +456,10 @@
       #nav{display:none}
       /* Month nav expands to fill between logo and icons */
       .month-nav{flex:1;justify-content:center;gap:6px}
-      .month-nav button{width:28px;height:28px;border-radius:8px;border:none;background:rgba(120,120,128,0.12);font-size:1rem}
+      .month-nav button{width:28px;height:28px;border-radius:8px;border:none;background:rgba(120,120,128,0.12);font-size:1.15rem;min-width:44px;min-height:44px}
       .month-nav span{font-size:17px;font-weight:700;letter-spacing:-0.01em}
       .save-status{display:none}
-      .icon-btn{width:30px;height:30px;border:none;background:rgba(120,120,128,0.12);border-radius:9px;font-size:.9rem}
+      .icon-btn{width:30px;height:30px;border:none;background:rgba(120,120,128,0.12);border-radius:9px;font-size:.9rem;min-width:44px;min-height:44px}
       #review-badge{padding:3px 8px;font-size:0;border:none;background:rgba(217,119,6,0.12);border-radius:9px}
       #review-badge-count{font-size:0.72rem}
       /* Lock buttons: hide on mobile (accessed via settings) */
@@ -630,21 +630,21 @@
       .ov-slide-inner{background:#ffffff;border-radius:20px;padding:0;display:flex;flex-direction:column;overflow:hidden;position:relative;flex:1;box-shadow:0 2px 16px rgba(0,0,0,0.07),0 0 0 0.5px rgba(0,0,0,0.06)}
       .ov-slide-inner.income-card{padding:0}
       /* Named slide tabs — pill/chip style, no underline */
-      .ov-tabs{display:flex;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:6px 8px 6px;scrollbar-width:none;background:transparent;flex-shrink:0}
+      .ov-tabs{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:7px 8px 7px;scrollbar-width:none;background:transparent;flex-shrink:0}
       .ov-tabs::-webkit-scrollbar{display:none}
-      .ov-tab{flex-shrink:0;padding:5px 14px;font-size:12px;font-weight:600;color:var(--ios-secondary);border-radius:20px;background:transparent;transition:color .18s,background .18s;cursor:pointer;-webkit-tap-highlight-color:transparent;white-space:nowrap;min-height:30px;display:flex;align-items:center}
+      .ov-tab{flex-shrink:0;padding:6px 16px;font-size:13px;font-weight:600;color:var(--ios-secondary);border-radius:20px;background:transparent;transition:color .18s,background .18s;cursor:pointer;-webkit-tap-highlight-color:transparent;white-space:nowrap;min-height:32px;display:flex;align-items:center}
       .ov-tab.active{color:var(--primary);background:var(--m3-primary-container)}
 
       /* ── iOS PWA: 2x2 income card ────────────────────── */
       .ov-person-card{display:flex;flex-direction:column;flex:1;padding:0}
       /* Compact header — saves vertical real estate for the data grid */
-      .ov-person-card .income-title{padding:10px 12px 0;font-size:14px;font-weight:800;margin-bottom:0;letter-spacing:.06em;text-transform:uppercase;color:var(--text)}
+      .ov-person-card .income-title{padding:12px 14px 2px;font-size:16px;font-weight:700;margin-bottom:0;letter-spacing:-.02em;text-transform:none;color:var(--text)}
       .ov-card-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;flex:1}
       /* Tighter cell padding — 36px number + label + chip all need room */
       .ov-card-cell{display:flex;flex-direction:column;justify-content:flex-start;padding:10px 12px;position:relative;overflow:hidden}
-      .ov-card-cell:nth-child(1){border-right:0.5px solid var(--ios-separator);border-bottom:0.5px solid var(--ios-separator)}
-      .ov-card-cell:nth-child(2){border-bottom:0.5px solid var(--ios-separator)}
-      .ov-card-cell:nth-child(3){border-right:0.5px solid var(--ios-separator)}
+      .ov-card-cell:nth-child(1){border-right:0.5px solid rgba(60,60,67,0.1);border-bottom:0.5px solid rgba(60,60,67,0.1)}
+      .ov-card-cell:nth-child(2){border-bottom:0.5px solid rgba(60,60,67,0.1)}
+      .ov-card-cell:nth-child(3){border-right:0.5px solid rgba(60,60,67,0.1)}
 
       /* Meta: category labels bold, values heavy (Instagram stats style) */
       .ov-cell-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--ios-secondary);margin-bottom:3px}
@@ -654,7 +654,7 @@
 
       /* Earned vs spent proportional bar — Apple capsule style */
       .ov-ep-bar-wrap{margin:2px 10px 0;display:flex;flex-direction:column;gap:3px}
-      .ov-ep-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:rgba(255,59,48,0.18)}
+      .ov-ep-bar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:rgba(255,59,48,0.18)}
       .ov-ep-bar-earn{background:var(--ios-green);transition:width .6s cubic-bezier(0.34,1.56,0.64,1)}
       .ov-ep-bar-spend{display:none}
       .ov-ep-bar-labels{display:flex;justify-content:space-between;font-size:11px;font-weight:600;padding:0 1px}
@@ -666,21 +666,21 @@
       .ov-ring-fill{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .7s cubic-bezier(0.25,0.46,0.45,0.94)}
       .ov-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
       .ov-ring-pct{font-size:2.6rem;font-weight:800;line-height:1;letter-spacing:-0.03em}
-      .ov-ring-lbl{font-size:10px;font-weight:700;color:var(--ios-secondary);text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
+      .ov-ring-lbl{font-size:11px;font-weight:700;color:var(--ios-secondary);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
 
       /* Cash flow chip in SAVED cell */
-      .ov-cashflow-chip{display:inline-flex;align-items:center;gap:3px;margin-top:6px;padding:3px 8px;border-radius:20px;font-size:12px;font-weight:600}
+      .ov-cashflow-chip{display:inline-flex;align-items:center;gap:3px;margin-top:6px;padding:4px 10px;border-radius:20px;font-size:13px;font-weight:600}
 
       /* Meta Insights-style breakdown rows */
-      .ov-breakdown{margin-top:6px}
-      .ov-breakdown-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:14px;position:relative}
+      .ov-breakdown{margin-top:5px}
+      .ov-breakdown-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;position:relative}
       .ov-breakdown-row+.ov-breakdown-row{border-top:0.5px solid rgba(0,0,0,.06)}
-      .ov-breakdown-label{color:var(--ios-secondary);font-weight:500;letter-spacing:.01em;display:flex;align-items:center;gap:6px}
-      .ov-breakdown-label .ov-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0}
-      .ov-breakdown-value{font-weight:700;font-size:14px}
+      .ov-breakdown-label{color:var(--ios-secondary);font-weight:500;letter-spacing:.01em;display:flex;align-items:center;gap:5px;font-size:12px}
+      .ov-breakdown-label .ov-dot{width:6px;height:6px;border-radius:2px;flex-shrink:0}
+      .ov-breakdown-value{font-weight:700;font-size:12px}
 
       /* Slide 4 & 5: scrollable content within fixed-height card */
-      .ov-slide-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ios-secondary);padding:12px 14px 8px;border-bottom:0.5px solid var(--ios-separator);flex-shrink:0}
+      .ov-slide-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ios-secondary);padding:10px 14px 7px;border-bottom:0.5px solid var(--ios-separator);flex-shrink:0}
       .ov-slide-inner.ov-scrollable{overflow-y:auto;-webkit-overflow-scrolling:touch}
       .ov-slide-inner.ov-scrollable .cat-row,.ov-slide-inner.ov-scrollable .merchant-row{padding-left:14px;padding-right:14px}
 
@@ -770,7 +770,7 @@
 
 <nav id="bottom-nav">
   <button data-tab="overview"><span class="bnav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span><span class="bnav-label">Overview</span></button>
-  <button data-tab="transactions"><span class="bnav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span><span class="bnav-label">Txns</span></button>
+  <button data-tab="transactions"><span class="bnav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span><span class="bnav-label">Spend</span></button>
   <button data-tab="split"><span class="bnav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span><span class="bnav-label">Split</span></button>
   <button data-tab="history"><span class="bnav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span class="bnav-label">History</span></button>
 </nav>
@@ -1797,12 +1797,12 @@ function renderOverview() {
               ${(normalInc-spend)>=0?'▲':'▼'} Cash flow ${(normalInc-spend)>=0?'+':'−'}${cashFlowAmt}
             </div>
           </div>
-          <div class="ov-card-cell" style="align-items:center;justify-content:flex-start;padding:8px 4px 4px">
+          <div class="ov-card-cell" style="align-items:center;justify-content:flex-start;padding:10px 6px 6px">
             <div class="ov-cell-label" style="text-align:center;width:100%">Savings Rate</div>
             <div class="ov-ring">
               <svg viewBox="0 0 100 100">
                 <circle class="ov-ring-bg" cx="50" cy="50" r="36"/>
-                <circle class="ov-ring-fill" cx="50" cy="50" r="36" stroke="${ringColor}" stroke-dasharray="${circ}" stroke-dashoffset="${dashOffset}"/>
+                <circle class="ov-ring-fill" id="ring-${cls}" cx="50" cy="50" r="36" stroke="${ringColor}" stroke-dasharray="${circ}" stroke-dashoffset="${circ}" data-to="${dashOffset}"/>
               </svg>
               <div class="ov-ring-center">
                 <div class="ov-ring-pct" style="color:${ringColor}">${sRate}%</div>
@@ -1865,6 +1865,12 @@ function renderOverview() {
       const carousel = document.getElementById('ov-carousel');
       const dotsEl = document.getElementById('ov-dots');
       if (!carousel || !dotsEl) return;
+      // Animate ring fills from 0 → target (entrance animation)
+      requestAnimationFrame(() => {
+        document.querySelectorAll('.ov-ring-fill[data-to]').forEach(el => {
+          el.style.strokeDashoffset = el.dataset.to;
+        });
+      });
       carousel.addEventListener('scroll', () => {
         const idx = Math.round(carousel.scrollLeft / carousel.offsetWidth * (5/4.75));
         const clampedIdx = Math.max(0, Math.min(4, idx));
