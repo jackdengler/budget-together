@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Budget Together">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#D4663A">
+  <meta name="theme-color" content="#F2F2F7">
   <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='38' fill='%23D4663A'/%3E%3Ctext x='90' y='118' font-size='90' text-anchor='middle'%3E%F0%9F%92%95%3C/text%3E%3C/svg%3E">
   <title>Budget Together 💕</title>
   <script>
@@ -30,7 +30,7 @@
         }
       }
       var m = {name:"Budget Together",short_name:"Budget",display:"standalone",orientation:"portrait",
-        background_color:"#FAF9F6",theme_color:"#D4663A",
+        background_color:"#F2F2F7",theme_color:"#F2F2F7",
         start_url: location.href.split('?')[0],
         icons:[{src:"data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20512%20512'%3E%3Crect%20width='512'%20height='512'%20rx='115'%20fill='%23D4663A'/%3E%3Ctext%20x='256'%20y='340'%20font-size='280'%20text-anchor='middle'%3E%F0%9F%92%95%3C/text%3E%3C/svg%3E",sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}]};
       var l = document.createElement('link'); l.rel='manifest';
@@ -41,498 +41,500 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     :root {
-      --bg: #FAF9F6;
-      --surface: #ffffff;
-      --primary: #D4663A;
-      --primary-hover: #C05A30;
-      --primary-light: #FEF0E8;
-      --p1: #2563EB;
-      --p1-light: #EFF6FF;
-      --p2: #DB2777;
-      --p2-light: #FCE7F3;
-      --green: #16A34A;
-      --yellow: #D97706;
-      --red: #DC2626;
-      --text: #1C1917;
-      --text-2: #57534E;
-      --text-3: #A8A29E;
-      --border: #E7E5E4;
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05),0 1px 2px rgba(0,0,0,0.03);
-      --shadow: 0 4px 16px rgba(0,0,0,0.07);
+      --bg: #F2F2F7;
+      --surface: #FFFFFF;
+      --primary: #FF6B47;
+      --primary-hover: #E5603F;
+      --primary-light: #FFF0EC;
+      --p1: #007AFF;
+      --p1-light: #EBF5FF;
+      --p2: #FF2D55;
+      --p2-light: #FFE5EC;
+      --green: #34C759;
+      --yellow: #FF9500;
+      --red: #FF3B30;
+      --text: #000000;
+      --text-2: #6C6C70;
+      --text-3: #8E8E93;
+      --border: #C6C6C8;
+      --shadow-sm: 0 1px 0 rgba(0,0,0,0.05);
+      --shadow: 0 1px 0 rgba(0,0,0,0.05);
       --radius: 12px;
-      --radius-lg: 18px;
+      --radius-lg: 12px;
+      /* iOS 17 Design System */
+      --ios-bg: #F2F2F7;
+      --ios-card: #FFFFFF;
+      --ios-separator: #C6C6C8;
+      --ios-red: #FF3B30;
+      --ios-green: #34C759;
+      --ios-blue: #007AFF;
+      --ios-orange: #FF9500;
+      --ios-accent: #FF6B47;
+      --ios-secondary-label: #6C6C70;
+      --ios-tertiary-label: #8E8E93;
+      --ios-fill: rgba(120,120,128,0.12);
+      --radius-pill: 10px;
+      --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", sans-serif;
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','Helvetica Neue',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.5;overscroll-behavior:none;-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased}
-    button,a,[role="button"]{touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;transition:transform 0.1s cubic-bezier(0.34,1.56,0.64,1),opacity 0.1s}
-    button:active,[role="button"]:active{transform:scale(0.94);opacity:0.8}
+    body{font-family:var(--font-stack);background:var(--bg);color:var(--text);min-height:100vh;font-size:17px;line-height:1.47;overscroll-behavior:none;-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased}
+    button,a,[role="button"]{touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;transition:opacity 0.1s}
+    button:active,[role="button"]:active{opacity:0.7;transition:opacity 0.1s}
     #app{display:flex;flex-direction:column;min-height:100vh}
 
-    /* Header */
-    header{background:rgba(255,255,255,0.82);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid rgba(0,0,0,0.08);padding:0 20px;display:flex;align-items:center;gap:16px;height:58px;position:sticky;top:0;z-index:100;}
-    .logo{font-size:1.15rem;font-weight:800;color:var(--primary);white-space:nowrap;letter-spacing:-0.02em}
-    nav{display:flex;gap:2px;flex:1;background:rgba(120,120,128,0.12);border-radius:10px;padding:2px}
-    nav button{padding:6px 14px;border:none;background:transparent;cursor:pointer;border-radius:8px;font-size:0.86rem;font-weight:500;color:var(--text-2);transition:all .2s cubic-bezier(0.34,1.56,0.64,1)}
-    nav button:hover{color:var(--text)}
-    nav button.active{background:white;color:var(--text);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.12)}
-    .month-nav{display:flex;align-items:center;gap:8px;font-weight:600;font-size:0.88rem;color:var(--text-2);white-space:nowrap}
-    .month-nav button{width:26px;height:26px;border:1px solid var(--border);background:white;border-radius:7px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
-    .month-nav button:hover{background:var(--primary-light);border-color:var(--primary);color:var(--primary)}
-    .icon-btn{width:32px;height:32px;border:1px solid var(--border);background:white;border-radius:8px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
-    .icon-btn:hover{background:var(--primary-light)}
-    .lock-btn{padding:4px 11px;border:1px solid var(--border);background:white;border-radius:20px;cursor:pointer;font-size:0.78rem;font-weight:600;transition:all .15s;white-space:nowrap;flex-shrink:0}
-    .lock-btn:hover{opacity:.85}
-    .save-status{font-size:0.78rem;color:var(--text-3);white-space:nowrap;transition:color .2s}
+    /* Header — iOS 17 Navigation Bar */
+    header{background:rgba(242,242,247,0.85);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-bottom:0.5px solid var(--ios-separator);padding:0 16px;padding-top:env(safe-area-inset-top);display:flex;align-items:center;gap:12px;height:calc(44px + env(safe-area-inset-top));position:sticky;top:0;z-index:100;}
+    .logo{font-size:17px;font-weight:600;color:var(--primary);white-space:nowrap;letter-spacing:-0.02em}
+    nav{display:flex;gap:0;flex:1;background:#E4E4EB;border-radius:9px;padding:2px}
+    nav button{padding:6px 14px;border:none;background:transparent;cursor:pointer;border-radius:7px;font-size:13px;font-weight:600;color:var(--text-2);transition:opacity 0.1s;-webkit-tap-highlight-color:transparent}
+    nav button:active{opacity:0.7}
+    nav button.active{background:white;color:var(--text);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,0.12)}
+    .month-nav{display:flex;align-items:center;gap:8px;font-weight:700;font-size:22px;color:var(--text);white-space:nowrap}
+    .month-nav button{width:28px;height:28px;border:none;background:transparent;border-radius:7px;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;color:var(--ios-blue);-webkit-tap-highlight-color:transparent}
+    .month-nav button:active{opacity:0.7}
+    .icon-btn{width:32px;height:32px;border:none;background:transparent;border-radius:8px;cursor:pointer;font-size:22px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--ios-blue);-webkit-tap-highlight-color:transparent}
+    .icon-btn:active{opacity:0.7}
+    .lock-btn{padding:4px 11px;border:none;background:rgba(120,120,128,0.12);border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+    .lock-btn:active{opacity:0.7}
+    .save-status{font-size:13px;color:var(--text-3);white-space:nowrap}
     .save-status.saving{color:var(--yellow)}
     .save-status.saved{color:var(--green)}
     .save-status.error{color:var(--red)}
-    main{flex:1;padding:22px;max-width:1100px;margin:0 auto;width:100%}
+    main{flex:1;padding:16px;max-width:1100px;margin:0 auto;width:100%}
 
     /* Loading overlay */
     #loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:500;gap:0}
     .load-logo{font-size:4.5rem;margin-bottom:8px;animation:loadPulse 2s ease-in-out infinite}
-    @keyframes loadPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.12);opacity:.85}}
-    .load-title{font-size:1.6rem;font-weight:800;letter-spacing:-0.03em;color:var(--primary);margin-bottom:6px}
-    .load-bar-track{width:180px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:14px}
-    .load-bar-fill{width:40%;height:100%;background:var(--primary);border-radius:2px;animation:loadSlide 1.2s ease-in-out infinite}
+    @keyframes loadPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.08);opacity:.85}}
+    .load-title{font-size:28px;font-weight:700;letter-spacing:-0.03em;color:var(--primary);margin-bottom:6px}
+    .load-bar-track{width:180px;height:3px;background:#E4E4E4;border-radius:1.5px;overflow:hidden;margin-bottom:14px}
+    .load-bar-fill{width:40%;height:100%;background:var(--primary);border-radius:1.5px;animation:loadSlide 1.2s ease-in-out infinite}
     @keyframes loadSlide{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
-    #loading p{color:var(--text-3);font-size:1rem;font-weight:500;letter-spacing:0.01em}
+    #loading p{color:var(--ios-secondary-label);font-size:17px;font-weight:400}
 
-    /* Cards */
-    .card{background:var(--surface);border-radius:var(--radius-lg);box-shadow:0 2px 12px rgba(0,0,0,0.06);border:none;padding:20px}
-    .section-title{font-size:0.95rem;font-weight:700;margin-bottom:16px;color:var(--text)}
-    .text-muted{color:var(--text-3);font-size:0.83rem}
+    /* Cards — iOS 17 grouped style */
+    .card{background:var(--ios-card);border-radius:12px;box-shadow:0 1px 0 rgba(0,0,0,0.05);border:none;padding:16px;margin:0 0 12px 0}
+    .section-title{font-size:13px;font-weight:600;margin-bottom:12px;color:var(--ios-secondary-label);text-transform:uppercase;letter-spacing:0.5px}
+    .text-muted{color:var(--ios-tertiary-label);font-size:13px}
 
-    /* Stats grid */
-    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+    /* Stats grid — iOS 17 */
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
     @media(max-width:700px),(pointer:coarse){.stats-grid{grid-template-columns:1fr 1fr}}
-    .stat-card{background:white;border-radius:var(--radius-lg);box-shadow:0 2px 12px rgba(0,0,0,0.06);border:none;padding:16px 18px;position:relative;overflow:hidden}
-    .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0}
-    .stat-card.s-total::before{background:linear-gradient(90deg,var(--primary),#F59E6A)}
-    .stat-card.s-p1::before{background:var(--p1)}
+    .stat-card{background:var(--ios-card);border-radius:12px;box-shadow:0 1px 0 rgba(0,0,0,0.05);border:none;padding:16px;position:relative;overflow:hidden}
+    .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0}
+    .stat-card.s-total::before{background:var(--ios-accent)}
+    .stat-card.s-p1::before{background:var(--ios-blue)}
     .stat-card.s-p2::before{background:var(--p2)}
-    .stat-card.s-shared::before{background:var(--green)}
-    .stat-label{font-size:0.82rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:7px}
-    .stat-value{font-size:1.8rem;font-weight:800;line-height:1}
-    .stat-sub{font-size:0.85rem;color:var(--text-3);margin-top:5px}
-    .stat-split{font-size:0.82rem;margin-top:6px;color:var(--text-3)}
-    .income-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
-    .income-card{background:white;border-radius:var(--radius-lg);box-shadow:var(--shadow);border:1px solid var(--border);padding:16px 20px;position:relative;overflow:hidden}
-    .income-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0;background:var(--border)}
-    .income-card.ic-p1::before{background:var(--p1)}
+    .stat-card.s-shared::before{background:var(--ios-green)}
+    .stat-label{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--ios-secondary-label);margin-bottom:6px}
+    .stat-value{font-size:28px;font-weight:700;line-height:1}
+    .stat-sub{font-size:13px;color:var(--ios-secondary-label);margin-top:5px}
+    .stat-split{font-size:13px;margin-top:6px;color:var(--ios-secondary-label)}
+    .income-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+    .income-card{background:var(--ios-card);border-radius:12px;box-shadow:0 1px 0 rgba(0,0,0,0.05);border:none;padding:16px;position:relative;overflow:hidden}
+    .income-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0;background:#E4E4E4}
+    .income-card.ic-p1::before{background:var(--ios-blue)}
     .income-card.ic-p2::before{background:var(--p2)}
-    .income-card.ic-combined::before{background:linear-gradient(90deg,var(--primary),#F59E6A)}
-    .income-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:10px}
+    .income-card.ic-combined::before{background:var(--ios-accent)}
+    .income-title{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--ios-secondary-label);margin-bottom:10px}
     .income-line{display:flex;justify-content:space-between;align-items:baseline;padding:3px 0}
-    .income-line+.income-line{border-top:1px solid var(--border)}
-    .income-line.net-line{margin-top:4px;padding-top:7px;border-top:2px solid var(--border) !important}
-    .income-lbl{font-size:.78rem;color:var(--text-3)}
-    .income-amt{font-size:.92rem;font-weight:700}
-    .income-sub{font-size:.73rem !important;opacity:.7;font-weight:500 !important}
-    .income-amt.g{color:var(--green)}
-    .income-amt.r{color:var(--red)}
+    .income-line+.income-line{border-top:0.5px solid var(--ios-separator)}
+    .income-line.net-line{margin-top:4px;padding-top:7px;border-top:0.5px solid var(--ios-separator) !important}
+    .income-lbl{font-size:13px;color:var(--ios-secondary-label)}
+    .income-amt{font-size:15px;font-weight:600}
+    .income-sub{font-size:12px !important;opacity:.7;font-weight:400 !important}
+    .income-amt.g{color:var(--ios-green)}
+    .income-amt.r{color:var(--ios-red)}
     @media(max-width:700px),(pointer:coarse){.income-row{grid-template-columns:1fr}}
 
     /* Charts row */
-    .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     @media(max-width:700px),(pointer:coarse){.charts-row{grid-template-columns:1fr}}
 
-    /* Category bars */
+    /* Category bars — iOS 17 */
     .cat-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-    .cat-name{width:130px;font-size:0.83rem;display:flex;align-items:center;gap:5px;flex-shrink:0}
-    .cat-track{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden}
-    .cat-fill{height:100%;border-radius:4px;transition:width .4s ease}
-    .cat-amt{width:64px;text-align:right;font-size:0.83rem;font-weight:600;color:var(--text-2)}
+    .cat-name{width:130px;font-size:15px;display:flex;align-items:center;gap:5px;flex-shrink:0;color:var(--text)}
+    .cat-track{flex:1;height:6px;background:#E4E4E4;border-radius:3px;overflow:hidden}
+    .cat-fill{height:100%;border-radius:3px;transition:width .25s ease}
+    .cat-amt{width:64px;text-align:right;font-size:15px;font-weight:600;color:var(--text-2)}
 
     /* Vertical comparison bars */
-    .vert-chart{display:flex;gap:12px;overflow-x:auto;padding-bottom:4px}
+    .vert-chart{display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
     .vbar-group{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
     .vbar-pair{display:flex;align-items:flex-end;gap:3px;height:120px}
     .vbar-cur,.vbar-avg{width:18px;border-radius:4px 4px 0 0;min-height:3px}
     .vbar-avg{background:#d1d5db}
-    .vbar-lbl{font-size:0.78rem;text-align:center;margin-top:5px;line-height:1}
-    .vert-legend{display:flex;gap:12px;margin-bottom:10px;font-size:0.75rem;color:var(--text-2);align-items:center}
+    .vbar-lbl{font-size:12px;text-align:center;margin-top:5px;line-height:1;color:var(--ios-secondary-label)}
+    .vert-legend{display:flex;gap:12px;margin-bottom:10px;font-size:12px;color:var(--ios-secondary-label);align-items:center}
     .vert-legend span{display:flex;align-items:center;gap:4px}
-    .vert-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;display:inline-block}
+    .vert-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;display:inline-block}
 
-    /* Top merchants */
+    /* Top merchants — iOS 17 */
     .merchant-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 28px}
     @media(max-width:700px),(pointer:coarse){.merchant-grid{grid-template-columns:1fr}}
-    .merchant-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6}
+    .merchant-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--ios-separator)}
     .merchant-row:last-child{border-bottom:none}
-    .merchant-rank{font-size:0.72rem;font-weight:700;color:var(--text-3);width:18px;text-align:right;flex-shrink:0}
-    .merchant-name{flex:1;font-size:0.87rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .merchant-meta{font-size:0.75rem;color:var(--text-3);white-space:nowrap}
-    .merchant-amt{font-size:0.88rem;font-weight:700;white-space:nowrap}
+    .merchant-rank{font-size:12px;font-weight:600;color:var(--ios-tertiary-label);width:18px;text-align:right;flex-shrink:0}
+    .merchant-name{flex:1;font-size:15px;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .merchant-meta{font-size:12px;color:var(--ios-secondary-label);white-space:nowrap}
+    .merchant-amt{font-size:15px;font-weight:600;white-space:nowrap}
 
-    /* Upload */
-    .upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+    /* Upload — iOS 17 */
+    .upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
     @media(max-width:700px),(pointer:coarse){.upload-grid{grid-template-columns:1fr}}
-    .upload-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:26px 18px;text-align:center;cursor:pointer;transition:all .2s;background:white}
-    .upload-zone:hover,.upload-zone.drag-over{border-color:var(--primary);background:var(--primary-light)}
-    .upload-zone.p1-zone:hover,.upload-zone.p1-zone.drag-over{border-color:var(--p1);background:var(--p1-light)}
-    .upload-zone.p2-zone:hover,.upload-zone.p2-zone.drag-over{border-color:var(--p2);background:var(--p2-light)}
+    .upload-zone{border:0.5px dashed var(--ios-separator);border-radius:12px;padding:24px 18px;text-align:center;cursor:pointer;background:var(--ios-card);-webkit-tap-highlight-color:transparent}
+    .upload-zone:active,.upload-zone.drag-over{opacity:0.7}
+    .upload-zone.p1-zone:active,.upload-zone.p1-zone.drag-over{background:var(--p1-light)}
+    .upload-zone.p2-zone:active,.upload-zone.p2-zone.drag-over{background:var(--p2-light)}
     .upload-icon{font-size:1.8rem;margin-bottom:6px}
-    .upload-label{font-weight:700;font-size:0.95rem;margin-bottom:3px}
-    .upload-hint{font-size:0.78rem;color:var(--text-3)}
+    .upload-label{font-weight:600;font-size:17px;margin-bottom:3px}
+    .upload-hint{font-size:13px;color:var(--ios-secondary-label)}
     input[type="file"]{display:none}
 
-    /* Filters */
-    .filters-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
-    .search-input{flex:1;min-width:160px;padding:7px 14px;border:1px solid var(--border);border-radius:20px;font-size:0.88rem;outline:none;transition:border-color .15s}
-    .search-input:focus{border-color:var(--primary)}
-    select.filter-sel{padding:7px 12px;border:1px solid var(--border);border-radius:20px;font-size:0.88rem;outline:none;background:white;cursor:pointer;color:var(--text-2)}
-    select.filter-sel:focus{border-color:var(--primary);outline:none}
+    /* Filters — iOS 17 */
+    .filters-bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+    .search-input{flex:1;min-width:160px;padding:8px 14px;border:none;border-radius:10px;font-size:17px;outline:none;background:rgba(120,120,128,0.12)}
+    .search-input:focus{outline:none}
+    select.filter-sel{padding:8px 12px;border:none;border-radius:10px;font-size:15px;outline:none;background:rgba(120,120,128,0.12);cursor:pointer;color:var(--text-2)}
+    select.filter-sel:focus{outline:none}
 
-    /* Table */
-    .table-wrap{background:white;border-radius:var(--radius-lg);box-shadow:0 2px 12px rgba(0,0,0,0.06);border:none;overflow:hidden}
+    /* Table — iOS 17 */
+    .table-wrap{background:var(--ios-card);border-radius:12px;box-shadow:0 1px 0 rgba(0,0,0,0.05);border:none;overflow:hidden}
     table{width:100%;border-collapse:collapse}
-    th{text-align:left;padding:10px 14px;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);background:#f9fafb;border-bottom:1px solid var(--border)}
-    th.sortable{cursor:pointer;user-select:none}
-    th.sortable:hover{color:var(--text-2)}
+    th{text-align:left;padding:10px 14px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--ios-secondary-label);background:rgba(120,120,128,0.04);border-bottom:0.5px solid var(--ios-separator)}
+    th.sortable{cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+    th.sortable:active{opacity:0.7}
     th.sort-active{color:var(--text)}
     th.sort-active .sort-arrow{opacity:1}
     .sort-arrow{opacity:.3;font-style:normal;margin-left:4px;font-size:.65rem}
-    td{padding:11px 14px;border-bottom:1px solid #f3f4f6;font-size:0.88rem;vertical-align:middle}
+    td{padding:11px 14px;border-bottom:0.5px solid rgba(60,60,67,0.08);font-size:15px;vertical-align:middle}
     tr:last-child td{border-bottom:none}
-    tr:hover td{background:#FAFAF9}
-    .badge{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:20px;font-size:0.74rem;font-weight:600}
+    .badge{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600}
     .b-p1{background:var(--p1-light);color:var(--p1)}
     .b-p2{background:var(--p2-light);color:var(--p2)}
     .amt-exp{font-weight:600}
-    .amt-inc{font-weight:600;color:var(--green)}
-    select.cat-sel{border:none;background:transparent;font-size:0.83rem;cursor:pointer;color:var(--text-2);padding:2px 4px;border-radius:4px;max-width:140px}
-    select.cat-sel:hover{background:var(--primary-light)}
-    select.cat-sel:focus{outline:none;background:var(--primary-light)}
-    .toggle{width:34px;height:19px;background:var(--border);border-radius:10px;border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
-    .toggle::after{content:'';position:absolute;width:13px;height:13px;background:white;border-radius:50%;top:3px;left:3px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
-    .toggle.on{background:var(--primary)}
-    .toggle.on::after{transform:translateX(15px)}
-    .del-btn{border:none;background:none;cursor:pointer;color:var(--text-3);font-size:.9rem;padding:3px;border-radius:4px;opacity:0;transition:opacity .15s,color .15s}
+    .amt-inc{font-weight:600;color:var(--ios-green)}
+    select.cat-sel{border:none;background:transparent;font-size:15px;cursor:pointer;color:var(--text-2);padding:2px 4px;border-radius:4px;max-width:140px;-webkit-tap-highlight-color:transparent}
+    select.cat-sel:focus{outline:none;background:rgba(120,120,128,0.08)}
+    .toggle{width:51px;height:31px;background:#E4E4E4;border-radius:16px;border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+    .toggle::after{content:'';position:absolute;width:27px;height:27px;background:white;border-radius:50%;top:2px;left:2px;transition:transform .2s;box-shadow:0 2px 4px rgba(0,0,0,.15)}
+    .toggle.on{background:var(--ios-green)}
+    .toggle.on::after{transform:translateX(20px)}
+    .del-btn{border:none;background:none;cursor:pointer;color:var(--ios-tertiary-label);font-size:.9rem;padding:3px;border-radius:4px;opacity:0;transition:opacity .15s;-webkit-tap-highlight-color:transparent}
     tr:hover .del-btn{opacity:1}
-    .del-btn:hover{color:var(--red)}
-    .excl-btn{border:none;background:none;cursor:pointer;color:var(--text-3);font-size:.85rem;padding:3px;border-radius:4px;opacity:0;transition:opacity .15s,color .15s}
+    .del-btn:active{color:var(--ios-red)}
+    .excl-btn{border:none;background:none;cursor:pointer;color:var(--ios-tertiary-label);font-size:.85rem;padding:3px;border-radius:4px;opacity:0;transition:opacity .15s;-webkit-tap-highlight-color:transparent}
     tr:hover .excl-btn{opacity:1}
-    .excl-btn:hover{color:var(--orange,#f97316)}
-    .excl-btn.on{opacity:1;color:var(--orange,#f97316)}
+    .excl-btn:active{color:var(--ios-orange)}
+    .excl-btn.on{opacity:1;color:var(--ios-orange)}
     tr.excluded td{opacity:.4}
     tr.excluded td:last-child{opacity:1}
-    .empty-state{text-align:center;padding:50px 20px;color:var(--text-3)}
+    .empty-state{text-align:center;padding:50px 20px;color:var(--ios-secondary-label)}
     .empty-icon{font-size:2.5rem;margin-bottom:10px}
 
-    /* Review modal */
+    /* Review modal — iOS 17 */
     .modal-wide{max-width:820px}
-    .rev-wrap{max-height:52vh;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px}
+    .rev-wrap{max-height:52vh;overflow-y:auto;border:0.5px solid var(--ios-separator);border-radius:12px;margin-bottom:16px;-webkit-overflow-scrolling:touch}
     .rev-table{width:100%;border-collapse:collapse}
-    .rev-table th{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);padding:8px 12px;background:#f9fafb;border-bottom:1px solid var(--border);text-align:left;position:sticky;top:0;z-index:1}
-    .rev-table td{padding:8px 12px;border-bottom:1px solid #f3f4f6;font-size:.85rem;vertical-align:middle}
+    .rev-table th{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--ios-secondary-label);padding:8px 12px;background:rgba(120,120,128,0.04);border-bottom:0.5px solid var(--ios-separator);text-align:left;position:sticky;top:0;z-index:1}
+    .rev-table td{padding:8px 12px;border-bottom:0.5px solid rgba(60,60,67,0.08);font-size:15px;vertical-align:middle}
     .rev-table tr:last-child td{border-bottom:none}
-    .rev-sel{padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:.82rem;background:white;cursor:pointer;outline:none;max-width:160px}
-    .rev-sel:focus{border-color:var(--primary)}
+    .rev-sel{padding:5px 8px;border:none;border-radius:8px;font-size:15px;background:rgba(120,120,128,0.08);cursor:pointer;outline:none;max-width:160px}
+    .rev-sel:focus{outline:none}
 
     /* Owner select (transactions table) */
-    select.owner-sel{border:none;background:transparent;font-size:.83rem;cursor:pointer;padding:3px 8px;border-radius:20px;font-weight:600;appearance:none;-webkit-appearance:none;text-align:center}
+    select.owner-sel{border:none;background:transparent;font-size:13px;cursor:pointer;padding:3px 8px;border-radius:20px;font-weight:600;appearance:none;-webkit-appearance:none;text-align:center;-webkit-tap-highlight-color:transparent}
     select.owner-sel.b-p1{background:var(--p1-light);color:var(--p1)}
     select.owner-sel.b-p2{background:var(--p2-light);color:var(--p2)}
-    select.owner-sel.b-shared{background:#d1fae5;color:var(--green)}
-    select.owner-sel:hover{opacity:.85}
+    select.owner-sel.b-shared{background:#d1fae5;color:var(--ios-green)}
+    select.owner-sel:active{opacity:0.7}
     select.owner-sel:focus{outline:none}
 
-    /* Budget */
-    .budget-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
-    .bud-card{background:white;border-radius:var(--radius);box-shadow:var(--shadow-sm);border:1px solid var(--border);padding:18px 20px}
+    /* Budget — iOS 17 */
+    .budget-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+    .bud-card{background:var(--ios-card);border-radius:12px;box-shadow:0 1px 0 rgba(0,0,0,0.05);border:none;padding:16px}
     .bud-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
-    .bud-cat{display:flex;align-items:center;gap:8px;font-weight:600;font-size:1rem}
-    .bud-amts{text-align:right;font-size:0.88rem;color:var(--text-3)}
-    .bud-spent{font-size:1.15rem;font-weight:700;color:var(--text)}
-    .prog-track{height:10px;background:var(--border);border-radius:5px;overflow:hidden;margin-bottom:8px}
-    .prog-fill{height:100%;border-radius:4px;transition:width .4s ease}
-    .prog-ok{background:var(--green)}
-    .prog-warn{background:var(--yellow)}
-    .prog-over{background:var(--red)}
+    .bud-cat{display:flex;align-items:center;gap:8px;font-weight:600;font-size:17px}
+    .bud-amts{text-align:right;font-size:15px;color:var(--ios-secondary-label)}
+    .bud-spent{font-size:20px;font-weight:600;color:var(--text)}
+    .prog-track{height:6px;background:#E4E4E4;border-radius:3px;overflow:hidden;margin-bottom:8px}
+    .prog-fill{height:100%;border-radius:3px;transition:width .25s ease}
+    .prog-ok{background:var(--ios-green)}
+    .prog-warn{background:var(--ios-orange)}
+    .prog-over{background:var(--ios-red)}
     .bud-input-row{display:flex;align-items:center;gap:6px;margin-top:10px}
-    .bud-input{width:76px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:0.83rem;text-align:right}
-    .bud-input:focus{outline:none;border-color:var(--primary)}
+    .bud-input{width:76px;padding:4px 8px;border:none;border-radius:8px;font-size:15px;text-align:right;background:rgba(120,120,128,0.08)}
+    .bud-input:focus{outline:none}
 
-    /* Split */
-    .split-hero{text-align:center;padding:30px;background:white;border-radius:var(--radius-lg);box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:20px}
-    .split-big{font-size:3.2rem;font-weight:800;margin:12px 0}
-    .split-lbl{font-size:1.1rem;color:var(--text-2)}
-    .scc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:16px}
-    .scc{background:white;border-radius:var(--radius-lg);box-shadow:var(--shadow);border:1px solid var(--border);padding:16px}
+    /* Split — iOS 17 */
+    .split-hero{text-align:center;padding:24px;background:var(--ios-card);border-radius:12px;box-shadow:0 1px 0 rgba(0,0,0,0.05);border:none;margin-bottom:16px}
+    .split-big{font-size:34px;font-weight:700;margin:12px 0;letter-spacing:-0.4px}
+    .split-lbl{font-size:17px;color:var(--ios-secondary-label)}
+    .scc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:16px}
+    .scc{background:var(--ios-card);border-radius:12px;box-shadow:0 1px 0 rgba(0,0,0,0.05);border:none;padding:16px}
     .scc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-    .scc-total{font-size:1.25rem;font-weight:700;color:var(--text)}
-    .scc-modes{display:flex;gap:5px;margin-bottom:10px}
-    .scc-mode{flex:1;padding:5px 0;font-size:.78rem;font-weight:600;border:1px solid var(--border);border-radius:8px;background:var(--bg-2);color:var(--text-2);cursor:pointer;transition:all .15s}
-    .scc-mode.active{background:var(--p1);border-color:var(--p1);color:white}
-    .scc-custom{display:flex;align-items:center;gap:6px;font-size:.83rem;margin-bottom:8px;flex-wrap:wrap}
-    .scc-input{width:60px;padding:3px 6px;border:1px solid var(--border);border-radius:6px;font-size:.83rem;text-align:center}
-    .split-track{display:flex;border-radius:20px;overflow:hidden;height:32px;width:100%}
-    .split-track-seg{display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;color:rgba(255,255,255,.9);transition:width .3s;overflow:hidden;white-space:nowrap;padding:0 8px}
-    .scc-amts{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-top:12px;font-size:.95rem}
-    .scc-sub{font-size:.82rem;color:var(--text-3);margin-top:3px}
+    .scc-total{font-size:20px;font-weight:600;color:var(--text)}
+    .scc-modes{display:flex;gap:0;margin-bottom:10px;background:#E4E4EB;border-radius:9px;padding:2px}
+    .scc-mode{flex:1;padding:6px 0;font-size:13px;font-weight:600;border:none;border-radius:7px;background:transparent;color:var(--text-2);cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .scc-mode.active{background:white;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.12)}
+    .scc-custom{display:flex;align-items:center;gap:6px;font-size:15px;margin-bottom:8px;flex-wrap:wrap}
+    .scc-input{width:60px;padding:4px 6px;border:none;border-radius:8px;font-size:15px;text-align:center;background:rgba(120,120,128,0.08)}
+    .split-track{display:flex;border-radius:20px;overflow:hidden;height:28px;width:100%}
+    .split-track-seg{display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:rgba(255,255,255,.9);transition:width .25s;overflow:hidden;white-space:nowrap;padding:0 8px}
+    .scc-amts{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-top:12px;font-size:15px}
+    .scc-sub{font-size:13px;color:var(--ios-secondary-label);margin-top:3px}
     .split-p2{color:var(--p2)}
-    .split-p1{color:var(--p1)}
-    .split-ok{color:var(--green)}
-    .settle-btn{margin-top:18px;padding:12px 30px;background:var(--green);color:white;border:none;border-radius:22px;font-size:1.05rem;font-weight:700;cursor:pointer;transition:opacity .15s}
-    .settle-btn:hover{opacity:.85}
-    .btn-sm{padding:3px 10px;font-size:0.78rem;background:var(--bg-2);border:1px solid var(--border);border-radius:10px;cursor:pointer;color:var(--text-2);transition:background .15s}
-    .btn-sm:hover{background:var(--bg-3)}
-    .hv-toggle{display:flex;gap:2px;background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:2px}
-    .hv-btn{padding:3px 11px;font-size:.78rem;font-weight:500;border:none;border-radius:8px;cursor:pointer;background:transparent;color:var(--text-3);transition:all .15s}
-    .hv-btn:hover{background:var(--bg-3);color:var(--text-1)}
-    .hv-btn.hv-active{background:white;color:var(--text-1);font-weight:600;box-shadow:var(--shadow-sm)}
-    .hv-btn.hv-active.hv-p1{color:var(--p1)}
+    .split-p1{color:var(--ios-blue)}
+    .split-ok{color:var(--ios-green)}
+    .settle-btn{margin-top:18px;padding:12px 30px;background:var(--ios-green);color:white;border:none;border-radius:12px;font-size:17px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .settle-btn:active{opacity:0.7}
+    .btn-sm{padding:4px 12px;font-size:13px;background:rgba(120,120,128,0.08);border:none;border-radius:10px;cursor:pointer;color:var(--text-2);-webkit-tap-highlight-color:transparent}
+    .btn-sm:active{opacity:0.7}
+    .hv-toggle{display:flex;gap:0;background:#E4E4EB;border:none;border-radius:9px;padding:2px}
+    .hv-btn{padding:4px 12px;font-size:13px;font-weight:600;border:none;border-radius:7px;cursor:pointer;background:transparent;color:var(--ios-secondary-label);-webkit-tap-highlight-color:transparent}
+    .hv-btn:active{opacity:0.7}
+    .hv-btn.hv-active{background:white;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.12)}
+    .hv-btn.hv-active.hv-p1{color:var(--ios-blue)}
     .hv-btn.hv-active.hv-p2{color:var(--p2)}
-    select.split-sel{padding:3px 7px;border:1px solid var(--border);border-radius:6px;font-size:0.8rem;background:white}
+    select.split-sel{padding:4px 8px;border:none;border-radius:8px;font-size:13px;background:rgba(120,120,128,0.08)}
 
-    /* Modals — bottom sheet on mobile, centered on desktop */
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;justify-content:center;z-index:1000;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);animation:overlayIn .22s ease}
+    /* Modals — iOS 17 bottom sheet on mobile, centered on desktop */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;justify-content:center;z-index:1000;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);animation:overlayIn .2s ease}
     @keyframes overlayIn{from{opacity:0}to{opacity:1}}
-    .modal{background:white;border-radius:24px 24px 0 0;padding:28px 24px calc(28px + env(safe-area-inset-bottom));width:100%;max-width:560px;box-shadow:0 -4px 40px rgba(0,0,0,.18);max-height:92vh;overflow-y:auto;animation:sheetUp .32s cubic-bezier(0.32,0.72,0,1)}
-    .modal::before{content:'';display:block;width:36px;height:5px;background:#e0e0e0;border-radius:3px;margin:0 auto 20px;flex-shrink:0}
+    .modal{background:var(--ios-card);border-radius:14px 14px 0 0;padding:24px 20px calc(24px + env(safe-area-inset-bottom));width:100%;max-width:560px;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;animation:sheetUp .25s cubic-bezier(0.32,0.72,0,1)}
+    .modal::before{content:'';display:block;width:36px;height:5px;background:#E4E4E4;border-radius:3px;margin:0 auto 16px;flex-shrink:0}
     @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
     @media(min-width:700px){
       .overlay{align-items:center}
-      .modal{border-radius:20px;padding:28px;width:90%;animation:modalIn .22s cubic-bezier(0.34,1.56,0.64,1)}
+      .modal{border-radius:14px;padding:24px;width:90%;animation:modalIn .2s ease}
       .modal::before{display:none}
-      @keyframes modalIn{from{opacity:0;transform:scale(0.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+      @keyframes modalIn{from{opacity:0;transform:scale(0.96) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
     }
-    .modal h2{font-size:1.45rem;font-weight:700;margin-bottom:8px}
-    .modal p{color:var(--text-2);font-size:0.95rem;margin-bottom:22px}
+    .modal h2{font-size:22px;font-weight:700;margin-bottom:8px}
+    .modal p{color:var(--ios-secondary-label);font-size:15px;margin-bottom:20px}
     .form-row{margin-bottom:14px}
-    .form-row label{display:block;font-size:0.82rem;font-weight:600;color:var(--text-2);margin-bottom:5px}
-    .form-input{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.92rem;outline:none;transition:border-color .15s}
-    .form-input:focus{border-color:var(--primary)}
-    .form-sel{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.92rem;outline:none;background:white}
-    .form-sel:focus{border-color:var(--primary);outline:none}
-    .btn-pri{width:100%;padding:14px;background:var(--primary);color:white;border:none;border-radius:12px;font-size:1.05rem;font-weight:700;cursor:pointer;transition:background .15s}
-    .btn-pri:hover{background:var(--primary-hover)}
-    .btn-sec{padding:8px 16px;background:white;color:var(--text-2);border:1px solid var(--border);border-radius:8px;font-size:0.88rem;font-weight:500;cursor:pointer;transition:all .15s}
-    .btn-sec:hover{background:var(--bg)}
+    .form-row label{display:block;font-size:13px;font-weight:600;color:var(--ios-secondary-label);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.3px}
+    .form-input{width:100%;padding:10px 12px;border:none;border-radius:10px;font-size:17px;outline:none;background:rgba(120,120,128,0.08)}
+    .form-input:focus{outline:none}
+    .form-sel{width:100%;padding:10px 12px;border:none;border-radius:10px;font-size:17px;outline:none;background:rgba(120,120,128,0.08)}
+    .form-sel:focus{outline:none}
+    .btn-pri{width:100%;padding:14px;background:var(--ios-blue);color:white;border:none;border-radius:12px;font-size:17px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .btn-pri:active{opacity:0.7}
+    .btn-sec{padding:8px 16px;background:rgba(120,120,128,0.08);color:var(--ios-blue);border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .btn-sec:active{opacity:0.7}
     .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
     .col-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
 
-    /* Toast */
-    .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px) scale(0.92);background:rgba(30,30,30,0.92);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:white;padding:10px 22px;border-radius:20px;font-size:0.88rem;font-weight:500;opacity:0;transition:all .32s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;z-index:2000;white-space:nowrap}
+    /* Toast — iOS 17 */
+    .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px) scale(0.96);background:rgba(30,30,30,0.88);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);color:white;padding:12px 20px;border-radius:14px;font-size:15px;font-weight:500;opacity:0;transition:all .25s ease;pointer-events:none;z-index:2000;white-space:nowrap}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
 
-    ::-webkit-scrollbar{width:5px;height:5px}
-    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+    ::-webkit-scrollbar{width:4px;height:4px}
+    ::-webkit-scrollbar-thumb{background:#C6C6C8;border-radius:2px}
 
-    /* History tab */
-    .hist-hero{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+    /* History tab — iOS 17 */
+    .hist-hero{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
     @media(max-width:720px){.hist-hero{grid-template-columns:1fr 1fr}}
-    .hist-hero-card{background:white;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow);padding:20px 22px;position:relative;overflow:hidden}
-    .hist-hero-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0}
-    .hist-hero-card.hh-spent::before{background:linear-gradient(90deg,var(--primary),#F59E6A)}
-    .hist-hero-card.hh-avg::before{background:linear-gradient(90deg,#3b82f6,#06b6d4)}
-    .hist-hero-card.hh-income::before{background:linear-gradient(90deg,var(--green),#84cc16)}
-    .hist-hero-card.hh-best::before{background:linear-gradient(90deg,#f59e0b,#f97316)}
-    .hist-hero-lbl{font-size:.92rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:8px}
-    .hist-hero-val{font-size:2.4rem;font-weight:800;line-height:1;margin-bottom:6px}
-    .hist-hero-sub{font-size:.95rem;color:var(--text-3)}
-    .hist-chart-scroll{overflow-x:auto;padding-bottom:4px}
+    .hist-hero-card{background:var(--ios-card);border-radius:12px;border:none;box-shadow:0 1px 0 rgba(0,0,0,0.05);padding:16px;position:relative;overflow:hidden}
+    .hist-hero-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0}
+    .hist-hero-card.hh-spent::before{background:var(--ios-accent)}
+    .hist-hero-card.hh-avg::before{background:var(--ios-blue)}
+    .hist-hero-card.hh-income::before{background:var(--ios-green)}
+    .hist-hero-card.hh-best::before{background:var(--ios-orange)}
+    .hist-hero-lbl{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--ios-secondary-label);margin-bottom:6px}
+    .hist-hero-val{font-size:28px;font-weight:700;line-height:1;margin-bottom:6px}
+    .hist-hero-sub{font-size:13px;color:var(--ios-secondary-label)}
+    .hist-chart-scroll{overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
     .hist-chart{display:flex;align-items:flex-end;gap:6px;height:230px;padding:10px 4px 0;padding-left:34px}
-    .hist-bar-col{display:flex;flex-direction:column;align-items:center;cursor:pointer;flex:1;min-width:44px;max-width:80px;transition:opacity .15s}
-    .hist-bar-col:hover{opacity:.82}
+    .hist-bar-col{display:flex;flex-direction:column;align-items:center;cursor:pointer;flex:1;min-width:44px;max-width:80px;-webkit-tap-highlight-color:transparent}
+    .hist-bar-col:active{opacity:0.7}
     .hist-bar-outer{flex:1;display:flex;align-items:flex-end;width:100%;position:relative}
-    .hist-bar-inner{width:100%;border-radius:6px 6px 0 0;transition:height .4s ease;min-height:4px;position:relative}
-    .hist-bar-inner.hb-cur{box-shadow:0 0 0 2px white,0 0 0 3px var(--primary)}
-    .hist-inc-dot{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--green);border:2px solid white;left:50%;transform:translateX(-50%);z-index:3;box-shadow:0 0 0 1px rgba(5,150,105,.35)}
-    .hist-bar-lbl{font-size:.78rem;font-weight:600;color:var(--text-3);text-align:center;margin-top:6px;line-height:1.3;white-space:nowrap}
+    .hist-bar-inner{width:100%;border-radius:6px 6px 0 0;transition:height .25s ease;min-height:4px;position:relative}
+    .hist-bar-inner.hb-cur{box-shadow:0 0 0 2px white,0 0 0 3px var(--ios-accent)}
+    .hist-inc-dot{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--ios-green);border:2px solid white;left:50%;transform:translateX(-50%);z-index:3}
+    .hist-bar-lbl{font-size:12px;font-weight:400;color:var(--ios-secondary-label);text-align:center;margin-top:6px;line-height:1.3;white-space:nowrap}
     .hm-tbl{width:100%;border-collapse:separate;border-spacing:0}
-    .hm-tbl th{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);padding:8px 6px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap}
+    .hm-tbl th{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--ios-secondary-label);padding:8px 6px;border-bottom:0.5px solid var(--ios-separator);text-align:right;white-space:nowrap}
     .hm-tbl th:first-child,.hm-tbl th:nth-child(2){text-align:left}
-    .hm-tbl td{padding:5px 6px;border-bottom:1px solid #f3f4f6;vertical-align:middle}
+    .hm-tbl td{padding:5px 6px;border-bottom:0.5px solid rgba(60,60,67,0.08);vertical-align:middle}
     .hm-tbl tr:last-child td{border-bottom:none}
-    .hm-cell{border-radius:7px;padding:5px 9px;text-align:right;font-weight:700;font-size:.8rem;white-space:nowrap;transition:filter .15s;display:block}
-    .hm-cell:hover{filter:brightness(.92)}
-    .chip-up{display:inline-flex;align-items:center;gap:3px;font-size:.82rem;font-weight:700;color:var(--red);background:#fef2f2;border-radius:20px;padding:3px 10px}
-    .chip-down{display:inline-flex;align-items:center;gap:3px;font-size:.82rem;font-weight:700;color:var(--green);background:#f0fdf4;border-radius:20px;padding:3px 10px}
-    .chip-flat{display:inline-flex;align-items:center;font-size:.82rem;color:var(--text-3);background:#f3f4f6;border-radius:20px;padding:3px 10px}
+    .hm-cell{border-radius:8px;padding:5px 9px;text-align:right;font-weight:600;font-size:13px;white-space:nowrap;display:block}
+    .hm-cell:active{opacity:0.7}
+    .chip-up{display:inline-flex;align-items:center;gap:3px;font-size:13px;font-weight:600;color:var(--ios-red);background:rgba(255,59,48,0.1);border-radius:20px;padding:3px 10px}
+    .chip-down{display:inline-flex;align-items:center;gap:3px;font-size:13px;font-weight:600;color:var(--ios-green);background:rgba(52,199,89,0.1);border-radius:20px;padding:3px 10px}
+    .chip-flat{display:inline-flex;align-items:center;font-size:13px;color:var(--ios-secondary-label);background:rgba(120,120,128,0.08);border-radius:20px;padding:3px 10px}
 
-    /* Review badge */
-    #review-badge{display:none;align-items:center;gap:5px;padding:5px 11px;border:1.5px solid #d97706;background:#fffbeb;border-radius:20px;cursor:pointer;font-size:0.78rem;font-weight:700;color:#92400e;white-space:nowrap;flex-shrink:0;animation:badge-pulse 2.5s ease-in-out infinite;transition:background .15s,border-color .15s}
-    #review-badge:hover{background:#fef3c7;border-color:#b45309;animation:none}
-    #review-badge-count{background:#d97706;color:white;border-radius:10px;padding:1px 7px;font-size:0.72rem;font-weight:800;line-height:1.6}
-    @keyframes badge-pulse{0%,100%{box-shadow:0 0 0 0 rgba(217,119,6,.35)}60%{box-shadow:0 0 0 5px rgba(217,119,6,0)}}
+    /* Review badge — iOS 17 */
+    #review-badge{display:none;align-items:center;gap:5px;padding:5px 11px;border:none;background:rgba(255,149,0,0.12);border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;color:#92400e;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+    #review-badge:active{opacity:0.7}
+    #review-badge-count{background:var(--ios-orange);color:white;border-radius:10px;padding:1px 7px;font-size:12px;font-weight:700;line-height:1.6}
 
-    /* Card review */
+    /* Card review — iOS 17 */
     .card-modal{max-width:460px}
-    .card-progress{text-align:center;font-size:0.75rem;font-weight:600;color:var(--text-3);margin-bottom:16px;letter-spacing:.06em;text-transform:uppercase}
-    .card-txn{background:var(--bg);border-radius:var(--radius);padding:18px 20px;margin-bottom:20px;text-align:center}
-    .card-date{font-size:0.78rem;color:var(--text-3);margin-bottom:4px}
-    .card-desc{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:8px;word-break:break-word}
-    .card-amt{font-size:1.5rem;font-weight:800;color:var(--text)}
-    .card-amt.card-inc{color:var(--green)}
-    .card-label{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:10px}
+    .card-progress{text-align:center;font-size:12px;font-weight:600;color:var(--ios-secondary-label);margin-bottom:16px;letter-spacing:.5px;text-transform:uppercase}
+    .card-txn{background:var(--bg);border-radius:12px;padding:16px;margin-bottom:20px;text-align:center}
+    .card-date{font-size:13px;color:var(--ios-secondary-label);margin-bottom:4px}
+    .card-desc{font-size:17px;font-weight:600;color:var(--text);margin-bottom:8px;word-break:break-word}
+    .card-amt{font-size:22px;font-weight:700;color:var(--text)}
+    .card-amt.card-inc{color:var(--ios-green)}
+    .card-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--ios-secondary-label);margin-bottom:10px}
     .card-cats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:20px}
-    .card-cat-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;border:1.5px solid var(--border);border-radius:10px;background:white;cursor:pointer;font-size:1.1rem;transition:all .15s}
-    .card-cat-btn span{font-size:0.62rem;font-weight:600;color:var(--text-3);text-align:center;line-height:1.2}
-    .card-cat-btn:hover{border-color:var(--primary);background:var(--primary-light)}
-    .card-cat-btn.sel{transform:scale(1.06)}
-    .card-cat-btn.sel span{font-weight:700}
+    .card-cat-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;border:0.5px solid var(--ios-separator);border-radius:10px;background:var(--ios-card);cursor:pointer;font-size:1.1rem;-webkit-tap-highlight-color:transparent}
+    .card-cat-btn span{font-size:11px;font-weight:600;color:var(--ios-secondary-label);text-align:center;line-height:1.2}
+    .card-cat-btn:active{opacity:0.7}
+    .card-cat-btn.sel{border-color:var(--ios-blue);background:rgba(0,122,255,0.08)}
+    .card-cat-btn.sel span{font-weight:700;color:var(--ios-blue)}
     .card-owners{display:flex;gap:8px;margin-bottom:4px}
-    .card-owner-btn{flex:1;padding:10px;border:1.5px solid var(--border);border-radius:10px;background:white;cursor:pointer;font-size:0.88rem;font-weight:600;color:var(--text-2);transition:all .15s}
-    .card-owner-btn:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
-    .card-hint{font-size:0.68rem;color:var(--text-3);text-align:center;margin-top:8px;margin-bottom:-4px}
+    .card-owner-btn{flex:1;padding:10px;border:0.5px solid var(--ios-separator);border-radius:10px;background:var(--ios-card);cursor:pointer;font-size:15px;font-weight:600;color:var(--text-2);-webkit-tap-highlight-color:transparent}
+    .card-owner-btn:active{opacity:0.7}
+    .card-hint{font-size:12px;color:var(--ios-secondary-label);text-align:center;margin-top:8px;margin-bottom:-4px}
 
     /* Group review modal */
     .grp-modal{max-width:560px}
     .grp-search-wrap{margin-bottom:10px}
-    .grp-search{width:100%;box-sizing:border-box;padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;outline:none;transition:border-color .15s}
-    .grp-search:focus{border-color:var(--primary)}
+    .grp-search{width:100%;box-sizing:border-box;padding:8px 12px;border:none;border-radius:10px;font-size:17px;outline:none;background:rgba(120,120,128,0.08)}
+    .grp-search:focus{outline:none}
     .grp-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px;gap:12px}
-    .grp-name{font-size:0.92rem;font-weight:700;color:var(--text);word-break:break-word}
-    .grp-count{font-size:0.72rem;font-weight:600;color:var(--text-3);white-space:nowrap}
-    .grp-rows{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:4px;max-height:220px;overflow-y:auto}
-    .grp-row{display:flex;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid var(--border);background:white}
+    .grp-name{font-size:15px;font-weight:600;color:var(--text);word-break:break-word}
+    .grp-count{font-size:12px;font-weight:600;color:var(--ios-secondary-label);white-space:nowrap}
+    .grp-rows{border:0.5px solid var(--ios-separator);border-radius:12px;overflow:hidden;margin-bottom:4px;max-height:220px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+    .grp-row{display:flex;align-items:center;gap:6px;padding:6px 10px;border-bottom:0.5px solid rgba(60,60,67,0.08);background:var(--ios-card)}
     .grp-row:last-child{border-bottom:none}
-    .grp-row-date{font-size:0.68rem;color:var(--text-3);white-space:nowrap;flex-shrink:0}
-    .grp-row-desc{font-size:0.75rem;color:var(--text-2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .grp-row-amt{font-size:0.8rem;font-weight:700;color:var(--text);white-space:nowrap;flex-shrink:0}
-    .grp-inc{color:var(--green)}
-    .grp-row-catbtn{flex-shrink:0;width:24px;height:24px;border:1.5px solid transparent;border-radius:6px;background:transparent;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
-    .grp-row-catbtn:hover{border-color:var(--primary)!important;background:var(--primary-light)}
-    .grp-owner-pill{flex-shrink:0;padding:2px 7px;border:1.5px solid;border-radius:20px;background:transparent;cursor:pointer;font-size:0.68rem;font-weight:700;white-space:nowrap;transition:opacity .15s}
-    .grp-owner-pill:hover{opacity:.7}
-    .grp-del-btn{flex-shrink:0;width:20px;height:20px;border:none;background:none;cursor:pointer;font-size:0.72rem;color:var(--text-3);border-radius:4px;display:flex;align-items:center;justify-content:center;transition:all .15s}
-    .grp-del-btn:hover{background:#fee2e2;color:#dc2626}
-    .grp-row-cats{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;padding:8px 10px;background:var(--bg);border-bottom:1px solid var(--border)}
+    .grp-row-date{font-size:12px;color:var(--ios-secondary-label);white-space:nowrap;flex-shrink:0}
+    .grp-row-desc{font-size:13px;color:var(--text-2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .grp-row-amt{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;flex-shrink:0}
+    .grp-inc{color:var(--ios-green)}
+    .grp-row-catbtn{flex-shrink:0;width:24px;height:24px;border:0.5px solid transparent;border-radius:6px;background:transparent;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+    .grp-row-catbtn:active{opacity:0.7}
+    .grp-owner-pill{flex-shrink:0;padding:2px 7px;border:0.5px solid;border-radius:20px;background:transparent;cursor:pointer;font-size:12px;font-weight:600;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+    .grp-owner-pill:active{opacity:0.7}
+    .grp-del-btn{flex-shrink:0;width:20px;height:20px;border:none;background:none;cursor:pointer;font-size:0.72rem;color:var(--ios-tertiary-label);border-radius:4px;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+    .grp-del-btn:active{background:rgba(255,59,48,0.1);color:var(--ios-red)}
+    .grp-row-cats{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;padding:8px 10px;background:var(--bg);border-bottom:0.5px solid rgba(60,60,67,0.08)}
     .card-cats{grid-template-columns:repeat(5,1fr)}
 
     /* ── Global tap feedback ─────────────────────────────────── */
     @media(hover:none){
-      button:active,a:active,[role="button"]:active{opacity:.6;transition:opacity 0s}
+      button:active,a:active,[role="button"]:active{opacity:.7;transition:opacity 0.1s}
     }
 
     /* ── iOS / Mobile optimizations ─────────────────────────── */
     #bottom-nav{display:none}
     @media(max-width:700px),(pointer:coarse){
-      /* iOS system + M3 tonal palette derived from brand orange #D4663A */
+      /* iOS 17 mobile overrides */
       :root{
-        --bg:#F2F2F7;--surface:#ffffff;--border:rgba(60,60,67,0.12);--radius:14px;--radius-lg:20px;
-        /* Apple system colors */
-        --ios-green:#30D158;--ios-red:#FF3B30;--ios-amber:#FF9F0A;
+        --bg:#F2F2F7;--surface:#FFFFFF;--border:rgba(60,60,67,0.12);--radius:12px;--radius-lg:12px;
+        --ios-green:#34C759;--ios-red:#FF3B30;--ios-amber:#FF9500;
         --ios-label:rgba(0,0,0,1);--ios-secondary:rgba(60,60,67,0.6);
         --ios-tertiary:rgba(60,60,67,0.3);--ios-separator:rgba(60,60,67,0.29);
         --ios-fill:rgba(120,120,128,0.12);
-        /* M3 tonal surfaces */
-        --m3-surface-container:#FFF8F5;
-        --m3-primary-container:#FFDBCB;
-        --m3-state-layer:rgba(212,102,58,0.12);
-        /* Design tokens: spacing grid (4px base) */
-        --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:20px;--sp-6:24px;
-        /* Design tokens: semantic color (accessible contrast on white) */
-        --color-earned:#1A9E45;    /* darkened #30D158 → 4.6:1 on white */
-        --color-earned-bg:rgba(48,209,88,0.08);
-        --color-spent:#C0392B;     /* darkened #FF3B30 → 5.1:1 on white */
+        --m3-surface-container:#F2F2F7;
+        --m3-primary-container:rgba(255,107,71,0.12);
+        --m3-state-layer:rgba(255,107,71,0.12);
+        --color-earned:#34C759;
+        --color-earned-bg:rgba(52,199,89,0.08);
+        --color-spent:#FF3B30;
         --color-spent-bg:rgba(255,59,48,0.07);
-        --color-saved-pos:#1A9E45; /* same as earned */
-        --color-deficit:#C0392B;
-        --color-amber:#C07C00;     /* darkened #FF9F0A → 4.8:1 on white */
-        --color-fixed:#4338CA;     /* indigo — fixed/recurring expenses */
-        /* Easing tokens */
+        --color-saved-pos:#34C759;
+        --color-deficit:#FF3B30;
+        --color-amber:#FF9500;
+        --color-fixed:#007AFF;
         --ease-spring:cubic-bezier(0.34,1.56,0.64,1);
         --ease-smooth:cubic-bezier(0.25,0.46,0.45,0.94);
         --ease-out:cubic-bezier(0,0,0.2,1);
       }
-      html{font-size:19px;-webkit-text-size-adjust:100%;height:100%;overflow:hidden}
-      body{background:#F2F2F7;overscroll-behavior-y:none;font-size:19px;line-height:1.5;height:100%;overflow:hidden}
+      html{font-size:17px;-webkit-text-size-adjust:100%;height:100%;overflow:hidden}
+      body{background:#F2F2F7;overscroll-behavior:none;font-size:17px;line-height:1.47;height:100%;overflow:hidden}
       #app{height:100vh;overflow:hidden;display:flex;flex-direction:column}
       main{flex:1;overflow:hidden;padding:4px 10px 0 !important;display:flex;flex-direction:column}
 
       /* Safe area */
       body{padding-top:env(safe-area-inset-top)}
-      #app{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+      #app{padding-bottom:calc(calc(49px + env(safe-area-inset-bottom)) + 0px)}
 
-      /* Header — single compact row: logo | month-nav (flex:1) | icons */
+      /* Header — iOS 17 mobile nav bar */
       header{
         padding:6px 12px 6px;gap:0 8px;height:auto;
         flex-wrap:nowrap;align-items:center;
-        background:rgba(242,242,247,0.92);
+        background:rgba(242,242,247,0.85);
         -webkit-backdrop-filter:saturate(180%) blur(20px);
         backdrop-filter:saturate(180%) blur(20px);
-        border-bottom:1px solid rgba(60,60,67,0.12);
+        border-bottom:0.5px solid var(--ios-separator);
       }
-      /* Logo becomes a compact wordmark on the left */
-      .logo{font-size:18px;font-weight:800;letter-spacing:-0.03em;width:auto;margin-bottom:0;line-height:1;flex-shrink:0;color:var(--primary)}
+      .logo{font-size:17px;font-weight:600;letter-spacing:-0.02em;width:auto;margin-bottom:0;line-height:1;flex-shrink:0;color:var(--primary)}
       #nav{display:none}
-      /* Month nav expands to fill between logo and icons */
       .month-nav{flex:1;justify-content:center;gap:6px}
-      .month-nav button{width:28px;height:28px;border-radius:8px;border:none;background:rgba(120,120,128,0.12);font-size:1.15rem;min-width:44px;min-height:44px}
-      .month-nav span{font-size:22px;font-weight:800;letter-spacing:-0.02em}
+      .month-nav button{width:28px;height:28px;border-radius:8px;border:none;background:transparent;font-size:17px;min-width:44px;min-height:44px;color:var(--ios-blue)}
+      .month-nav span{font-size:22px;font-weight:700;letter-spacing:-0.02em;color:var(--text)}
       .save-status{display:none}
-      .icon-btn{width:30px;height:30px;border:none;background:rgba(120,120,128,0.12);border-radius:9px;font-size:.9rem;min-width:44px;min-height:44px}
-      #review-badge{padding:3px 8px;font-size:0;border:none;background:rgba(217,119,6,0.12);border-radius:9px}
-      #review-badge-count{font-size:0.72rem}
-      /* Lock buttons: hide on mobile (accessed via settings) */
+      .icon-btn{width:30px;height:30px;border:none;background:transparent;border-radius:9px;font-size:22px;min-width:44px;min-height:44px;color:var(--ios-blue)}
+      #review-badge{padding:3px 8px;font-size:0;border:none;background:rgba(255,149,0,0.12);border-radius:9px}
+      #review-badge-count{font-size:12px}
       #lock-btns{display:none}
 
-      /* Bottom tab bar */
+      /* Bottom tab bar — iOS 17 */
       #bottom-nav{
         display:flex;position:fixed;
         bottom:0;left:0;right:0;
-        height:calc(84px + env(safe-area-inset-bottom));
+        height:calc(49px + env(safe-area-inset-bottom));
         padding-bottom:env(safe-area-inset-bottom);
         background:rgba(242,242,247,0.85);
         -webkit-backdrop-filter:saturate(180%) blur(20px);
         backdrop-filter:saturate(180%) blur(20px);
-        border-top:0.5px solid rgba(0,0,0,0.12);
+        border-top:0.5px solid var(--ios-separator);
         z-index:200;
       }
       #bottom-nav button{
         flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-        gap:3px;border:none;background:none;cursor:pointer;
-        padding:6px 4px;color:var(--text-3);
+        gap:2px;border:none;background:none;cursor:pointer;
+        padding:4px 4px;color:#8E8E93;
         -webkit-tap-highlight-color:transparent;
         min-height:44px;
       }
-      /* M3 navigation bar: indicator pill behind active icon */
+      /* iOS 17 tab bar: color change only, no pill indicator */
       #bottom-nav button{position:relative}
-      #bottom-nav button.active{color:var(--primary)}
-      #bottom-nav button.active .bnav-icon{transform:scale(1.0)}
-      #bottom-nav button.active .bnav-icon::before{content:'';position:absolute;inset:-6px -20px;border-radius:16px;background:var(--m3-primary-container);z-index:-1;transition:opacity .2s}
-      #bottom-nav button:not(.active) .bnav-icon::before{content:'';position:absolute;inset:-6px -20px;border-radius:16px;background:var(--m3-state-layer);z-index:-1;opacity:0;transition:opacity .15s}
-      #bottom-nav button:active .bnav-icon::before{opacity:1}
-      #bottom-nav button.active .bnav-label{font-weight:700;color:var(--primary)}
+      #bottom-nav button.active{color:var(--ios-accent)}
+      #bottom-nav button.active .bnav-icon{transform:none}
+      #bottom-nav button.active .bnav-icon::before{display:none}
+      #bottom-nav button:not(.active) .bnav-icon::before{display:none}
+      #bottom-nav button:active{opacity:0.7}
+      #bottom-nav button.active .bnav-label{font-weight:600;color:var(--ios-accent)}
       .bnav-icon{line-height:1;position:relative;z-index:0}
       .bnav-icon svg{width:24px;height:24px}
-      .bnav-label{font-size:14px;font-weight:600;letter-spacing:.02em;margin-top:4px}
+      .bnav-label{font-size:10px;font-weight:400;letter-spacing:.02em;margin-top:2px}
 
-      /* Main layout — iOS grouped inset padding */
-      main{padding:12px 16px}
+      /* Main layout — iOS 17 grouped inset padding */
+      main{padding:8px 16px}
 
-      /* Remove all card borders and shadows — background does the separating */
+      /* Remove all card borders and shadows — iOS grouped style */
       .card,.stat-card,.income-card,.bud-card,.scc,.table-wrap,.hist-hero-card{
         border:none !important;
-        box-shadow:none !important;
+        box-shadow:0 1px 0 rgba(0,0,0,0.05) !important;
         border-radius:12px !important;
       }
 
-      /* Inputs — iOS native feel: no border, filled background */
+      /* Inputs — iOS 17 filled style */
       .form-input,.form-sel,.search-input{
         background:rgba(120,120,128,0.08);
         border:none !important;
         border-radius:10px;
       }
-      input,select,textarea{font-size:16px !important}
-      .form-input,.form-sel,.search-input,.bud-input,.scc-input,.rev-sel{font-size:16px !important}
+      input,select,textarea{font-size:17px !important}
+      .form-input,.form-sel,.search-input,.bud-input,.scc-input,.rev-sel{font-size:17px !important}
 
-      /* Section titles — iOS gray caps style */
+      /* Section titles — iOS 17 footnote caps */
       .section-title{
-        font-size:1rem;font-weight:700;
-        text-transform:uppercase;letter-spacing:.05em;
-        color:rgba(60,60,67,0.6);
-        margin-bottom:12px;margin-top:8px;
+        font-size:13px;font-weight:600;
+        text-transform:uppercase;letter-spacing:.5px;
+        color:var(--ios-secondary-label);
+        margin-bottom:8px;margin-top:8px;
       }
 
-      /* Stats — 2 column, full width */
-      .stats-grid{grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
-      .stat-card{padding:24px}
-      .stat-label{font-size:1.05rem;letter-spacing:.04em}
-      .stat-value{font-size:2.8rem}
+      /* Stats — 2 column */
+      .stats-grid{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+      .stat-card{padding:16px}
+      .stat-label{font-size:13px;letter-spacing:.5px}
+      .stat-value{font-size:28px;font-weight:700}
 
       /* Income cards — horizontal scroll strip */
       .income-row{
@@ -541,13 +543,13 @@
         -webkit-overflow-scrolling:touch;
         scroll-snap-type:x mandatory;
         padding-bottom:4px;
-        margin-bottom:14px;
+        margin-bottom:12px;
       }
       .income-card{min-width:72vw;scroll-snap-align:start;flex-shrink:0}
 
-      /* Table rows — more breathing room for fingers */
-      td{padding:13px 14px}
-      th{padding:10px 14px}
+      /* Table rows */
+      td{padding:12px 14px;font-size:15px}
+      th{padding:10px 14px;font-size:12px}
 
       /* Budget cards */
       .budget-grid{grid-template-columns:1fr;gap:10px}
@@ -556,198 +558,189 @@
       main{touch-action:pan-y}
       .rev-wrap,.vert-chart,.hist-chart-scroll,.table-wrap{-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 
-      /* Toggles */
-      .toggle{width:40px;height:24px}
-      .toggle::after{width:16px;height:16px;top:4px;left:4px}
-      .toggle.on::after{transform:translateX(16px)}
+      /* Toggles — iOS 17 native size */
+      .toggle{width:51px;height:31px}
+      .toggle::after{width:27px;height:27px;top:2px;left:2px}
+      .toggle.on::after{transform:translateX(20px)}
 
       /* Toast above bottom nav */
-      .toast{bottom:calc(72px + env(safe-area-inset-bottom))}
+      .toast{bottom:calc(56px + env(safe-area-inset-bottom))}
 
       /* No selection on chrome */
       header,#bottom-nav,.stat-card,.income-card,.bud-card,.scc,.card-txn{user-select:none;-webkit-user-select:none}
 
-      /* ── iOS PWA: Transaction card list ──────────────── */
-      .txn-card-list{display:flex;flex-direction:column;gap:0;background:white;border-radius:12px;overflow:visible;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
-      @keyframes txnCardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-      .txn-card{display:flex;align-items:center;gap:16px;padding:16px 18px 16px 20px;background:white;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s,transform .1s cubic-bezier(0.34,1.56,0.64,1);animation:txnCardIn .22s var(--ease-out) calc(var(--i,0) * 30ms) both}
-      .txn-card:active{background:rgba(212,102,58,0.08);transform:scale(0.985)}
+      /* ── iOS 17: Transaction card list ──────────────── */
+      .txn-card-list{display:flex;flex-direction:column;gap:0;background:white;border-radius:12px;overflow:visible;flex-shrink:0;box-shadow:0 1px 0 rgba(0,0,0,0.05)}
+      @keyframes txnCardIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+      .txn-card{display:flex;align-items:center;gap:12px;padding:12px 16px;background:white;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity 0.1s;animation:txnCardIn .2s var(--ease-out) calc(var(--i,0) * 20ms) both}
+      .txn-card:active{opacity:0.7}
       .txn-card+.txn-card{border-top:0.5px solid rgba(60,60,67,0.08)}
-      /* First/last card gets matching border-radius */
       .txn-card:first-child{border-radius:12px 12px 0 0}
       .txn-card:last-child{border-radius:0 0 12px 12px}
       .txn-card:only-child{border-radius:12px}
       .txn-card.excluded{opacity:.4}
-      /* Owner accent: 3px left border for instant person identification */
-      .txn-card.txn-p1{border-left:3px solid var(--p1);padding-left:13px}
-      .txn-card.txn-p2{border-left:3px solid var(--p2);padding-left:13px}
-      .txn-card.txn-shared{border-left:3px solid var(--green);padding-left:13px}
-      .txn-card-emoji{font-size:1.8rem;width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:rgba(120,120,128,0.08);border-radius:14px;flex-shrink:0}
+      .txn-card.txn-p1{border-left:2px solid var(--ios-blue);padding-left:14px}
+      .txn-card.txn-p2{border-left:2px solid var(--p2);padding-left:14px}
+      .txn-card.txn-shared{border-left:2px solid var(--ios-green);padding-left:14px}
+      .txn-card-emoji{font-size:1.5rem;width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:rgba(120,120,128,0.06);border-radius:12px;flex-shrink:0}
       .txn-card-body{flex:1;min-width:0}
-      .txn-card-desc{font-size:1.18rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-      .txn-card-meta{font-size:.95rem;color:var(--text-3);margin-top:4px;display:flex;align-items:center;gap:7px}
+      .txn-card-desc{font-size:17px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .txn-card-meta{font-size:13px;color:var(--ios-secondary-label);margin-top:3px;display:flex;align-items:center;gap:6px}
       .txn-card-meta .owner-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-      .txn-card-amt{font-size:1.3rem;font-weight:800;text-align:right;flex-shrink:0;white-space:nowrap}
-      .txn-card-amt.inc{color:var(--color-earned)}
-      .txn-card-chevron{color:var(--text-3);font-size:.85rem;margin-left:2px;flex-shrink:0;opacity:.25}
-      /* Date group header — tighter spacing */
-      .txn-date-header{font-size:.92rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:rgba(60,60,67,0.5);padding:20px 4px 8px;background:transparent;flex-shrink:0}
+      .txn-card-amt{font-size:17px;font-weight:600;text-align:right;flex-shrink:0;white-space:nowrap}
+      .txn-card-amt.inc{color:var(--ios-green)}
+      .txn-card-chevron{color:var(--ios-tertiary-label);font-size:.75rem;margin-left:2px;flex-shrink:0;opacity:.3}
+      .txn-date-header{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--ios-secondary-label);padding:20px 4px 6px;background:transparent;flex-shrink:0}
       .txn-date-header:first-child{padding-top:4px}
 
       /* ── iOS PWA: Filters mobile ─────────────────────── */
-      .filters-bar-mobile{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;flex-shrink:0}
-      .filter-pill{padding:10px 20px;border-radius:24px;font-size:1rem;font-weight:600;border:1.5px solid var(--border);background:white;color:var(--text-2);white-space:nowrap;cursor:pointer;flex-shrink:0;transition:all .15s}
-      /* M3 filter chip active: primary-container bg + primary text (not filled primary) */
-      .filter-pill.active{border-color:var(--primary);background:var(--m3-primary-container);color:var(--primary)}
+      /* ── iOS 17: Horizontally scrollable pill row ──── */
+      .filters-bar-mobile{display:flex;gap:8px;margin-bottom:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;flex-shrink:0}
+      .filter-pill{padding:8px 16px;border-radius:12px;font-size:15px;font-weight:400;border:none;background:#E4E4EB;color:#3C3C43;white-space:nowrap;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+      .filter-pill:active{opacity:0.7}
+      /* Active pill: coral brand fill with white text */
+      .filter-pill.active{background:var(--ios-accent);color:white;font-weight:600}
 
-      /* ── iOS PWA: History month cards ─────────────────── */
-      .month-card-list{display:flex;flex-direction:column;gap:2px;background:var(--m3-surface-container);border-radius:12px;overflow:visible;flex-shrink:0}
-      .month-card{padding:13px 16px;background:white;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s,transform .1s cubic-bezier(0.34,1.56,0.64,1)}
-      .month-card:active{background:rgba(212,102,58,0.08);transform:scale(0.985)}
+      /* ── iOS 17: History month cards ─────────────────── */
+      .month-card-list{display:flex;flex-direction:column;gap:0;background:white;border-radius:12px;overflow:visible;flex-shrink:0;box-shadow:0 1px 0 rgba(0,0,0,0.05)}
+      .month-card{padding:12px 16px;background:white;cursor:pointer;-webkit-tap-highlight-color:transparent}
+      .month-card:active{opacity:0.7}
       .month-card+.month-card{border-top:0.5px solid rgba(60,60,67,0.08)}
       .month-card-top{display:flex;justify-content:space-between;align-items:baseline}
-      .month-card-title{font-size:1.15rem;font-weight:700;color:var(--text)}
-      .month-card-title .cur-badge{font-size:.65rem;background:var(--primary-light);color:var(--primary);padding:2px 7px;border-radius:10px;font-weight:600;margin-left:6px;vertical-align:middle}
-      .month-card-amt{font-size:1.35rem;font-weight:800;color:var(--text)}
-      .month-card-row2{display:flex;align-items:center;gap:10px;margin-top:6px;font-size:.98rem;color:var(--text-3)}
-      .month-card-detail{padding:10px 16px 16px;border-top:1px solid rgba(60,60,67,0.08);background:rgba(120,120,128,0.03)}
-      .month-card-detail-row{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;font-size:.82rem}
-      .month-card-expand{font-size:.75rem;color:var(--primary);font-weight:600;margin-top:6px;display:flex;align-items:center;gap:3px}
+      .month-card-title{font-size:17px;font-weight:600;color:var(--text)}
+      .month-card-title .cur-badge{font-size:12px;background:rgba(0,122,255,0.1);color:var(--ios-blue);padding:2px 7px;border-radius:10px;font-weight:600;margin-left:6px;vertical-align:middle}
+      .month-card-amt{font-size:20px;font-weight:700;color:var(--text)}
+      .month-card-row2{display:flex;align-items:center;gap:10px;margin-top:4px;font-size:13px;color:var(--ios-secondary-label)}
+      .month-card-detail{padding:10px 16px 16px;border-top:0.5px solid rgba(60,60,67,0.08);background:rgba(120,120,128,0.02)}
+      .month-card-detail-row{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;font-size:13px}
+      .month-card-expand{font-size:13px;color:var(--ios-blue);font-weight:600;margin-top:6px;display:flex;align-items:center;gap:3px}
 
-      /* ── iOS PWA: Heatmap mobile (vertical category list) ── */
-      .hm-mobile-list{display:flex;flex-direction:column;gap:2px;background:white;border-radius:12px;overflow:visible;flex-shrink:0}
-      .hm-mobile-row{display:flex;align-items:center;gap:12px;padding:13px 16px;background:white}
-      .hm-mobile-row+.hm-mobile-row{border-top:1px solid rgba(60,60,67,0.08)}
-      .hm-mobile-cat{font-size:1.12rem;font-weight:600;display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+      /* ── iOS 17: Heatmap mobile (vertical category list) ── */
+      .hm-mobile-list{display:flex;flex-direction:column;gap:0;background:white;border-radius:12px;overflow:visible;flex-shrink:0;box-shadow:0 1px 0 rgba(0,0,0,0.05)}
+      .hm-mobile-row{display:flex;align-items:center;gap:12px;padding:12px 16px;background:white}
+      .hm-mobile-row+.hm-mobile-row{border-top:0.5px solid rgba(60,60,67,0.08)}
+      .hm-mobile-cat{font-size:17px;font-weight:600;display:flex;align-items:center;gap:10px;flex:1;min-width:0}
       .hm-mobile-vals{display:flex;align-items:center;gap:12px;flex-shrink:0}
-      .hm-mobile-amt{font-size:1.12rem;font-weight:700;color:var(--text)}
-      .hm-mobile-trend{font-size:.95rem;font-weight:700}
+      .hm-mobile-amt{font-size:17px;font-weight:600;color:var(--text)}
+      .hm-mobile-trend{font-size:15px;font-weight:600}
 
-      /* ── iOS PWA: Section styling ────────────────────── */
-      .ios-section-header{font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:rgba(60,60,67,0.6);padding:20px 16px 8px}
+      /* ── iOS 17: Section styling ────────────────────── */
+      .ios-section-header{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--ios-secondary-label);padding:20px 16px 6px}
       .ios-grouped{background:white;border-radius:12px;overflow:hidden}
 
-      /* ── iOS PWA: Overview carousel ──────────────────── */
+      /* ── iOS 17: Overview carousel ──────────────────── */
       .ov-carousel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;gap:0;padding:0;margin:0 -12px;flex:1}
       .ov-carousel::-webkit-scrollbar{display:none}
-      /* Peek effect: 95% width shows sliver of next slide, hinting at swipe */
       .ov-slide{flex:0 0 95%;width:95%;scroll-snap-align:start;padding:0 6px 0 8px;box-sizing:border-box;display:flex}
       .ov-slide:last-child{flex:0 0 100%;width:100%;padding:0 8px}
-      /* Clean white card with subtle warm shadow for depth over gray background */
-      .ov-slide-inner{background:#ffffff;border-radius:20px;padding:0;display:flex;flex-direction:column;overflow:hidden;position:relative;flex:1;box-shadow:0 2px 20px rgba(212,102,58,0.06),0 0 0 0.5px rgba(0,0,0,0.05)}
-      /* Combined slide: warm brand tint to feel like the authoritative summary */
-      .ic-combined .ov-slide-inner{background:linear-gradient(160deg,#fff 55%,rgba(212,102,58,0.04) 100%)}
-      /* M3 tonal surfaces for person slides — p1 blue tint, p2 pink tint */
-      /* Meta-style identity stripe: 2px solid color along top of card */
-      .ic-p1 .ov-slide-inner{background:linear-gradient(160deg,#fff 55%,rgba(37,99,235,0.04) 100%);border-top:2.5px solid var(--p1)}
-      .ic-p2 .ov-slide-inner{background:linear-gradient(160deg,#fff 55%,rgba(219,39,119,0.04) 100%);border-top:2.5px solid var(--p2)}
-      .ic-combined .ov-slide-inner{border-top:2.5px solid var(--primary)}
+      /* iOS 17 card: white, 12px radius, subtle shadow */
+      .ov-slide-inner{background:#ffffff;border-radius:12px;padding:0;display:flex;flex-direction:column;overflow:hidden;position:relative;flex:1;box-shadow:0 1px 0 rgba(0,0,0,0.05)}
+      .ic-combined .ov-slide-inner{background:#ffffff}
+      .ic-p1 .ov-slide-inner{background:#ffffff;border-top:2px solid var(--ios-blue)}
+      .ic-p2 .ov-slide-inner{background:#ffffff;border-top:2px solid var(--p2)}
+      .ic-combined .ov-slide-inner{border-top:2px solid var(--ios-accent)}
       .ov-slide-inner.income-card{padding:0}
-      /* Named slide tabs — pill/chip style, no underline */
-      .ov-tabs{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:7px 8px 7px;scrollbar-width:none;background:transparent;flex-shrink:0}
+      /* Slide tabs — iOS 17 segmented pill style */
+      .ov-tabs{display:flex;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:8px 8px;scrollbar-width:none;background:transparent;flex-shrink:0}
       .ov-tabs::-webkit-scrollbar{display:none}
-      .ov-tab{flex-shrink:0;padding:9px 20px;font-size:16px;font-weight:600;color:var(--ios-secondary);border-radius:22px;background:transparent;transition:color .18s,background .18s;cursor:pointer;-webkit-tap-highlight-color:transparent;white-space:nowrap;min-height:40px;display:flex;align-items:center}
-      .ov-tab.active{color:var(--primary);background:var(--m3-primary-container)}
+      .ov-tab{flex-shrink:0;padding:8px 16px;font-size:13px;font-weight:600;color:var(--ios-secondary-label);border-radius:12px;background:#E4E4EB;transition:opacity 0.1s;cursor:pointer;-webkit-tap-highlight-color:transparent;white-space:nowrap;min-height:32px;display:flex;align-items:center;margin-right:6px}
+      .ov-tab.active{color:white;background:var(--ios-accent)}
 
-      /* ── iOS PWA: 2x2 income card ────────────────────── */
+      /* ── iOS 17: 2x2 income card ────────────────────── */
       .ov-person-card{display:flex;flex-direction:column;flex:1;padding:0}
-      /* Compact header — saves vertical real estate for the data grid */
-      .ov-person-card .income-title{padding:16px 18px 6px;font-size:24px;font-weight:800;margin-bottom:0;letter-spacing:-.03em;text-transform:none;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .ov-person-card .income-title{padding:14px 16px 6px;font-size:22px;font-weight:700;margin-bottom:0;letter-spacing:-.02em;text-transform:none;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .ov-card-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;flex:1}
-      /* Tighter cell padding — 36px number + label + chip all need room */
-      .ov-card-cell{display:flex;flex-direction:column;justify-content:flex-start;padding:14px 16px;position:relative;overflow:hidden}
-      .ov-card-cell:nth-child(1){border-right:0.5px solid rgba(60,60,67,0.1);border-bottom:0.5px solid rgba(60,60,67,0.1)}
-      .ov-card-cell:nth-child(2){border-bottom:0.5px solid rgba(60,60,67,0.1)}
-      .ov-card-cell:nth-child(3){border-right:0.5px solid rgba(60,60,67,0.1)}
+      .ov-card-cell{display:flex;flex-direction:column;justify-content:flex-start;padding:12px 14px;position:relative;overflow:hidden}
+      .ov-card-cell:nth-child(1){border-right:0.5px solid var(--ios-separator);border-bottom:0.5px solid var(--ios-separator)}
+      .ov-card-cell:nth-child(2){border-bottom:0.5px solid var(--ios-separator)}
+      .ov-card-cell:nth-child(3){border-right:0.5px solid var(--ios-separator)}
 
-      /* Meta: category labels bold, values heavy (Instagram stats style) */
-      .ov-cell-label{font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ios-secondary);margin-bottom:6px}
-      .ov-cell-value{font-size:42px;font-weight:800;line-height:1;letter-spacing:-0.03em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-variant-numeric:tabular-nums}
-      .ov-cell-sub{font-size:14px;color:var(--text-3);margin-top:5px;font-weight:400}
+      /* iOS 17 typography for cells */
+      .ov-cell-label{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--ios-secondary-label);margin-bottom:4px}
+      .ov-cell-value{font-size:28px;font-weight:700;line-height:1;letter-spacing:-0.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-variant-numeric:tabular-nums}
+      .ov-cell-sub{font-size:13px;color:var(--ios-secondary-label);margin-top:4px;font-weight:400}
 
-      /* Earned vs spent proportional bar — Apple capsule style */
+      /* Earned vs spent bar — iOS 17 thin style */
       .ov-ep-bar-wrap{margin:4px 12px 0;display:flex;flex-direction:column;gap:4px}
-      .ov-ep-bar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:rgba(255,59,48,0.18)}
-      .ov-ep-bar-earn{background:var(--ios-green);transition:width .6s cubic-bezier(0.34,1.56,0.64,1)}
+      .ov-ep-bar{display:flex;height:6px;border-radius:3px;overflow:hidden;background:#E4E4E4}
+      .ov-ep-bar-earn{background:var(--ios-green);transition:width .25s ease}
       .ov-ep-bar-spend{display:none}
-      .ov-ep-bar-labels{display:flex;justify-content:space-between;font-size:16px;font-weight:700;padding:0 1px;font-variant-numeric:tabular-nums}
+      .ov-ep-bar-labels{display:flex;justify-content:space-between;font-size:13px;font-weight:600;padding:0 1px;font-variant-numeric:tabular-nums}
 
-      /* Ring chart — fills cell vertically, heavy numeral center */
+      /* Ring chart — iOS 17 thinner stroke */
       .ov-ring{position:relative;width:calc(100% - 8px);aspect-ratio:1;margin:auto}
       .ov-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
-      .ov-ring-bg{fill:none;stroke:rgba(0,0,0,0.07);stroke-width:8}
-      /* M3 emphasized decelerate easing for ring animation */
-      .ov-ring-fill{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .6s cubic-bezier(0.05,0.7,0.1,1.0)}
+      .ov-ring-bg{fill:none;stroke:rgba(0,0,0,0.06);stroke-width:8}
+      .ov-ring-fill{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .25s ease}
       .ov-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-      .ov-ring-pct{font-size:3.8rem;font-weight:800;line-height:1;letter-spacing:-0.03em;font-variant-numeric:tabular-nums}
-      .ov-ring-lbl{font-size:15px;font-weight:700;color:var(--ios-secondary);text-transform:uppercase;letter-spacing:.07em;margin-top:4px}
+      .ov-ring-pct{font-size:28px;font-weight:700;line-height:1;letter-spacing:-0.02em;font-variant-numeric:tabular-nums}
+      .ov-ring-lbl{font-size:12px;font-weight:600;color:var(--ios-secondary-label);text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
 
-      /* Cash flow chip in SAVED cell */
-      .ov-cashflow-chip{display:inline-flex;align-items:center;gap:5px;margin-top:10px;padding:6px 14px;border-radius:22px;font-size:16px;font-weight:700}
+      /* Cash flow chip */
+      .ov-cashflow-chip{display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:5px 12px;border-radius:10px;font-size:13px;font-weight:600}
 
-      /* Meta Insights-style breakdown rows */
+      /* iOS 17 breakdown rows */
       .ov-breakdown{margin-top:4px}
-      .ov-breakdown-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;position:relative}
+      .ov-breakdown-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:13px;position:relative}
       .ov-breakdown-row+.ov-breakdown-row{border-top:0.5px solid rgba(0,0,0,.06)}
-      .ov-breakdown-label{color:var(--ios-secondary);font-weight:600;letter-spacing:.01em;display:flex;align-items:center;gap:7px;font-size:15px}
-      .ov-breakdown-label .ov-dot{width:8px;height:8px;border-radius:3px;flex-shrink:0}
-      .ov-breakdown-value{font-weight:700;font-size:16px}
+      .ov-breakdown-label{color:var(--ios-secondary-label);font-weight:600;display:flex;align-items:center;gap:7px;font-size:15px}
+      .ov-breakdown-label .ov-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+      .ov-breakdown-value{font-weight:600;font-size:15px}
 
-      /* Slide 4 & 5: scrollable content within fixed-height card */
-      .ov-slide-title{font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ios-secondary);padding:14px 18px 10px;border-bottom:0.5px solid var(--ios-separator);flex-shrink:0}
+      /* Slide scrollable content */
+      .ov-slide-title{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--ios-secondary-label);padding:12px 16px 8px;border-bottom:0.5px solid var(--ios-separator);flex-shrink:0}
       .ov-slide-inner.ov-scrollable{overflow-y:auto;-webkit-overflow-scrolling:touch}
       .ov-slide-inner.ov-scrollable .cat-row,.ov-slide-inner.ov-scrollable .merchant-row{padding-left:14px;padding-right:14px}
 
-      /* ── iOS PWA: Settled history mobile ──────────────── */
-      .settled-card-list{display:flex;flex-direction:column;gap:2px;background:white;border-radius:12px;overflow:visible;flex-shrink:0}
-      .settled-card{display:flex;align-items:center;gap:12px;padding:13px 16px;background:white}
-      .settled-card+.settled-card{border-top:1px solid rgba(60,60,67,0.08)}
+      /* ── iOS 17: Settled history mobile ──────────────── */
+      .settled-card-list{display:flex;flex-direction:column;gap:0;background:white;border-radius:12px;overflow:visible;flex-shrink:0;box-shadow:0 1px 0 rgba(0,0,0,0.05)}
+      .settled-card{display:flex;align-items:center;gap:12px;padding:12px 16px;background:white}
+      .settled-card+.settled-card{border-top:0.5px solid rgba(60,60,67,0.08)}
 
-      /* ── iOS PWA: Income cards mobile ────────────────── */
-      .income-row-mobile{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+      /* ── iOS 17: Income cards mobile ────────────────── */
+      .income-row-mobile{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
       .income-row-mobile .income-card{min-width:unset;flex-shrink:unset;scroll-snap-align:unset}
       .income-card-collapse .income-detail{display:none}
       .income-card-collapse.expanded .income-detail{display:block}
-      .income-toggle-btn{font-size:.75rem;color:var(--primary);font-weight:600;cursor:pointer;border:none;background:none;padding:6px 0;display:flex;align-items:center;gap:3px;-webkit-tap-highlight-color:transparent}
+      .income-toggle-btn{font-size:13px;color:var(--ios-blue);font-weight:600;cursor:pointer;border:none;background:none;padding:6px 0;display:flex;align-items:center;gap:3px;-webkit-tap-highlight-color:transparent}
 
-      /* ── iOS PWA: Upload section mobile ──────────────── */
-      .upload-grid-mobile{display:flex;gap:8px;margin-bottom:14px}
-      .upload-zone-mini{flex:1;padding:14px 10px;border:2px dashed var(--border);border-radius:12px;text-align:center;cursor:pointer;background:white;transition:all .2s}
-      .upload-zone-mini:active{transform:scale(0.96);opacity:.7}
+      /* ── iOS 17: Upload section mobile ──────────────── */
+      .upload-grid-mobile{display:flex;gap:8px;margin-bottom:12px}
+      .upload-zone-mini{flex:1;padding:14px 10px;border:0.5px dashed var(--ios-separator);border-radius:12px;text-align:center;cursor:pointer;background:white;-webkit-tap-highlight-color:transparent}
+      .upload-zone-mini:active{opacity:0.7}
 
-      /* ── iOS PWA: Larger text for iframe rendering ───── */
-      /* cat-name: wider column + ellipsis so "Entertainment" doesn't wrap */
-      .cat-name{font-size:1.1rem;width:125px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-      .cat-amt{font-size:1.12rem;width:85px;font-weight:700}
-      .cat-track{height:12px;border-radius:6px}
-      .merchant-name{font-size:1.12rem}
-      .merchant-amt{font-size:1.2rem;font-weight:800}
-      .merchant-rank{font-size:.95rem}
-      .section-title{font-size:1rem}
-      .month-card-title{font-size:1.2rem}
-      .month-card-amt{font-size:1.45rem}
-      .hm-mobile-cat{font-size:1.12rem}
-      .hm-mobile-amt{font-size:1.12rem}
-      .split-big{font-size:4.2rem}
-      .split-lbl{font-size:1.35rem}
-      .filter-sel,.search-input{font-size:18px !important}
+      /* ── iOS 17: Text size overrides for mobile ───── */
+      .cat-name{font-size:15px;width:125px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .cat-amt{font-size:15px;width:85px;font-weight:600}
+      .cat-track{height:6px;border-radius:3px}
+      .merchant-name{font-size:15px}
+      .merchant-amt{font-size:17px;font-weight:600}
+      .merchant-rank{font-size:12px}
+      .section-title{font-size:13px}
+      .month-card-title{font-size:17px}
+      .month-card-amt{font-size:20px}
+      .hm-mobile-cat{font-size:17px}
+      .hm-mobile-amt{font-size:17px}
+      .split-big{font-size:34px;font-weight:700;letter-spacing:-0.4px}
+      .split-lbl{font-size:17px}
+      .filter-sel,.search-input{font-size:17px !important}
 
-      /* ── iOS PWA: Edit modal cat grid ────────────────── */
+      /* ── iOS 17: Edit modal cat grid ────────────────── */
       .txe-cat-grid{grid-template-columns:repeat(4,1fr) !important;gap:6px !important}
       .txe-cat-grid .card-cat-btn{padding:8px 2px}
-      .txe-cat-grid .card-cat-btn span{font-size:.68rem}
+      .txe-cat-grid .card-cat-btn span{font-size:11px}
 
-      /* ── iOS PWA: Accessible focus ring ──────────────── */
-      *:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:4px}
+      /* ── iOS 17: Accessible focus ring ──────────────── */
+      *:focus-visible{outline:2px solid var(--ios-blue);outline-offset:2px;border-radius:4px}
 
-      /* ── iOS PWA: Tab switch entrance ───────────────── */
-      @keyframes mobileTabIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-      #main>*{animation:mobileTabIn .2s cubic-bezier(0.25,0.46,0.45,0.94) both}
+      /* ── iOS 17: Tab switch entrance ───────────────── */
+      @keyframes mobileTabIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+      #main>*{animation:mobileTabIn .2s ease both}
     }
 
     /* Tab content fade-in */
-    @keyframes tabFadeIn{from{opacity:0;transform:translateY(8px) scale(0.99)}to{opacity:1;transform:translateY(0) scale(1)}}
-    #main>*{animation:tabFadeIn .24s cubic-bezier(0.25,0.46,0.45,0.94)}
+    @keyframes tabFadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+    #main>*{animation:tabFadeIn .2s ease}
   </style>
 </head>
 <body>
