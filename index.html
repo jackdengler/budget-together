@@ -406,15 +406,20 @@
     /* ── iOS / Mobile optimizations ─────────────────────────── */
     #bottom-nav{display:none}
     @media(max-width:700px),(pointer:coarse){
-      /* iOS system background + HIG system colors */
+      /* iOS system + M3 tonal palette derived from brand orange #D4663A */
       :root{
         --bg:#F2F2F7;--surface:#ffffff;--border:rgba(60,60,67,0.12);--radius:14px;--radius-lg:20px;
-        /* Apple system colors (UIColor semantic) */
+        /* Apple system colors */
         --ios-green:#30D158;--ios-red:#FF3B30;--ios-amber:#FF9F0A;
-        --ios-blue:#007AFF;--ios-indigo:#5856D6;--ios-purple:#AF52DE;
         --ios-label:rgba(0,0,0,1);--ios-secondary:rgba(60,60,67,0.6);
         --ios-tertiary:rgba(60,60,67,0.3);--ios-separator:rgba(60,60,67,0.29);
-        --ios-fill:rgba(120,120,128,0.12);--ios-fill2:rgba(120,120,128,0.08);
+        --ios-fill:rgba(120,120,128,0.12);
+        /* M3 tonal surfaces derived from primary #D4663A */
+        --m3-surface-container:#FFF8F5;     /* card background with warm tint */
+        --m3-surface-container-high:#FFEEE5;
+        --m3-primary-container:#FFDBCB;     /* active/selected state bg */
+        --m3-on-primary-container:#3A1200;  /* text on primary container */
+        --m3-state-layer:rgba(212,102,58,0.12); /* pressed state */
       }
       html{font-size:19px;-webkit-text-size-adjust:100%;height:100%;overflow:hidden}
       body{background:#F2F2F7;overscroll-behavior-y:none;font-size:19px;line-height:1.5;height:100%;overflow:hidden}
@@ -462,13 +467,17 @@
         -webkit-tap-highlight-color:transparent;
         min-height:44px;
       }
+      /* M3 navigation bar: indicator pill behind active icon */
+      #bottom-nav button{position:relative}
       #bottom-nav button.active{color:var(--primary)}
-      #bottom-nav button.active .bnav-icon{transform:scale(1.08)}
-      #bottom-nav button.active .bnav-icon::after{content:'';position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--primary)}
+      #bottom-nav button.active .bnav-icon{transform:scale(1.0)}
+      #bottom-nav button.active .bnav-icon::before{content:'';position:absolute;inset:-6px -20px;border-radius:16px;background:var(--m3-primary-container);z-index:-1;transition:opacity .2s}
+      #bottom-nav button:not(.active) .bnav-icon::before{content:'';position:absolute;inset:-6px -20px;border-radius:16px;background:var(--m3-state-layer);z-index:-1;opacity:0;transition:opacity .15s}
+      #bottom-nav button:active .bnav-icon::before{opacity:1}
       #bottom-nav button.active .bnav-label{font-weight:700;color:var(--primary)}
-      .bnav-icon{line-height:1;transition:transform .2s cubic-bezier(0.34,1.56,0.64,1);position:relative}
-      .bnav-icon svg{width:25px;height:25px}
-      .bnav-label{font-size:10px;font-weight:500;letter-spacing:.02em;margin-top:3px}
+      .bnav-icon{line-height:1;position:relative;z-index:0}
+      .bnav-icon svg{width:24px;height:24px}
+      .bnav-label{font-size:12px;font-weight:500;letter-spacing:.02em;margin-top:4px}
 
       /* Main layout — iOS grouped inset padding */
       main{padding:12px 16px}
@@ -591,7 +600,8 @@
       /* Peek effect: 95% width shows sliver of next slide, hinting at swipe */
       .ov-slide{flex:0 0 95%;width:95%;scroll-snap-align:start;padding:0 6px 0 8px;box-sizing:border-box;display:flex}
       .ov-slide:last-child{flex:0 0 100%;width:100%;padding:0 8px}
-      .ov-slide-inner{background:white;border-radius:20px;padding:0;display:flex;flex-direction:column;overflow:hidden;position:relative;flex:1;box-shadow:0 2px 8px rgba(0,0,0,0.07),0 0 0 0.5px rgba(0,0,0,0.04)}
+      /* M3 tonal surface: warm-tinted card, tonal elevation (color not shadow) */
+      .ov-slide-inner{background:var(--m3-surface-container);border-radius:20px;padding:0;display:flex;flex-direction:column;overflow:hidden;position:relative;flex:1}
       .ov-slide-inner.income-card{padding:0}
       /* Named slide tabs replace meaningless dots */
       .ov-tabs{display:flex;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:6px 8px 2px;scrollbar-width:none;border-bottom:0.5px solid var(--ios-separator)}
@@ -608,10 +618,10 @@
       .ov-card-cell:nth-child(2){border-bottom:0.5px solid var(--ios-separator)}
       .ov-card-cell:nth-child(3){border-right:0.5px solid var(--ios-separator)}
 
-      /* Cell labels */
-      .ov-cell-label{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:4px}
-      .ov-cell-value{font-size:36px;font-weight:700;line-height:1;letter-spacing:-0.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-      .ov-cell-sub{font-size:16px;color:var(--text-3);margin-top:6px;font-weight:500}
+      /* M3 type scale: Label Large for category labels, Display Small for values */
+      .ov-cell-label{font-size:14px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;color:var(--ios-secondary);margin-bottom:4px}
+      .ov-cell-value{font-size:36px;font-weight:700;line-height:1;letter-spacing:-0.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .ov-cell-sub{font-size:14px;color:var(--text-3);margin-top:6px;font-weight:400}
 
       /* Earned vs spent proportional bar — Apple capsule style */
       .ov-ep-bar-wrap{margin:4px 12px 0;display:flex;flex-direction:column;gap:4px}
@@ -632,12 +642,12 @@
       /* Cash flow chip in SAVED cell */
       .ov-cashflow-chip{display:inline-flex;align-items:center;gap:4px;margin-top:8px;padding:4px 10px;border-radius:20px;font-size:14px;font-weight:600}
 
-      /* Breakdown lines in bottom cells */
+      /* M3 Body Medium for breakdown rows */
       .ov-breakdown{margin-top:8px}
-      .ov-breakdown-row{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;font-size:16px}
-      .ov-breakdown-row+.ov-breakdown-row{border-top:1px solid rgba(0,0,0,.05)}
-      .ov-breakdown-label{color:var(--text-3);font-weight:400}
-      .ov-breakdown-value{font-weight:700;font-size:16px}
+      .ov-breakdown-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:15px}
+      .ov-breakdown-row+.ov-breakdown-row{border-top:0.5px solid rgba(0,0,0,.06)}
+      .ov-breakdown-label{color:var(--ios-secondary);font-weight:400;letter-spacing:.01em}
+      .ov-breakdown-value{font-weight:600;font-size:15px}
 
       /* ── iOS PWA: Settled history mobile ──────────────── */
       .settled-card-list{display:flex;flex-direction:column;gap:2px;background:white;border-radius:12px;overflow:hidden}
@@ -1633,7 +1643,7 @@ function renderOverview() {
   // ── Range toggle row ────────────────────────────────────────────────────────
   const shortMo = new Date(S.currentMonth + '-02').toLocaleDateString('en-US', {month:'short'});
   const pill = (label, active, fn) =>
-    `<button onclick="${fn}" style="height:38px;padding:0 18px;border-radius:19px;font-size:16px;font-weight:600;cursor:pointer;border:none;background:${active?'var(--primary)':'rgba(120,120,128,0.14)'};color:${active?'white':'var(--text-2)'};white-space:nowrap;-webkit-tap-highlight-color:transparent;transition:transform .12s,opacity .12s">${label}</button>`;
+    `<button onclick="${fn}" style="height:38px;padding:0 18px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;border:${active?'none':'1.5px solid rgba(120,120,128,0.3)'};background:${active?'var(--primary)':'transparent'};color:${active?'white':'var(--text-2)'};white-space:nowrap;-webkit-tap-highlight-color:transparent;transition:all .15s">${active?'✓ ':''}${label}</button>`;
   const r = S.overviewRange;
 
   // In multi-month mode, contextual nav arrows live in the top-right of this row.
