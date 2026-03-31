@@ -563,21 +563,30 @@
       header,#bottom-nav,.stat-card,.income-card,.bud-card,.scc,.card-txn{user-select:none;-webkit-user-select:none}
 
       /* ── iOS PWA: Transaction card list ──────────────── */
-      .txn-card-list{display:flex;flex-direction:column;gap:2px;background:white;border-radius:12px;overflow:visible;flex-shrink:0}
-      .txn-card{display:flex;align-items:center;gap:12px;padding:13px 16px;background:white;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .1s}
-      .txn-card:active{background:rgba(0,0,0,.04)}
-      .txn-card+.txn-card{border-top:1px solid rgba(60,60,67,0.08)}
+      .txn-card-list{display:flex;flex-direction:column;gap:0;background:white;border-radius:12px;overflow:visible;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+      .txn-card{display:flex;align-items:center;gap:12px;padding:12px 14px 12px 16px;background:white;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s,transform .1s cubic-bezier(0.34,1.56,0.64,1)}
+      .txn-card:active{background:rgba(0,0,0,.05);transform:scale(0.985)}
+      .txn-card+.txn-card{border-top:0.5px solid rgba(60,60,67,0.08)}
+      /* First/last card gets matching border-radius */
+      .txn-card:first-child{border-radius:12px 12px 0 0}
+      .txn-card:last-child{border-radius:0 0 12px 12px}
+      .txn-card:only-child{border-radius:12px}
       .txn-card.excluded{opacity:.4}
-      .txn-card-emoji{font-size:1.5rem;width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:rgba(120,120,128,0.08);border-radius:10px;flex-shrink:0}
+      /* Owner accent: 3px left border for instant person identification */
+      .txn-card.txn-p1{border-left:3px solid var(--p1);padding-left:13px}
+      .txn-card.txn-p2{border-left:3px solid var(--p2);padding-left:13px}
+      .txn-card.txn-shared{border-left:3px solid var(--green);padding-left:13px}
+      .txn-card-emoji{font-size:1.4rem;width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:rgba(120,120,128,0.08);border-radius:9px;flex-shrink:0}
       .txn-card-body{flex:1;min-width:0}
-      .txn-card-desc{font-size:1rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-      .txn-card-meta{font-size:.82rem;color:var(--text-3);margin-top:3px;display:flex;align-items:center;gap:6px}
-      .txn-card-meta .owner-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-      .txn-card-amt{font-size:1.05rem;font-weight:700;text-align:right;flex-shrink:0;white-space:nowrap}
-      .txn-card-amt.inc{color:var(--green)}
-      .txn-card-chevron{color:var(--text-3);font-size:.9rem;margin-left:4px;flex-shrink:0;opacity:.3}
-      .txn-date-header{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:rgba(60,60,67,0.6);padding:20px 16px 6px;background:transparent}
-      .txn-date-header:first-child{padding-top:8px}
+      .txn-card-desc{font-size:.96rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .txn-card-meta{font-size:.75rem;color:var(--text-3);margin-top:2px;display:flex;align-items:center;gap:5px}
+      .txn-card-meta .owner-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+      .txn-card-amt{font-size:1rem;font-weight:700;text-align:right;flex-shrink:0;white-space:nowrap}
+      .txn-card-amt.inc{color:var(--color-earned)}
+      .txn-card-chevron{color:var(--text-3);font-size:.85rem;margin-left:2px;flex-shrink:0;opacity:.25}
+      /* Date group header — tighter spacing */
+      .txn-date-header{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:rgba(60,60,67,0.5);padding:16px 4px 5px;background:transparent;flex-shrink:0}
+      .txn-date-header:first-child{padding-top:4px}
 
       /* ── iOS PWA: Filters mobile ─────────────────────── */
       .filters-bar-mobile{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;flex-shrink:0}
@@ -586,9 +595,9 @@
 
       /* ── iOS PWA: History month cards ─────────────────── */
       .month-card-list{display:flex;flex-direction:column;gap:2px;background:white;border-radius:12px;overflow:visible;flex-shrink:0}
-      .month-card{padding:14px 16px;background:white;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .1s}
-      .month-card:active{background:rgba(0,0,0,.04)}
-      .month-card+.month-card{border-top:1px solid rgba(60,60,67,0.08)}
+      .month-card{padding:13px 16px;background:white;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s,transform .1s cubic-bezier(0.34,1.56,0.64,1)}
+      .month-card:active{background:rgba(0,0,0,.05);transform:scale(0.985)}
+      .month-card+.month-card{border-top:0.5px solid rgba(60,60,67,0.08)}
       .month-card-top{display:flex;justify-content:space-between;align-items:baseline}
       .month-card-title{font-size:.92rem;font-weight:700;color:var(--text)}
       .month-card-title .cur-badge{font-size:.65rem;background:var(--primary-light);color:var(--primary);padding:2px 7px;border-radius:10px;font-weight:600;margin-left:6px;vertical-align:middle}
@@ -617,14 +626,14 @@
       /* Peek effect: 95% width shows sliver of next slide, hinting at swipe */
       .ov-slide{flex:0 0 95%;width:95%;scroll-snap-align:start;padding:0 6px 0 8px;box-sizing:border-box;display:flex}
       .ov-slide:last-child{flex:0 0 100%;width:100%;padding:0 8px}
-      /* Meta: clean white card with defined border */
-      .ov-slide-inner{background:#ffffff;border-radius:20px;padding:0;display:flex;flex-direction:column;overflow:hidden;position:relative;flex:1;border:1px solid rgba(0,0,0,0.08)}
+      /* Clean white card with subtle shadow for depth over gray background */
+      .ov-slide-inner{background:#ffffff;border-radius:20px;padding:0;display:flex;flex-direction:column;overflow:hidden;position:relative;flex:1;box-shadow:0 2px 16px rgba(0,0,0,0.07),0 0 0 0.5px rgba(0,0,0,0.06)}
       .ov-slide-inner.income-card{padding:0}
-      /* Named slide tabs replace meaningless dots */
-      .ov-tabs{display:flex;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:6px 8px 2px;scrollbar-width:none;border-bottom:0.5px solid var(--ios-separator)}
+      /* Named slide tabs — pill/chip style, no underline */
+      .ov-tabs{display:flex;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:6px 8px 6px;scrollbar-width:none;background:transparent;flex-shrink:0}
       .ov-tabs::-webkit-scrollbar{display:none}
-      .ov-tab{flex-shrink:0;padding:5px 14px;font-size:13px;font-weight:600;color:var(--ios-secondary);border-bottom:2.5px solid transparent;margin-bottom:-0.5px;transition:color .18s,border-color .18s;cursor:pointer;-webkit-tap-highlight-color:transparent;white-space:nowrap}
-      .ov-tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+      .ov-tab{flex-shrink:0;padding:5px 14px;font-size:12px;font-weight:600;color:var(--ios-secondary);border-radius:20px;background:transparent;transition:color .18s,background .18s;cursor:pointer;-webkit-tap-highlight-color:transparent;white-space:nowrap;min-height:30px;display:flex;align-items:center}
+      .ov-tab.active{color:var(--primary);background:var(--m3-primary-container)}
 
       /* ── iOS PWA: 2x2 income card ────────────────────── */
       .ov-person-card{display:flex;flex-direction:column;flex:1;padding:0}
@@ -712,6 +721,13 @@
       .txe-cat-grid{grid-template-columns:repeat(4,1fr) !important;gap:6px !important}
       .txe-cat-grid .card-cat-btn{padding:8px 2px}
       .txe-cat-grid .card-cat-btn span{font-size:.58rem}
+
+      /* ── iOS PWA: Accessible focus ring ──────────────── */
+      *:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:4px}
+
+      /* ── iOS PWA: Tab switch entrance ───────────────── */
+      @keyframes mobileTabIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+      #main>*{animation:mobileTabIn .2s cubic-bezier(0.25,0.46,0.45,0.94) both}
     }
 
     /* Tab content fade-in */
@@ -1966,7 +1982,8 @@ function renderTxns() {
         const ownerColor = t.shared ? 'var(--green)' : (t.person==='p1' ? 'var(--p1)' : 'var(--p2)');
         const ownerLabel = t.shared ? 'Shared' : (t.person==='p1' ? esc(S.settings.person1) : esc(S.settings.person2));
         const isInc = t.amount < 0;
-        return `<div class="txn-card${t.excluded?' excluded':''}" onclick="showTxnEditModal('${t.id}')">
+        const _ownerCls = t.shared ? 'txn-shared' : (t.person==='p1' ? 'txn-p1' : 'txn-p2');
+        return `<div class="txn-card ${_ownerCls}${t.excluded?' excluded':''}" onclick="showTxnEditModal('${t.id}')">
           <div class="txn-card-emoji">${cat.emoji}</div>
           <div class="txn-card-body">
             <div class="txn-card-desc">${esc(t.description)}</div>
@@ -2310,7 +2327,7 @@ function renderHistory() {
       <div class="hist-bar-outer">
         ${incH !== null ? `<div class="hist-inc-dot" style="bottom:${incH}px"></div>` : ''}
         <div class="hist-bar-inner${isCur?' hb-cur':''}" style="height:${barH}px;background:${gradient};opacity:${barOpacity}"></div>
-        ${amt > 0 ? `<div style="position:absolute;bottom:${barH+3}px;left:50%;transform:translateX(-50%);font-size:.58rem;font-weight:700;color:${lblColor};white-space:nowrap;pointer-events:none">${fc(amt)}</div>` : ''}
+        ${amt > 0 ? `<div style="position:absolute;bottom:${barH+3}px;left:50%;transform:translateX(-50%);font-size:.58rem;font-weight:700;color:${lblColor};white-space:nowrap;pointer-events:none">${fc0(amt)}</div>` : ''}
       </div>
       <div class="hist-bar-lbl" style="${isExcl?'color:var(--text-3);opacity:.6':''}"> ${shortLbl}<br><span style="font-size:.6rem;opacity:.65">'${y.slice(2)}</span></div>
     </div>`;
