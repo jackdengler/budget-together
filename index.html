@@ -1380,16 +1380,14 @@ function unlinkPerson(person) {
 }
 
 // ── PIN / Private Mode ──────────────────────────────────────
-// Access: long-press the logo (hold ~600ms). Looks accidental to anyone watching.
+// Access: long-press the logo (hold ~10s, desktop only). Looks accidental to anyone watching.
 let _lpTimer = null;
 function _initLongPress() {
   const el = document.getElementById('logo-el');
   if (!el) return;
-  const start = () => { _lpTimer = setTimeout(() => { _lpTimer = null; showPinModal(); }, 600); };
+  const start = () => { _lpTimer = setTimeout(() => { _lpTimer = null; showPinModal(); }, 10000); };
   const cancel = () => { clearTimeout(_lpTimer); _lpTimer = null; };
-  el.addEventListener('touchstart',  start,  {passive:true});
-  el.addEventListener('touchend',    cancel);
-  el.addEventListener('touchcancel', cancel);
+  // Desktop only – no touch events so mobile cannot trigger private mode
   el.addEventListener('mousedown',   start);
   el.addEventListener('mouseup',     cancel);
   el.addEventListener('mouseleave',  cancel);
