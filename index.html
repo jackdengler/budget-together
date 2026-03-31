@@ -3771,13 +3771,15 @@ function init() {
 
   // ── Swipe between tabs on mobile ─────────────────────────
   const TABS = ['overview','transactions','split','history'];
-  let _swipeX = 0, _swipeY = 0;
+  let _swipeX = 0, _swipeY = 0, _swipeInCarousel = false;
   const mainEl = $('main');
   mainEl.addEventListener('touchstart', e => {
     _swipeX = e.touches[0].clientX;
     _swipeY = e.touches[0].clientY;
+    _swipeInCarousel = !!e.target.closest('.ov-carousel');
   }, {passive: true});
   mainEl.addEventListener('touchend', e => {
+    if (_swipeInCarousel) return;
     const dx = e.changedTouches[0].clientX - _swipeX;
     const dy = e.changedTouches[0].clientY - _swipeY;
     if (Math.abs(dx) < 55 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
