@@ -555,6 +555,16 @@
       .ios-section-header{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:rgba(60,60,67,0.6);padding:20px 16px 6px}
       .ios-grouped{background:white;border-radius:12px;overflow:hidden}
 
+      /* ── iOS PWA: Overview carousel ──────────────────── */
+      .ov-carousel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;gap:0;padding:0;margin:0 -16px}
+      .ov-carousel::-webkit-scrollbar{display:none}
+      .ov-slide{flex:0 0 100%;width:100%;scroll-snap-align:start;padding:0 16px;box-sizing:border-box}
+      .ov-slide-inner{background:white;border-radius:16px;padding:20px;min-height:60vh;display:flex;flex-direction:column}
+      .ov-slide-title{font-size:1.1rem;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+      .ov-dots{display:flex;justify-content:center;gap:8px;padding:14px 0 6px}
+      .ov-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:all .2s}
+      .ov-dot.active{background:var(--primary);width:24px;border-radius:4px}
+
       /* ── iOS PWA: Settled history mobile ──────────────── */
       .settled-card-list{display:flex;flex-direction:column;gap:2px;background:white;border-radius:12px;overflow:hidden}
       .settled-card{display:flex;align-items:center;gap:12px;padding:13px 16px;background:white}
@@ -1576,42 +1586,82 @@ function renderOverview() {
 
   // ── Mobile: iOS grouped overview ─────────────────────────
   if (isMobile()) {
-    // Collapsible income cards — show hero number, tap to expand details
-    const mobileIncomeCard = (title, titleColor, summaryHtml, cls) => `
-      <div class="income-card ${cls} income-card-collapse" onclick="this.classList.toggle('expanded')">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div class="income-title" style="${titleColor?'color:'+titleColor:''}">${title}</div>
-          <span style="font-size:.8rem;color:var(--text-3);transition:transform .2s" class="expand-chevron">▸</span>
-        </div>
-        <div class="income-detail">${summaryHtml}</div>
-      </div>`;
+    // ── Slide 1: Combined ──
+    const slide1 = `<div class="ov-slide"><div class="ov-slide-inner">
+      <div class="ov-slide-title">Combined</div>
+      <div class="stats-grid" style="margin-bottom:18px">
+        <div class="stat-card s-total"><div class="stat-label">Total Spent</div><div class="stat-value">${fc(scaleNum(total))}</div></div>
+        <div class="stat-card s-shared"><div class="stat-label">Shared</div><div class="stat-value">${fc(scaleNum(shared))}</div></div>
+      </div>
+      ${personSummaryHtml(scaleNum(totalInc), scaleNum(p1sp+p2sp), scaleNum(shared), false, scaleNum(retTot), false, scaleNum(famTot))}
+    </div></div>`;
 
-    const incomeSection = `
-      <div class="ios-section-header">Income & Savings</div>
-      <div class="income-row-mobile">
-        ${mobileIncomeCard('Combined', '', personSummaryHtml(scaleNum(totalInc), scaleNum(p1sp+p2sp), scaleNum(shared), false, scaleNum(retTot), false, scaleNum(famTot)), 'ic-combined')}
-        ${mobileIncomeCard(esc(S.settings.person1), 'var(--p1)', personSummaryHtml(scaleNum(p1inc), scaleNum(p1sp), scaleNum(sharedP1), p1Locked, scaleNum(p1ret), true, scaleNum(p1fam)), 'ic-p1')}
-        ${mobileIncomeCard(esc(S.settings.person2), 'var(--p2)', personSummaryHtml(scaleNum(p2inc), scaleNum(p2sp), scaleNum(sharedP2), p2Locked, scaleNum(p2ret), true, scaleNum(p2fam)), 'ic-p2')}
-      </div>`;
+    // ── Slide 2: Person 1 ──
+    const slide2 = `<div class="ov-slide"><div class="ov-slide-inner" style="border-top:3px solid var(--p1)">
+      <div class="ov-slide-title" style="color:var(--p1)">${esc(S.settings.person1)}</div>
+      <div class="stats-grid" style="margin-bottom:18px">
+        <div class="stat-card s-p1"><div class="stat-label">Solo</div><div class="stat-value">${fc(scaleNum(p1sp))}</div></div>
+        <div class="stat-card s-shared"><div class="stat-label">Shared</div><div class="stat-value">${fc(scaleNum(sharedP1))}</div></div>
+      </div>
+      ${personSummaryHtml(scaleNum(p1inc), scaleNum(p1sp), scaleNum(sharedP1), p1Locked, scaleNum(p1ret), true, scaleNum(p1fam))}
+    </div></div>`;
+
+    // ── Slide 3: Person 2 ──
+    const slide3 = `<div class="ov-slide"><div class="ov-slide-inner" style="border-top:3px solid var(--p2)">
+      <div class="ov-slide-title" style="color:var(--p2)">${esc(S.settings.person2)}</div>
+      <div class="stats-grid" style="margin-bottom:18px">
+        <div class="stat-card s-p2"><div class="stat-label">Solo</div><div class="stat-value">${fc(scaleNum(p2sp))}</div></div>
+        <div class="stat-card s-shared"><div class="stat-label">Shared</div><div class="stat-value">${fc(scaleNum(sharedP2))}</div></div>
+      </div>
+      ${personSummaryHtml(scaleNum(p2inc), scaleNum(p2sp), scaleNum(sharedP2), p2Locked, scaleNum(p2ret), true, scaleNum(p2fam))}
+    </div></div>`;
+
+    // ── Slide 4: Categories ──
+    const slide4 = `<div class="ov-slide"><div class="ov-slide-inner">
+      <div class="ov-slide-title">Spending by Category</div>
+      ${catBars}
+      ${vCats.length?`<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)"><div style="font-size:.82rem;font-weight:700;margin-bottom:10px;color:var(--text-2)">vs. Average</div><div class="vert-legend"><span><span class="vert-dot" style="background:var(--primary)"></span>${isMulti?'Range':'Month'}</span><span><span class="vert-dot" style="background:#d1d5db"></span>Avg</span></div><div class="vert-chart">${vBars}</div></div>`:''}
+    </div></div>`;
+
+    // ── Slide 5: Top Merchants ──
+    const slide5 = `<div class="ov-slide"><div class="ov-slide-inner">
+      <div class="ov-slide-title">Top Merchants</div>
+      ${topMerchants.length?topMerchants.map((m,i) => `<div class="merchant-row"><div class="merchant-rank">#${i+1}</div><div class="merchant-name" title="${esc(m.label)}">${esc(m.label.length>30?m.label.slice(0,30)+'…':m.label)}</div><div class="merchant-meta">${m.count} txn${m.count!==1?'s':''}</div><div class="merchant-amt">${fc(m.amount)}</div></div>`).join(''):'<p class="text-muted" style="text-align:center;padding:18px">No transactions yet</p>'}
+    </div></div>`;
+
+    const dots = `<div class="ov-dots" id="ov-dots">
+      <div class="ov-dot active" data-idx="0"></div>
+      <div class="ov-dot" data-idx="1"></div>
+      <div class="ov-dot" data-idx="2"></div>
+      <div class="ov-dot" data-idx="3"></div>
+      <div class="ov-dot" data-idx="4"></div>
+    </div>`;
+
+    // Wire up dot tracking after render
+    requestAnimationFrame(() => {
+      const carousel = document.getElementById('ov-carousel');
+      const dotsEl = document.getElementById('ov-dots');
+      if (!carousel || !dotsEl) return;
+      carousel.addEventListener('scroll', () => {
+        const idx = Math.round(carousel.scrollLeft / carousel.offsetWidth);
+        dotsEl.querySelectorAll('.ov-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+      }, {passive: true});
+      // Tap dots to navigate
+      dotsEl.addEventListener('click', e => {
+        const dot = e.target.closest('.ov-dot');
+        if (!dot) return;
+        carousel.scrollTo({left: +dot.dataset.idx * carousel.offsetWidth, behavior: 'smooth'});
+      });
+    });
 
     return `
 ${rangeToggle}
 ${viewToggle}
 ${recSectionHtml}
-<div class="stats-grid">
-  <div class="stat-card s-total"><div class="stat-label">Total</div><div class="stat-value">${fc(scaleNum(total))}</div></div>
-  <div class="stat-card s-p1"><div class="stat-label">${esc(S.settings.person1)}</div><div class="stat-value">${fc(scaleNum(p1sp + sharedP1))}</div></div>
-  <div class="stat-card s-p2"><div class="stat-label">${esc(S.settings.person2)}</div><div class="stat-value">${fc(scaleNum(p2sp + sharedP2))}</div></div>
-  <div class="stat-card s-shared"><div class="stat-label">Shared</div><div class="stat-value">${fc(scaleNum(shared))}</div></div>
+<div class="ov-carousel" id="ov-carousel">
+  ${slide1}${slide2}${slide3}${slide4}${slide5}
 </div>
-${incomeSection}
-<div class="ios-section-header">Spending by Category</div>
-<div class="card">${catBars}</div>
-${vCats.length?`
-<div class="ios-section-header">Spending vs. Average</div>
-<div class="card"><div class="vert-legend"><span><span class="vert-dot" style="background:var(--primary)"></span>${isMulti?'This range':'This month'}</span><span><span class="vert-dot" style="background:#d1d5db"></span>${pastMonths.length?`${pastMonths.length}-mo avg`:'Avg'}</span></div><div class="vert-chart">${vBars}</div></div>`:''}
-<div class="ios-section-header">Top Merchants</div>
-<div class="card">${topMerchants.length?`<div class="merchant-grid">${merchantRows}</div>`:'<p class="text-muted" style="text-align:center;padding:18px">No transactions yet</p>'}</div>`;
+${dots}`;
   }
 
   // ── Desktop: standard overview ──────────────────────────
