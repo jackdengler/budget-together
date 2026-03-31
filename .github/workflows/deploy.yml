@@ -25,7 +25,7 @@ jobs:
       - name: Stamp build info
         run: |
           STAMP="Git push: $(date -u +'%b %d %Y %H:%M') UTC | Deploy: $(date -u +'%b %d %Y %H:%M') UTC"
-          sed -i "s|__BUILD_TIMESTAMP__|$STAMP|g" index.html
+          sed -i "s#__BUILD_TIMESTAMP__#$STAMP#g" index.html
 
       - name: Push to Apps Script
         run: clasp push --force
