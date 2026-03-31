@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(chmod +x \"/Users/jackdengler/budget stuff/start.command\")",
+      "Bash(grep -n \"if \\(S.settings.person1 === ''Person 1''\\) showSetup\" \"/Users/jackdengler/budget stuff/index.html\")",
+      "WebFetch(domain:plaid.com)",
+      "WebSearch",
+      "Bash(python3 -:*)",
+      "WebFetch(domain:blog.finexer.com)",
+      "WebFetch(domain:itexus.com)",
+      "WebFetch(domain:cognitofi.com)",
+      "WebFetch(domain:senticmoney.com)",
+      "WebFetch(domain:teller.io)",
+      "WebFetch(domain:www.openbankingtracker.com)",
+      "WebFetch(domain:help.monarch.com)",
+      "WebFetch(domain:docs.cdp.coinbase.com)",
+      "Read(//Users/jackdengler/Library/Application Support/Claude/local-agent-mode-sessions/skills-plugin/23ee48a6-898f-490b-9f22-149264777273/d73ea7ef-6592-43d6-9e80-6dea02b468af/skills/xlsx/**)",
+      "Bash(python3 -c \":*)",
+      "Bash(pip3 install:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(ipconfig getifaddr:*)",
+      "Bash(sed -i '' 's|<input type=\"\"file\"\" id=\"\"fp1\"\" accept=\"\".csv,.pdf\"\" onchange=\"\"onFile\\(event,'\"''\"'p1'\"''\"'\\)\"\">|<input type=\"\"file\"\" id=\"\"fp1\"\" accept=\"\".csv,.pdf\"\" multiple onchange=\"\"onFile\\(event,'\"''\"'p1'\"''\"'\\)\"\">|' \"/Users/jackdengler/budget stuff/index.html\")",
+      "Bash(sed -i '' 's|<input type=\"\"file\"\" id=\"\"fp2\"\" accept=\"\".csv,.pdf\"\" onchange=\"\"onFile\\(event,'\"''\"'p2'\"''\"'\\)\"\">|<input type=\"\"file\"\" id=\"\"fp2\"\" accept=\"\".csv,.pdf\"\" multiple onchange=\"\"onFile\\(event,'\"''\"'p2'\"''\"'\\)\"\">|' \"/Users/jackdengler/budget stuff/index.html\")"
+    ]
+  }
+}
