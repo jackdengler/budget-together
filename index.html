@@ -16,6 +16,8 @@
       if (window.self !== window.top) {
         var vp = document.querySelector('meta[name="viewport"]');
         if (vp) vp.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover';
+        // Try to hide GAS "created by" banner in parent
+        try { parent.document.querySelector('.apps-script-banner')?.remove(); } catch(e){}
       }
       var m = {name:"Budget Together",short_name:"Budget",display:"standalone",orientation:"portrait",
         background_color:"#FAF9F6",theme_color:"#D4663A",
@@ -401,7 +403,7 @@
 
       /* Safe area */
       body{padding-top:env(safe-area-inset-top)}
-      #app{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
+      #app{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
 
       /* Header — iOS large-title style */
       header{
@@ -412,12 +414,12 @@
         backdrop-filter:saturate(180%) blur(20px);
         border-bottom:1px solid rgba(60,60,67,0.12);
       }
-      .logo{font-size:1.5rem;font-weight:800;letter-spacing:-0.03em;width:100%}
+      .logo{font-size:1.6rem;font-weight:800;letter-spacing:-0.03em;width:100%;margin-bottom:2px}
       #nav{display:none}
-      .month-nav button{width:32px;height:32px;border-radius:10px;border:none;background:rgba(120,120,128,0.12);font-size:1rem}
-      .month-nav span{font-size:.88rem}
+      .month-nav button{width:38px;height:38px;border-radius:12px;border:none;background:rgba(120,120,128,0.12);font-size:1.2rem}
+      .month-nav span{font-size:1.05rem;font-weight:700}
       .save-status{font-size:.7rem;margin-left:auto}
-      .icon-btn{width:32px;height:32px;border:none;background:rgba(120,120,128,0.12);border-radius:10px}
+      .icon-btn{width:38px;height:38px;border:none;background:rgba(120,120,128,0.12);border-radius:12px;font-size:1.1rem}
       #review-badge{padding:4px 10px;font-size:0;border:none;background:rgba(217,119,6,0.12);border-radius:10px}
       #review-badge-count{font-size:0.78rem}
 
@@ -425,7 +427,7 @@
       #bottom-nav{
         display:flex;position:fixed;
         bottom:0;left:0;right:0;
-        height:calc(60px + env(safe-area-inset-bottom));
+        height:calc(84px + env(safe-area-inset-bottom));
         padding-bottom:env(safe-area-inset-bottom);
         background:rgba(242,242,247,0.85);
         -webkit-backdrop-filter:saturate(180%) blur(20px);
@@ -443,8 +445,9 @@
       #bottom-nav button.active{color:var(--primary)}
       #bottom-nav button.active .bnav-icon{transform:scale(1.12)}
       #bottom-nav button.active .bnav-label{font-weight:700}
-      .bnav-icon{font-size:1.6rem;line-height:1;transition:transform .25s cubic-bezier(0.34,1.56,0.64,1)}
-      .bnav-label{font-size:0.7rem;font-weight:500;letter-spacing:.01em}
+      .bnav-icon{line-height:1;transition:transform .25s cubic-bezier(0.34,1.56,0.64,1)}
+      .bnav-icon svg{width:26px;height:26px}
+      .bnav-label{font-size:0.72rem;font-weight:500;letter-spacing:.02em;margin-top:2px}
 
       /* Main layout — iOS grouped inset padding */
       main{padding:12px 16px}
@@ -564,12 +567,29 @@
       /* ── iOS PWA: Overview carousel ──────────────────── */
       .ov-carousel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;gap:0;padding:0;margin:0 -16px}
       .ov-carousel::-webkit-scrollbar{display:none}
-      .ov-slide{flex:0 0 100%;width:100%;scroll-snap-align:start;padding:0 16px;box-sizing:border-box}
-      .ov-slide-inner{background:white;border-radius:16px;padding:20px;min-height:60vh;display:flex;flex-direction:column}
-      .ov-slide-title{font-size:1.3rem;font-weight:800;margin-bottom:16px;display:flex;align-items:center;gap:8px}
-      .ov-dots{display:flex;justify-content:center;gap:8px;padding:14px 0 6px}
+      .ov-slide{flex:0 0 100%;width:100%;scroll-snap-align:start;padding:0 12px;box-sizing:border-box}
+      .ov-slide-inner{background:white;border-radius:20px;padding:0;min-height:calc(100vh - 230px);display:flex;flex-direction:column;overflow:hidden;position:relative}
+      .ov-slide-inner.income-card{padding:0;min-height:calc(100vh - 230px)}
+      .ov-dots{display:flex;justify-content:center;gap:8px;padding:12px 0 4px}
       .ov-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:all .2s}
       .ov-dot.active{background:var(--primary);width:24px;border-radius:4px}
+
+      /* ── iOS PWA: Full-height income card sections ─── */
+      .ov-person-card{display:flex;flex-direction:column;flex:1;padding-top:3px}
+      .ov-person-card .income-title{padding:16px 20px 0;font-size:.85rem;margin-bottom:0}
+      .ov-card-section{flex:1;display:flex;flex-direction:column;justify-content:center;padding:12px 20px;position:relative}
+      .ov-card-section+.ov-card-section{border-top:1px solid rgba(0,0,0,.06)}
+      .ov-card-hero-label{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:4px}
+      .ov-card-hero-value{font-size:2.4rem;font-weight:800;line-height:1.1}
+      .ov-card-hero-sub{font-size:.85rem;color:var(--text-3);margin-top:6px}
+      .ov-card-rate-label{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:8px}
+      .ov-card-rate-pct{font-size:1.8rem;font-weight:800;margin-bottom:8px}
+      .ov-card-rate-bar{height:10px;background:#f3f4f6;border-radius:5px;overflow:hidden}
+      .ov-card-rate-fill{height:100%;border-radius:5px}
+      .ov-card-money-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+      .ov-card-money-value{font-size:1.6rem;font-weight:800;line-height:1.1;margin-bottom:8px}
+      .ov-card-money-sub{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;font-size:.85rem}
+      .ov-card-money-sub+.ov-card-money-sub{border-top:1px solid rgba(0,0,0,.06)}
 
       /* ── iOS PWA: Settled history mobile ──────────────── */
       .settled-card-list{display:flex;flex-direction:column;gap:2px;background:white;border-radius:12px;overflow:hidden}
@@ -648,10 +668,10 @@
 </div>
 
 <nav id="bottom-nav">
-  <button data-tab="overview"><span class="bnav-icon">🏠</span><span class="bnav-label">Overview</span></button>
-  <button data-tab="transactions"><span class="bnav-icon">💳</span><span class="bnav-label">Txns</span></button>
-  <button data-tab="split"><span class="bnav-icon">⚖️</span><span class="bnav-label">Split</span></button>
-  <button data-tab="history"><span class="bnav-icon">📈</span><span class="bnav-label">History</span></button>
+  <button data-tab="overview"><span class="bnav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span><span class="bnav-label">Overview</span></button>
+  <button data-tab="transactions"><span class="bnav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span><span class="bnav-label">Txns</span></button>
+  <button data-tab="split"><span class="bnav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span><span class="bnav-label">Split</span></button>
+  <button data-tab="history"><span class="bnav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span class="bnav-label">History</span></button>
 </nav>
 
 <div class="toast" id="toast"></div>
@@ -1562,7 +1582,7 @@ function renderOverview() {
   // ── Range toggle row ────────────────────────────────────────────────────────
   const shortMo = new Date(S.currentMonth + '-02').toLocaleDateString('en-US', {month:'short'});
   const pill = (label, active, fn) =>
-    `<button onclick="${fn}" style="padding:5px 14px;border-radius:20px;font-size:.78rem;font-weight:700;cursor:pointer;border:1px solid ${active?'var(--primary)':'var(--border)'};background:${active?'var(--primary)':'white'};color:${active?'white':'var(--text-2)'}">${label}</button>`;
+    `<button onclick="${fn}" style="padding:8px 18px;border-radius:20px;font-size:.9rem;font-weight:700;cursor:pointer;border:1px solid ${active?'var(--primary)':'var(--border)'};background:${active?'var(--primary)':'white'};color:${active?'white':'var(--text-2)'}">${label}</button>`;
   const r = S.overviewRange;
 
   // In multi-month mode, contextual nav arrows live in the top-right of this row.
@@ -1608,21 +1628,58 @@ function renderOverview() {
 
   // ── Mobile: iOS grouped overview ─────────────────────────
   if (isMobile()) {
-    // ── Slides 1-3: Identical to desktop income cards ──
-    const slide1 = `<div class="ov-slide"><div class="ov-slide-inner income-card ic-combined" style="border:none;box-shadow:none;padding:20px;min-height:auto">
-      <div class="income-title">Combined</div>
-      ${personSummaryHtml(scaleNum(totalInc), scaleNum(p1sp+p2sp), scaleNum(shared), false, scaleNum(retTot), false, scaleNum(famTot))}
-    </div></div>`;
+    // ── Full-height person card builder ──
+    function mobilePersonSlide(title, titleColor, cls, inc, solo, sharedAmt, locked, ret, showSplit, fam) {
+      if (locked) return `<div class="ov-slide"><div class="ov-slide-inner income-card ${cls}"><div class="ov-person-card"><div class="income-title" style="${titleColor?'color:'+titleColor:''}">${title}</div><div class="ov-card-section" style="align-items:center"><div style="font-size:2rem;margin-bottom:8px">🔒</div><div style="font-size:1rem;color:var(--text-3)">Private</div></div></div></div></div>`;
+      fam = fam || 0;
+      const spend = solo + sharedAmt;
+      const normalInc = inc - ret - fam;
+      const tSaved = inc - spend;
+      const sRate = normalInc > 0 ? Math.round(tSaved / normalInc * 100) : 0;
+      const isDeficit = tSaved < 0;
+      const barColor = isDeficit ? '#ef4444' : sRate >= 20 ? '#22c55e' : sRate >= 10 ? '#f59e0b' : '#f59e0b';
+      const heroColor = isDeficit ? '#dc2626' : sRate >= 20 ? '#16a34a' : sRate >= 10 ? '#ca8a04' : '#6b7280';
+      const heroLabel = isDeficit ? 'Deficit' : 'Saved';
+      const heroAmt = isDeficit ? `−${fc(Math.abs(tSaved))}` : `+${fc(tSaved)}`;
+      const useRet = ret > 0, useFam = fam > 0;
 
-    const slide2 = `<div class="ov-slide"><div class="ov-slide-inner income-card ic-p1" style="border:none;box-shadow:none;padding:20px;min-height:auto">
-      <div class="income-title" style="color:var(--p1)">${esc(S.settings.person1)}</div>
-      ${personSummaryHtml(scaleNum(p1inc), scaleNum(p1sp), scaleNum(sharedP1), p1Locked, scaleNum(p1ret), true, scaleNum(p1fam))}
-    </div></div>`;
+      const earnedSubs = (useRet || useFam)
+        ? (useRet ? `<div class="ov-card-money-sub"><span style="color:var(--text-3)">Retirement</span><span style="font-weight:700;color:#D4663A">${fc(ret)}</span></div>` : '')
+          + (useFam ? `<div class="ov-card-money-sub"><span style="color:var(--text-3)">Family</span><span style="font-weight:700;color:#7c3aed">${fc(fam)}</span></div>` : '')
+          + `<div class="ov-card-money-sub"><span style="color:var(--text-3)">Normal</span><span style="font-weight:700;color:#15803d">${fc(inc - ret - fam)}</span></div>`
+        : '';
+      const spentSubs = showSplit !== false
+        ? `<div class="ov-card-money-sub"><span style="color:var(--text-3)">Solo</span><span style="font-weight:700">${fc(solo)}</span></div><div class="ov-card-money-sub"><span style="color:var(--text-3)">Shared</span><span style="font-weight:700">${fc(sharedAmt)}</span></div>`
+        : '';
 
-    const slide3 = `<div class="ov-slide"><div class="ov-slide-inner income-card ic-p2" style="border:none;box-shadow:none;padding:20px;min-height:auto">
-      <div class="income-title" style="color:var(--p2)">${esc(S.settings.person2)}</div>
-      ${personSummaryHtml(scaleNum(p2inc), scaleNum(p2sp), scaleNum(sharedP2), p2Locked, scaleNum(p2ret), true, scaleNum(p2fam))}
-    </div></div>`;
+      return `<div class="ov-slide"><div class="ov-slide-inner income-card ${cls}"><div class="ov-person-card">
+        <div class="income-title" style="${titleColor?'color:'+titleColor:''}">${title}</div>
+        <div class="ov-card-section">
+          <div class="ov-card-hero-label">${heroLabel}</div>
+          <div class="ov-card-hero-value" style="color:${heroColor}">${heroAmt}</div>
+          ${useRet?`<div class="ov-card-hero-sub">Take-home cash flow: <span style="font-weight:700;color:${(normalInc-spend)>=0?'#0369a1':'#dc2626'}">${(normalInc-spend)>=0?'+':'−'}${fc(Math.abs(normalInc-spend))}</span></div>`:''}
+        </div>
+        <div class="ov-card-section">
+          <div class="ov-card-rate-label">Savings Rate</div>
+          <div class="ov-card-rate-pct" style="color:${barColor}">${sRate}%</div>
+          <div class="ov-card-rate-bar"><div class="ov-card-rate-fill" style="width:${Math.max(0,Math.min(sRate,100))}%;background:${barColor}"></div></div>
+        </div>
+        <div class="ov-card-section" style="background:#f0fdf4">
+          <div class="ov-card-money-label" style="color:#16a34a">Earned</div>
+          <div class="ov-card-money-value" style="color:#15803d">+${fc(inc)}</div>
+          ${earnedSubs}
+        </div>
+        <div class="ov-card-section" style="background:#fef2f2">
+          <div class="ov-card-money-label" style="color:#dc2626">Spent</div>
+          <div class="ov-card-money-value" style="color:#b91c1c">${fc(spend)}</div>
+          ${spentSubs}
+        </div>
+      </div></div></div>`;
+    }
+
+    const slide1 = mobilePersonSlide('Combined', '', 'ic-combined', scaleNum(totalInc), scaleNum(p1sp+p2sp), scaleNum(shared), false, scaleNum(retTot), false, scaleNum(famTot));
+    const slide2 = mobilePersonSlide(esc(S.settings.person1), 'var(--p1)', 'ic-p1', scaleNum(p1inc), scaleNum(p1sp), scaleNum(sharedP1), p1Locked, scaleNum(p1ret), true, scaleNum(p1fam));
+    const slide3 = mobilePersonSlide(esc(S.settings.person2), 'var(--p2)', 'ic-p2', scaleNum(p2inc), scaleNum(p2sp), scaleNum(sharedP2), p2Locked, scaleNum(p2ret), true, scaleNum(p2fam));
 
     // ── Slide 4: Categories ──
     const slide4 = `<div class="ov-slide"><div class="ov-slide-inner">
