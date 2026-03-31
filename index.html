@@ -1395,9 +1395,7 @@ function _initLongPress() {
     _lpTimer = setTimeout(() => { _lpTimer = null; _lpFired = true; showPinModal(); }, 600);
   };
   const cancel = () => { clearTimeout(_lpTimer); _lpTimer = null; };
-  el.addEventListener('touchstart',  start,  {passive:true});
-  el.addEventListener('touchend',    cancel);
-  el.addEventListener('touchcancel', cancel);
+  // Desktop only – no touch events so mobile cannot trigger private mode
   el.addEventListener('mousedown',   start);
   el.addEventListener('mouseup',     cancel);
   el.addEventListener('mouseleave',  cancel);
