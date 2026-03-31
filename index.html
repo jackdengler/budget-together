@@ -600,8 +600,8 @@
       /* Peek effect: 95% width shows sliver of next slide, hinting at swipe */
       .ov-slide{flex:0 0 95%;width:95%;scroll-snap-align:start;padding:0 6px 0 8px;box-sizing:border-box;display:flex}
       .ov-slide:last-child{flex:0 0 100%;width:100%;padding:0 8px}
-      /* M3 tonal surface: warm-tinted card, tonal elevation (color not shadow) */
-      .ov-slide-inner{background:var(--m3-surface-container);border-radius:20px;padding:0;display:flex;flex-direction:column;overflow:hidden;position:relative;flex:1}
+      /* Meta: clean white card with defined border */
+      .ov-slide-inner{background:#ffffff;border-radius:20px;padding:0;display:flex;flex-direction:column;overflow:hidden;position:relative;flex:1;border:1px solid rgba(0,0,0,0.08)}
       .ov-slide-inner.income-card{padding:0}
       /* Named slide tabs replace meaningless dots */
       .ov-tabs{display:flex;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:6px 8px 2px;scrollbar-width:none;border-bottom:0.5px solid var(--ios-separator)}
@@ -611,16 +611,17 @@
 
       /* ── iOS PWA: 2x2 income card ────────────────────── */
       .ov-person-card{display:flex;flex-direction:column;flex:1;padding:0}
-      .ov-person-card .income-title{padding:12px 14px 0;font-size:14px;font-weight:700;margin-bottom:0;letter-spacing:.07em;text-transform:uppercase;color:var(--text-3)}
+      /* Meta-style card header: title left, date badge right */
+      .ov-person-card .income-title{padding:14px 14px 0;font-size:16px;font-weight:800;margin-bottom:0;letter-spacing:.04em;text-transform:uppercase;color:var(--text)}
       .ov-card-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;flex:1}
       .ov-card-cell{display:flex;flex-direction:column;justify-content:flex-start;padding:14px 14px 14px;position:relative;overflow:hidden}
       .ov-card-cell:nth-child(1){border-right:0.5px solid var(--ios-separator);border-bottom:0.5px solid var(--ios-separator)}
       .ov-card-cell:nth-child(2){border-bottom:0.5px solid var(--ios-separator)}
       .ov-card-cell:nth-child(3){border-right:0.5px solid var(--ios-separator)}
 
-      /* M3 type scale: Label Large for category labels, Display Small for values */
-      .ov-cell-label{font-size:14px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;color:var(--ios-secondary);margin-bottom:4px}
-      .ov-cell-value{font-size:36px;font-weight:700;line-height:1;letter-spacing:-0.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      /* Meta: category labels bold, values heavy (Instagram stats style) */
+      .ov-cell-label{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ios-secondary);margin-bottom:4px}
+      .ov-cell-value{font-size:36px;font-weight:800;line-height:1;letter-spacing:-0.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       .ov-cell-sub{font-size:14px;color:var(--text-3);margin-top:6px;font-weight:400}
 
       /* Earned vs spent proportional bar — Apple capsule style */
@@ -630,24 +631,25 @@
       .ov-ep-bar-spend{display:none}
       .ov-ep-bar-labels{display:flex;justify-content:space-between;font-size:12px;font-weight:600;padding:0 2px}
 
-      /* Ring chart — Apple Watch-style activity ring */
+      /* Ring chart — Meta-style thicker arc, heavy numeral */
       .ov-ring{position:relative;width:calc(100% - 12px);aspect-ratio:1;margin:auto}
       .ov-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
-      .ov-ring-bg{fill:none;stroke:rgba(0,0,0,0.08);stroke-width:4}
-      .ov-ring-fill{fill:none;stroke-width:4;stroke-linecap:round;transition:stroke-dashoffset .8s cubic-bezier(0.34,1.56,0.64,1)}
+      .ov-ring-bg{fill:none;stroke:rgba(0,0,0,0.07);stroke-width:7}
+      .ov-ring-fill{fill:none;stroke-width:7;stroke-linecap:round;transition:stroke-dashoffset .7s cubic-bezier(0.25,0.46,0.45,0.94)}
       .ov-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-      .ov-ring-pct{font-size:2.6rem;font-weight:700;line-height:1;letter-spacing:-0.02em}
-      .ov-ring-lbl{font-size:11px;font-weight:600;color:var(--ios-secondary);text-transform:uppercase;letter-spacing:.08em;margin-top:4px}
+      .ov-ring-pct{font-size:2.8rem;font-weight:800;line-height:1;letter-spacing:-0.03em}
+      .ov-ring-lbl{font-size:11px;font-weight:700;color:var(--ios-secondary);text-transform:uppercase;letter-spacing:.1em;margin-top:3px}
 
       /* Cash flow chip in SAVED cell */
       .ov-cashflow-chip{display:inline-flex;align-items:center;gap:4px;margin-top:8px;padding:4px 10px;border-radius:20px;font-size:14px;font-weight:600}
 
-      /* M3 Body Medium for breakdown rows */
+      /* Meta Insights-style breakdown rows with inline bar */
       .ov-breakdown{margin-top:8px}
-      .ov-breakdown-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:15px}
+      .ov-breakdown-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:15px;position:relative}
       .ov-breakdown-row+.ov-breakdown-row{border-top:0.5px solid rgba(0,0,0,.06)}
-      .ov-breakdown-label{color:var(--ios-secondary);font-weight:400;letter-spacing:.01em}
-      .ov-breakdown-value{font-weight:600;font-size:15px}
+      .ov-breakdown-label{color:var(--ios-secondary);font-weight:500;letter-spacing:.01em;display:flex;align-items:center;gap:6px}
+      .ov-breakdown-label::before{content:'';display:inline-block;width:8px;height:8px;border-radius:2px;flex-shrink:0;background:currentColor}
+      .ov-breakdown-value{font-weight:700;font-size:15px}
 
       /* ── iOS PWA: Settled history mobile ──────────────── */
       .settled-card-list{display:flex;flex-direction:column;gap:2px;background:white;border-radius:12px;overflow:hidden}
