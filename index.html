@@ -565,7 +565,7 @@
       /* ── iOS PWA: Transaction card list ──────────────── */
       .txn-card-list{display:flex;flex-direction:column;gap:0;background:white;border-radius:12px;overflow:visible;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
       .txn-card{display:flex;align-items:center;gap:12px;padding:12px 14px 12px 16px;background:white;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s,transform .1s cubic-bezier(0.34,1.56,0.64,1)}
-      .txn-card:active{background:rgba(0,0,0,.05);transform:scale(0.985)}
+      .txn-card:active{background:rgba(212,102,58,0.08);transform:scale(0.985)}
       .txn-card+.txn-card{border-top:0.5px solid rgba(60,60,67,0.08)}
       /* First/last card gets matching border-radius */
       .txn-card:first-child{border-radius:12px 12px 0 0}
@@ -591,12 +591,13 @@
       /* ── iOS PWA: Filters mobile ─────────────────────── */
       .filters-bar-mobile{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;flex-shrink:0}
       .filter-pill{padding:6px 14px;border-radius:20px;font-size:.8rem;font-weight:600;border:1.5px solid var(--border);background:white;color:var(--text-2);white-space:nowrap;cursor:pointer;flex-shrink:0;transition:all .15s}
-      .filter-pill.active{border-color:var(--primary);background:var(--primary);color:white}
+      /* M3 filter chip active: primary-container bg + primary text (not filled primary) */
+      .filter-pill.active{border-color:var(--primary);background:var(--m3-primary-container);color:var(--primary)}
 
       /* ── iOS PWA: History month cards ─────────────────── */
-      .month-card-list{display:flex;flex-direction:column;gap:2px;background:white;border-radius:12px;overflow:visible;flex-shrink:0}
+      .month-card-list{display:flex;flex-direction:column;gap:2px;background:var(--m3-surface-container);border-radius:12px;overflow:visible;flex-shrink:0}
       .month-card{padding:13px 16px;background:white;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s,transform .1s cubic-bezier(0.34,1.56,0.64,1)}
-      .month-card:active{background:rgba(0,0,0,.05);transform:scale(0.985)}
+      .month-card:active{background:rgba(212,102,58,0.08);transform:scale(0.985)}
       .month-card+.month-card{border-top:0.5px solid rgba(60,60,67,0.08)}
       .month-card-top{display:flex;justify-content:space-between;align-items:baseline}
       .month-card-title{font-size:.92rem;font-weight:700;color:var(--text)}
@@ -626,10 +627,13 @@
       /* Peek effect: 95% width shows sliver of next slide, hinting at swipe */
       .ov-slide{flex:0 0 95%;width:95%;scroll-snap-align:start;padding:0 6px 0 8px;box-sizing:border-box;display:flex}
       .ov-slide:last-child{flex:0 0 100%;width:100%;padding:0 8px}
-      /* Clean white card with subtle shadow for depth over gray background */
-      .ov-slide-inner{background:#ffffff;border-radius:20px;padding:0;display:flex;flex-direction:column;overflow:hidden;position:relative;flex:1;box-shadow:0 2px 16px rgba(0,0,0,0.07),0 0 0 0.5px rgba(0,0,0,0.06)}
+      /* Clean white card with subtle warm shadow for depth over gray background */
+      .ov-slide-inner{background:#ffffff;border-radius:20px;padding:0;display:flex;flex-direction:column;overflow:hidden;position:relative;flex:1;box-shadow:0 2px 20px rgba(212,102,58,0.06),0 0 0 0.5px rgba(0,0,0,0.05)}
       /* Combined slide: warm brand tint to feel like the authoritative summary */
       .ic-combined .ov-slide-inner{background:linear-gradient(160deg,#fff 55%,rgba(212,102,58,0.04) 100%)}
+      /* M3 tonal surfaces for person slides — p1 blue tint, p2 pink tint */
+      .ic-p1 .ov-slide-inner{background:linear-gradient(160deg,#fff 55%,rgba(37,99,235,0.03) 100%)}
+      .ic-p2 .ov-slide-inner{background:linear-gradient(160deg,#fff 55%,rgba(219,39,119,0.03) 100%)}
       .ov-slide-inner.income-card{padding:0}
       /* Named slide tabs — pill/chip style, no underline */
       .ov-tabs{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:7px 8px 7px;scrollbar-width:none;background:transparent;flex-shrink:0}
@@ -665,7 +669,8 @@
       .ov-ring{position:relative;width:calc(100% - 8px);aspect-ratio:1;margin:auto}
       .ov-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
       .ov-ring-bg{fill:none;stroke:rgba(0,0,0,0.07);stroke-width:8}
-      .ov-ring-fill{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .7s cubic-bezier(0.25,0.46,0.45,0.94)}
+      /* M3 emphasized decelerate easing for ring animation */
+      .ov-ring-fill{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .6s cubic-bezier(0.05,0.7,0.1,1.0)}
       .ov-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
       .ov-ring-pct{font-size:2.6rem;font-weight:800;line-height:1;letter-spacing:-0.03em;font-variant-numeric:tabular-nums}
       .ov-ring-lbl{font-size:11px;font-weight:700;color:var(--ios-secondary);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
