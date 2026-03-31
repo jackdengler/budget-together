@@ -760,7 +760,7 @@
 
 <div id="app" style="display:none">
   <header>
-    <div class="logo" id="logo-el" style="cursor:default">💕 Budget Together</div>
+    <div class="logo" id="logo-el" style="cursor:pointer" onclick="showBuildInfo(this)">💕 Budget Together</div>
     <nav id="nav">
       <button class="active" data-tab="overview">Overview</button>
       <button data-tab="transactions">Transactions</button>
@@ -1379,13 +1379,21 @@ function unlinkPerson(person) {
   toast('Account unlinked');
 }
 
+// ── Build info (injected by deploy workflow) ───────────────
+const BUILD_TIMESTAMP = '__BUILD_TIMESTAMP__';
+
 // ── PIN / Private Mode ──────────────────────────────────────
 // Access: long-press the logo (hold ~600ms). Looks accidental to anyone watching.
+// Tap (short click): briefly show deploy timestamp.
 let _lpTimer = null;
+let _lpFired = false;
 function _initLongPress() {
   const el = document.getElementById('logo-el');
   if (!el) return;
-  const start = () => { _lpTimer = setTimeout(() => { _lpTimer = null; showPinModal(); }, 600); };
+  const start = () => {
+    _lpFired = false;
+    _lpTimer = setTimeout(() => { _lpTimer = null; _lpFired = true; showPinModal(); }, 600);
+  };
   const cancel = () => { clearTimeout(_lpTimer); _lpTimer = null; };
   el.addEventListener('touchstart',  start,  {passive:true});
   el.addEventListener('touchend',    cancel);
@@ -1394,6 +1402,12 @@ function _initLongPress() {
   el.addEventListener('mouseup',     cancel);
   el.addEventListener('mouseleave',  cancel);
   el.addEventListener('contextmenu', e => e.preventDefault());
+
+  // Short tap → briefly show deploy info
+  el.addEventListener('click', () => {
+    if (_lpFired) return;            // long-press already handled
+    showBuildInfo(el);
+  });
 
   // Tap the month label to open gambling tracker (only works when PIN is unlocked)
   const moEl = document.getElementById('mo-label');
@@ -1406,6 +1420,19 @@ function _initLongPress() {
       render();
     }
   });
+}
+
+let _buildInfoTimer = null;
+function showBuildInfo(el) {
+  const orig = el.textContent;
+  const deployed = BUILD_TIMESTAMP.startsWith('__') ? 'dev build' : BUILD_TIMESTAMP;
+  el.textContent = '🚀 ' + deployed;
+  el.style.fontSize = '.72rem';
+  clearTimeout(_buildInfoTimer);
+  _buildInfoTimer = setTimeout(() => {
+    el.textContent = orig;
+    el.style.fontSize = '';
+  }, 2500);
 }
 
 function showPinModal() {
