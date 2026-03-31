@@ -434,7 +434,7 @@
         background:rgba(242,242,247,0.85);
         -webkit-backdrop-filter:saturate(180%) blur(20px);
         backdrop-filter:saturate(180%) blur(20px);
-        border-top:1px solid rgba(60,60,67,0.12);
+        border-top:0.5px solid rgba(0,0,0,0.12);
         z-index:200;
       }
       #bottom-nav button{
@@ -585,26 +585,31 @@
       .ov-card-cell:nth-child(2){border-bottom:1px solid rgba(0,0,0,.06)}
       .ov-card-cell:nth-child(3){border-right:1px solid rgba(0,0,0,.06)}
 
-      /* Cell labels — large, readable */
-      .ov-cell-label{font-size:.9rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:8px}
-      .ov-cell-value{font-size:2rem;font-weight:800;line-height:1.1;letter-spacing:-0.02em}
-      .ov-cell-sub{font-size:.85rem;color:var(--text-3);margin-top:6px}
+      /* Cell labels — Hermès tag style */
+      .ov-cell-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);margin-bottom:8px}
+      .ov-cell-value{font-size:36px;font-weight:300;line-height:1.05;letter-spacing:-0.02em}
+      .ov-cell-sub{font-size:.78rem;color:var(--text-3);margin-top:6px}
 
-      /* Ring chart — fills the cell */
-      .ov-ring{position:relative;width:min(120px, 60%);aspect-ratio:1;margin:0 auto}
+      /* Earned vs spent proportional bar */
+      .ov-ep-bar{display:flex;height:3px;margin:0 20px 0;border-radius:2px;overflow:hidden}
+      .ov-ep-bar-earn{background:rgba(52,199,89,0.55);transition:width .5s ease}
+      .ov-ep-bar-spend{flex:1;background:rgba(255,59,48,0.35)}
+
+      /* Ring chart — thin arc, no fill background */
+      .ov-ring{position:relative;width:72px;height:72px;margin:0 auto}
       .ov-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
-      .ov-ring-bg{fill:none;stroke:#f3f4f6;stroke-width:8}
-      .ov-ring-fill{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .6s ease}
+      .ov-ring-bg{fill:none;stroke:rgba(0,0,0,0.06);stroke-width:3}
+      .ov-ring-fill{fill:none;stroke-width:3;stroke-linecap:round;transition:stroke-dashoffset .6s ease}
       .ov-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-      .ov-ring-pct{font-size:2rem;font-weight:800;line-height:1}
-      .ov-ring-lbl{font-size:.75rem;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;margin-top:3px}
+      .ov-ring-pct{font-size:1.2rem;font-weight:600;line-height:1}
+      .ov-ring-lbl{font-size:9px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
 
       /* Breakdown lines in bottom cells */
-      .ov-breakdown{margin-top:10px}
-      .ov-breakdown-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;font-size:.88rem}
+      .ov-breakdown{margin-top:8px}
+      .ov-breakdown-row{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;font-size:15px}
       .ov-breakdown-row+.ov-breakdown-row{border-top:1px solid rgba(0,0,0,.05)}
-      .ov-breakdown-label{color:var(--text-3);font-weight:500}
-      .ov-breakdown-value{font-weight:700}
+      .ov-breakdown-label{color:var(--text-3);font-weight:400}
+      .ov-breakdown-value{font-weight:600}
 
       /* ── iOS PWA: Settled history mobile ──────────────── */
       .settled-card-list{display:flex;flex-direction:column;gap:2px;background:white;border-radius:12px;overflow:hidden}
@@ -1600,7 +1605,7 @@ function renderOverview() {
   // ── Range toggle row ────────────────────────────────────────────────────────
   const shortMo = new Date(S.currentMonth + '-02').toLocaleDateString('en-US', {month:'short'});
   const pill = (label, active, fn) =>
-    `<button onclick="${fn}" style="padding:8px 18px;border-radius:20px;font-size:.9rem;font-weight:700;cursor:pointer;border:1px solid ${active?'var(--primary)':'var(--border)'};background:${active?'var(--primary)':'white'};color:${active?'white':'var(--text-2)'}">${label}</button>`;
+    `<button onclick="${fn}" style="height:32px;padding:0 14px;border-radius:16px;font-size:.86rem;font-weight:600;cursor:pointer;border:1px solid ${active?'var(--primary)':'var(--border)'};background:${active?'var(--primary)':'white'};color:${active?'white':'var(--text-2)'};white-space:nowrap">${label}</button>`;
   const r = S.overviewRange;
 
   // In multi-month mode, contextual nav arrows live in the top-right of this row.
@@ -1655,6 +1660,13 @@ function renderOverview() {
     const p2Var = scaleNum(exp.filter(t => (t.person==='p2'||t.shared) && !isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0));
 
     // ── 2x2 person card builder ──
+    // Stocks-style currency: sign+$ as superscript, number weight 300 (zero) / 700 (non-zero)
+    function moneyEl(sign, amount, color) {
+      const isZero = Math.abs(amount) < 0.005;
+      const num = fc(Math.abs(amount)).slice(1); // strip leading $
+      return `<span style="color:${color}"><sup style="font-size:0.55em;font-weight:600;vertical-align:super;line-height:0">${sign}$</sup><span style="font-weight:${isZero?300:700}">${num}</span></span>`;
+    }
+
     function mobilePersonSlide(title, titleColor, cls, inc, spend, locked, ret, fam, fixed, variable) {
       if (locked) return `<div class="ov-slide"><div class="ov-slide-inner income-card ${cls}"><div class="ov-person-card"><div class="income-title" style="${titleColor?'color:'+titleColor:''}">${title}</div><div class="ov-card-grid"><div class="ov-card-cell" style="grid-column:1/-1;align-items:center"><div style="font-size:2rem;margin-bottom:8px">🔒</div><div style="font-size:1rem;color:var(--text-3)">Private</div></div></div></div></div></div>`;
       fam = fam || 0;
@@ -1662,15 +1674,19 @@ function renderOverview() {
       const tSaved = inc - spend;
       const sRate = normalInc > 0 ? Math.round(tSaved / normalInc * 100) : 0;
       const isDeficit = tSaved < 0;
-      const barColor = isDeficit ? '#ef4444' : sRate >= 20 ? '#22c55e' : sRate >= 10 ? '#f59e0b' : '#f59e0b';
+      // Ring: muted gold for savings, red for deficit
+      const ringColor = isDeficit ? '#ef4444' : '#B8935A';
       const heroColor = isDeficit ? '#dc2626' : sRate >= 20 ? '#16a34a' : sRate >= 10 ? '#ca8a04' : '#6b7280';
       const heroLabel = isDeficit ? 'Deficit' : 'Saved';
-      const heroAmt = isDeficit ? `−${fc(Math.abs(tSaved))}` : `+${fc(tSaved)}`;
 
       // SVG ring chart
       const circ = 2 * Math.PI * 36;
       const fillPct = Math.max(0, Math.min(sRate, 100));
       const dashOffset = circ - (fillPct / 100) * circ;
+
+      // Proportional earned-vs-spent bar
+      const total = inc + spend;
+      const earnPct = total > 0 ? Math.round(inc / total * 100) : 50;
 
       // Earned breakdown
       const earnedRows = [];
@@ -1678,36 +1694,39 @@ function renderOverview() {
       if ((ret||0) > 0) earnedRows.push({l:'Retirement', v:fc(ret), c:'#D4663A'});
       if (fam > 0) earnedRows.push({l:'Family', v:fc(fam), c:'#7c3aed'});
 
+      const cashFlowColor = (normalInc-spend)>=0?'#0369a1':'#dc2626';
+
       return `<div class="ov-slide"><div class="ov-slide-inner income-card ${cls}"><div class="ov-person-card">
         <div class="income-title" style="${titleColor?'color:'+titleColor:''}">${title}</div>
+        <div class="ov-ep-bar"><div class="ov-ep-bar-earn" style="width:${earnPct}%"></div><div class="ov-ep-bar-spend"></div></div>
         <div class="ov-card-grid">
           <div class="ov-card-cell">
             <div class="ov-cell-label">${heroLabel}</div>
-            <div class="ov-cell-value" style="color:${heroColor}">${heroAmt}</div>
-            <div class="ov-cell-sub" style="color:${(normalInc-spend)>=0?'#0369a1':'#dc2626'};font-weight:600">Cash flow ${(normalInc-spend)>=0?'+':'−'}${fc(Math.abs(normalInc-spend))}</div>
+            <div class="ov-cell-value">${moneyEl(isDeficit?'−':'+', Math.abs(tSaved), heroColor)}</div>
+            <div class="ov-cell-sub" style="color:${cashFlowColor};font-weight:600">Cash flow ${(normalInc-spend)>=0?'+':'−'}${fc(Math.abs(normalInc-spend))}</div>
           </div>
           <div class="ov-card-cell" style="align-items:center">
             <div class="ov-ring">
               <svg viewBox="0 0 100 100">
                 <circle class="ov-ring-bg" cx="50" cy="50" r="36"/>
-                <circle class="ov-ring-fill" cx="50" cy="50" r="36" stroke="${barColor}" stroke-dasharray="${circ}" stroke-dashoffset="${dashOffset}"/>
+                <circle class="ov-ring-fill" cx="50" cy="50" r="36" stroke="${ringColor}" stroke-dasharray="${circ}" stroke-dashoffset="${dashOffset}"/>
               </svg>
               <div class="ov-ring-center">
-                <div class="ov-ring-pct" style="color:${barColor}">${sRate}%</div>
+                <div class="ov-ring-pct" style="color:${ringColor}">${sRate}%</div>
                 <div class="ov-ring-lbl">saved</div>
               </div>
             </div>
           </div>
-          <div class="ov-card-cell" style="background:#f0fdf4;border-radius:0 0 0 20px">
+          <div class="ov-card-cell" style="background:rgba(52,199,89,0.06);border-radius:0 0 0 20px">
             <div class="ov-cell-label" style="color:#16a34a">Earned</div>
-            <div class="ov-cell-value" style="color:#15803d">+${fc(inc)}</div>
+            <div class="ov-cell-value">${moneyEl('+', inc, '#15803d')}</div>
             <div class="ov-breakdown">
               ${earnedRows.map(r => `<div class="ov-breakdown-row"><span class="ov-breakdown-label">${r.l}</span><span class="ov-breakdown-value" style="color:${r.c}">${r.v}</span></div>`).join('')}
             </div>
           </div>
-          <div class="ov-card-cell" style="background:#fef2f2;border-radius:0 0 20px 0">
+          <div class="ov-card-cell" style="background:rgba(255,59,48,0.06);border-radius:0 0 20px 0">
             <div class="ov-cell-label" style="color:#dc2626">Spent</div>
-            <div class="ov-cell-value" style="color:#b91c1c">${fc(spend)}</div>
+            <div class="ov-cell-value">${moneyEl('', spend, '#b91c1c')}</div>
             <div class="ov-breakdown">
               <div class="ov-breakdown-row"><span class="ov-breakdown-label">Fixed</span><span class="ov-breakdown-value" style="color:#6366f1">${fc(fixed)}</span></div>
               <div class="ov-breakdown-row"><span class="ov-breakdown-label">Variable</span><span class="ov-breakdown-value" style="color:#f59e0b">${fc(variable)}</span></div>
