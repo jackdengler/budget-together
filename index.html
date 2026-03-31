@@ -702,9 +702,10 @@
       .upload-zone-mini:active{transform:scale(0.96);opacity:.7}
 
       /* ── iOS PWA: Larger text for iframe rendering ───── */
-      .cat-name{font-size:.95rem}
-      .cat-amt{font-size:.95rem;width:80px}
-      .cat-track{height:10px}
+      /* cat-name: wider column + ellipsis so "Entertainment" doesn't wrap */
+      .cat-name{font-size:.9rem;width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .cat-amt{font-size:.9rem;width:72px}
+      .cat-track{height:8px}
       .merchant-name{font-size:.95rem}
       .merchant-amt{font-size:1rem}
       .merchant-rank{font-size:.8rem}
@@ -1641,7 +1642,7 @@ function renderOverview() {
   const catArr = Object.entries(byCat).filter(([,v])=>v>0).sort((a,b) => b[1]-a[1]);
   const mx = catArr[0]?.[1]||1;
   const noExpMsg = isMulti ? 'No expenses in this range' : 'No expenses this month';
-  const catBars = catArr.map(([cid,amt]) => { const c = getCat(cid); const displayAmt = scaleNum(amt); return `<div class="cat-row"><div class="cat-name">${c.emoji} ${c.label}</div><div class="cat-track"><div class="cat-fill" style="width:${(amt/mx*100).toFixed(1)}%;background:${c.color}"></div></div><div class="cat-amt">${fc(displayAmt)}</div></div>`; }).join('') || `<p class="text-muted" style="text-align:center;padding:18px">${noExpMsg}</p>`;
+  const catBars = catArr.map(([cid,amt]) => { const c = getCat(cid); const displayAmt = scaleNum(amt); return `<div class="cat-row"><div class="cat-name">${c.emoji} ${c.label}</div><div class="cat-track"><div class="cat-fill" style="width:${(amt/mx*100).toFixed(1)}%;background:${c.color}"></div></div><div class="cat-amt">${fc0(displayAmt)}</div></div>`; }).join('') || `<p class="text-muted" style="text-align:center;padding:18px">${noExpMsg}</p>`;
   // Historical per-category averages — exclude the months in the current range so we compare apples to apples
   const pastMonths = [...new Set(S.transactions.map(t => t.date.slice(0,7)))].filter(m => !rangeMonths.includes(m) && !S.excludedFromAvg.includes(m));
   const avgByCat = {};
@@ -1850,7 +1851,7 @@ function renderOverview() {
     const slide5 = `<div class="ov-slide"><div class="ov-slide-inner ov-scrollable" style="display:flex;flex-direction:column">
       <div class="ov-slide-title">Top Merchants</div>
       <div style="padding:4px 0;flex:1">
-        ${topMerchants.length?topMerchants.map((m,i) => `<div class="merchant-row"><div class="merchant-rank">#${i+1}</div><div class="merchant-name" title="${esc(m.label)}">${esc(m.label.length>30?m.label.slice(0,30)+'…':m.label)}</div><div class="merchant-meta">${m.count} txn${m.count!==1?'s':''}</div><div class="merchant-amt">${fc(m.amount)}</div></div>`).join(''):'<p class="text-muted" style="text-align:center;padding:18px">No transactions yet</p>'}
+        ${topMerchants.length?topMerchants.map((m,i) => `<div class="merchant-row"><div class="merchant-rank">#${i+1}</div><div class="merchant-name" title="${esc(m.label)}">${esc(m.label.length>30?m.label.slice(0,30)+'…':m.label)}</div><div class="merchant-meta">${m.count} txn${m.count!==1?'s':''}</div><div class="merchant-amt">${fc0(m.amount)}</div></div>`).join(''):'<p class="text-muted" style="text-align:center;padding:18px">No transactions yet</p>'}
       </div>
     </div></div>`;
 
