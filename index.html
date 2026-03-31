@@ -588,12 +588,16 @@
       /* ── iOS PWA: Overview carousel ──────────────────── */
       .ov-carousel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;gap:0;padding:0;margin:0 -12px;flex:1}
       .ov-carousel::-webkit-scrollbar{display:none}
-      .ov-slide{flex:0 0 100%;width:100%;scroll-snap-align:start;padding:0 8px;box-sizing:border-box;display:flex}
+      /* Peek effect: 95% width shows sliver of next slide, hinting at swipe */
+      .ov-slide{flex:0 0 95%;width:95%;scroll-snap-align:start;padding:0 6px 0 8px;box-sizing:border-box;display:flex}
+      .ov-slide:last-child{flex:0 0 100%;width:100%;padding:0 8px}
       .ov-slide-inner{background:white;border-radius:20px;padding:0;display:flex;flex-direction:column;overflow:hidden;position:relative;flex:1;box-shadow:0 2px 8px rgba(0,0,0,0.07),0 0 0 0.5px rgba(0,0,0,0.04)}
       .ov-slide-inner.income-card{padding:0}
-      .ov-dots{display:flex;justify-content:center;gap:6px;padding:8px 0 2px}
-      .ov-dot{width:6px;height:6px;border-radius:50%;background:var(--border);transition:all .2s}
-      .ov-dot.active{background:var(--primary);width:20px;border-radius:3px}
+      /* Named slide tabs replace meaningless dots */
+      .ov-tabs{display:flex;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:6px 8px 2px;scrollbar-width:none;border-bottom:0.5px solid var(--ios-separator)}
+      .ov-tabs::-webkit-scrollbar{display:none}
+      .ov-tab{flex-shrink:0;padding:5px 14px;font-size:13px;font-weight:600;color:var(--ios-secondary);border-bottom:2.5px solid transparent;margin-bottom:-0.5px;transition:color .18s,border-color .18s;cursor:pointer;-webkit-tap-highlight-color:transparent;white-space:nowrap}
+      .ov-tab.active{color:var(--primary);border-bottom-color:var(--primary)}
 
       /* ── iOS PWA: 2x2 income card ────────────────────── */
       .ov-person-card{display:flex;flex-direction:column;flex:1;padding:0}
@@ -624,6 +628,9 @@
       .ov-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
       .ov-ring-pct{font-size:2.6rem;font-weight:700;line-height:1;letter-spacing:-0.02em}
       .ov-ring-lbl{font-size:11px;font-weight:600;color:var(--ios-secondary);text-transform:uppercase;letter-spacing:.08em;margin-top:4px}
+
+      /* Cash flow chip in SAVED cell */
+      .ov-cashflow-chip{display:inline-flex;align-items:center;gap:4px;margin-top:8px;padding:4px 10px;border-radius:20px;font-size:14px;font-weight:600}
 
       /* Breakdown lines in bottom cells */
       .ov-breakdown{margin-top:8px}
@@ -1722,15 +1729,18 @@ function renderOverview() {
         <div class="income-title" style="${titleColor?'color:'+titleColor:''}">${title}</div>
         <div class="ov-ep-bar-wrap">
           <div class="ov-ep-bar"><div class="ov-ep-bar-earn" style="width:${earnPct}%"></div><div class="ov-ep-bar-spend"></div></div>
-          <div class="ov-ep-bar-labels"><span style="color:#16a34a">${fc0(inc)}</span><span style="color:#b91c1c">${fc0(spend)}</span></div>
+          <div class="ov-ep-bar-labels"><span style="color:#30D158">↑ ${fc0(inc)}</span><span style="color:#FF3B30">↓ ${fc0(spend)}</span></div>
         </div>
         <div class="ov-card-grid">
           <div class="ov-card-cell">
             <div class="ov-cell-label">${heroLabel}</div>
             <div class="ov-cell-value" style="color:${heroColor}">${(isDeficit?'−':'+')}${fc0(Math.abs(tSaved))}</div>
-            <div class="ov-cell-sub" style="color:${cashFlowColor}">Cash flow ${(normalInc-spend)>=0?'+':'−'}${cashFlowAmt}</div>
+            <div class="ov-cashflow-chip" style="background:${(normalInc-spend)>=0?'rgba(48,209,88,0.12)':'rgba(255,59,48,0.1)'};color:${cashFlowColor}">
+              ${(normalInc-spend)>=0?'▲':'▼'} Cash flow ${(normalInc-spend)>=0?'+':'−'}${cashFlowAmt}
+            </div>
           </div>
-          <div class="ov-card-cell" style="align-items:center;justify-content:center;padding:6px">
+          <div class="ov-card-cell" style="align-items:center;justify-content:flex-start;padding:14px 6px 6px">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ios-secondary);text-align:center;width:100%;margin-bottom:4px">Savings Rate</div>
             <div class="ov-ring">
               <svg viewBox="0 0 100 100">
                 <circle class="ov-ring-bg" cx="50" cy="50" r="36"/>
@@ -1779,26 +1789,27 @@ function renderOverview() {
       ${topMerchants.length?topMerchants.map((m,i) => `<div class="merchant-row"><div class="merchant-rank">#${i+1}</div><div class="merchant-name" title="${esc(m.label)}">${esc(m.label.length>30?m.label.slice(0,30)+'…':m.label)}</div><div class="merchant-meta">${m.count} txn${m.count!==1?'s':''}</div><div class="merchant-amt">${fc(m.amount)}</div></div>`).join(''):'<p class="text-muted" style="text-align:center;padding:18px">No transactions yet</p>'}
     </div></div>`;
 
-    const dots = `<div class="ov-dots" id="ov-dots">
-      <div class="ov-dot active" data-idx="0"></div>
-      <div class="ov-dot" data-idx="1"></div>
-      <div class="ov-dot" data-idx="2"></div>
-      <div class="ov-dot" data-idx="3"></div>
-      <div class="ov-dot" data-idx="4"></div>
+    const slideNames = ['Combined', esc(S.settings.person1||'Person 1'), esc(S.settings.person2||'Person 2'), 'Categories', 'Merchants'];
+    const dots = `<div class="ov-tabs" id="ov-dots">
+      ${slideNames.map((n,i) => `<div class="ov-tab${i===0?' active':''}" data-idx="${i}">${n}</div>`).join('')}
     </div>`;
 
-    // Wire up dot tracking after render
+    // Wire up tab tracking after render
     requestAnimationFrame(() => {
       const carousel = document.getElementById('ov-carousel');
       const dotsEl = document.getElementById('ov-dots');
       if (!carousel || !dotsEl) return;
       carousel.addEventListener('scroll', () => {
-        const idx = Math.round(carousel.scrollLeft / carousel.offsetWidth);
-        dotsEl.querySelectorAll('.ov-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+        const idx = Math.round(carousel.scrollLeft / carousel.offsetWidth * (5/4.75));
+        const clampedIdx = Math.max(0, Math.min(4, idx));
+        dotsEl.querySelectorAll('.ov-tab').forEach((d, i) => {
+          d.classList.toggle('active', i === clampedIdx);
+          if (i === clampedIdx) d.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+        });
       }, {passive: true});
-      // Tap dots to navigate
+      // Tap tabs to navigate
       dotsEl.addEventListener('click', e => {
-        const dot = e.target.closest('.ov-dot');
+        const dot = e.target.closest('.ov-tab');
         if (!dot) return;
         carousel.scrollTo({left: +dot.dataset.idx * carousel.offsetWidth, behavior: 'smooth'});
       });
