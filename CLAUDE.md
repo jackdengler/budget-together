@@ -17,3 +17,7 @@ Do NOT wait for the user to ask — this should happen after every edit, every t
 - Backend: `Code.gs`
 - Config: `appsscript.json`
 - The user has a single deployed web app URL that should always reflect the latest code
+
+## Manual Tasks
+
+When a task requires something that must be done manually (e.g., opening a website, changing a computer setting, configuring an account, enabling a toggle in an app, etc.), offer to do it on the user's Mac for them.
