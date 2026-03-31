@@ -564,7 +564,8 @@
 
       /* ── iOS PWA: Transaction card list ──────────────── */
       .txn-card-list{display:flex;flex-direction:column;gap:0;background:white;border-radius:12px;overflow:visible;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
-      .txn-card{display:flex;align-items:center;gap:12px;padding:12px 14px 12px 16px;background:white;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s,transform .1s cubic-bezier(0.34,1.56,0.64,1)}
+      @keyframes txnCardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+      .txn-card{display:flex;align-items:center;gap:12px;padding:12px 14px 12px 16px;background:white;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s,transform .1s cubic-bezier(0.34,1.56,0.64,1);animation:txnCardIn .22s var(--ease-out) calc(var(--i,0) * 30ms) both}
       .txn-card:active{background:rgba(212,102,58,0.08);transform:scale(0.985)}
       .txn-card+.txn-card{border-top:0.5px solid rgba(60,60,67,0.08)}
       /* First/last card gets matching border-radius */
@@ -632,8 +633,10 @@
       /* Combined slide: warm brand tint to feel like the authoritative summary */
       .ic-combined .ov-slide-inner{background:linear-gradient(160deg,#fff 55%,rgba(212,102,58,0.04) 100%)}
       /* M3 tonal surfaces for person slides — p1 blue tint, p2 pink tint */
-      .ic-p1 .ov-slide-inner{background:linear-gradient(160deg,#fff 55%,rgba(37,99,235,0.03) 100%)}
-      .ic-p2 .ov-slide-inner{background:linear-gradient(160deg,#fff 55%,rgba(219,39,119,0.03) 100%)}
+      /* Meta-style identity stripe: 2px solid color along top of card */
+      .ic-p1 .ov-slide-inner{background:linear-gradient(160deg,#fff 55%,rgba(37,99,235,0.04) 100%);border-top:2.5px solid var(--p1)}
+      .ic-p2 .ov-slide-inner{background:linear-gradient(160deg,#fff 55%,rgba(219,39,119,0.04) 100%);border-top:2.5px solid var(--p2)}
+      .ic-combined .ov-slide-inner{border-top:2.5px solid var(--primary)}
       .ov-slide-inner.income-card{padding:0}
       /* Named slide tabs — pill/chip style, no underline */
       .ov-tabs{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:7px 8px 7px;scrollbar-width:none;background:transparent;flex-shrink:0}
@@ -2003,6 +2006,7 @@ function renderTxns() {
     }
     const dateKeys = Object.keys(grouped).sort((a,b) => sDir==='desc' ? b.localeCompare(a) : a.localeCompare(b));
 
+    let _cardIdx = 0; // global stagger counter across all date groups
     const cardHtml = dateKeys.map(dk => {
       const dayTxns = grouped[dk];
       const [y,m,d] = dk.split('-');
@@ -2015,8 +2019,11 @@ function renderTxns() {
         const ownerLabel = t.shared ? 'Shared' : (t.person==='p1' ? esc(S.settings.person1) : esc(S.settings.person2));
         const isInc = t.amount < 0;
         const _ownerCls = t.shared ? 'txn-shared' : (t.person==='p1' ? 'txn-p1' : 'txn-p2');
-        return `<div class="txn-card ${_ownerCls}${t.excluded?' excluded':''}" onclick="showTxnEditModal('${t.id}')">
-          <div class="txn-card-emoji">${cat.emoji}</div>
+        const _staggerIdx = _cardIdx++;
+        // Category-colored emoji background: subtle 10% tint of the category color
+        const emojiBg = cat.color ? cat.color + '1a' : 'rgba(120,120,128,0.08)';
+        return `<div class="txn-card ${_ownerCls}${t.excluded?' excluded':''}" style="--i:${_staggerIdx}" onclick="showTxnEditModal('${t.id}')">
+          <div class="txn-card-emoji" style="background:${emojiBg}">${cat.emoji}</div>
           <div class="txn-card-body">
             <div class="txn-card-desc">${esc(t.description)}</div>
             <div class="txn-card-meta">
