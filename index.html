@@ -428,6 +428,7 @@
         --color-saved-pos:#1A9E45; /* same as earned */
         --color-deficit:#C0392B;
         --color-amber:#C07C00;     /* darkened #FF9F0A → 4.8:1 on white */
+        --color-fixed:#4338CA;     /* indigo — fixed/recurring expenses */
         /* Easing tokens */
         --ease-spring:cubic-bezier(0.34,1.56,0.64,1);
         --ease-smooth:cubic-bezier(0.25,0.46,0.45,0.94);
@@ -577,7 +578,7 @@
       .txn-card.txn-p1{border-left:3px solid var(--p1);padding-left:13px}
       .txn-card.txn-p2{border-left:3px solid var(--p2);padding-left:13px}
       .txn-card.txn-shared{border-left:3px solid var(--green);padding-left:13px}
-      .txn-card-emoji{font-size:1.4rem;width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:rgba(120,120,128,0.08);border-radius:9px;flex-shrink:0}
+      .txn-card-emoji{font-size:1.4rem;width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:rgba(120,120,128,0.08);border-radius:10px;flex-shrink:0}
       .txn-card-body{flex:1;min-width:0}
       .txn-card-desc{font-size:.96rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .txn-card-meta{font-size:.75rem;color:var(--text-3);margin-top:2px;display:flex;align-items:center;gap:5px}
@@ -647,7 +648,7 @@
       /* ── iOS PWA: 2x2 income card ────────────────────── */
       .ov-person-card{display:flex;flex-direction:column;flex:1;padding:0}
       /* Compact header — saves vertical real estate for the data grid */
-      .ov-person-card .income-title{padding:12px 14px 2px;font-size:16px;font-weight:700;margin-bottom:0;letter-spacing:-.02em;text-transform:none;color:var(--text)}
+      .ov-person-card .income-title{padding:12px 14px 2px;font-size:16px;font-weight:700;margin-bottom:0;letter-spacing:-.02em;text-transform:none;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .ov-card-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;flex:1}
       /* Tighter cell padding — 36px number + label + chip all need room */
       .ov-card-cell{display:flex;flex-direction:column;justify-content:flex-start;padding:10px 12px;position:relative;overflow:hidden}
@@ -656,13 +657,13 @@
       .ov-card-cell:nth-child(3){border-right:0.5px solid rgba(60,60,67,0.1)}
 
       /* Meta: category labels bold, values heavy (Instagram stats style) */
-      .ov-cell-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--ios-secondary);margin-bottom:3px}
+      .ov-cell-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--ios-secondary);margin-bottom:4px}
       /* 30px prevents overflow for values like -$11,718 in a half-width cell */
       .ov-cell-value{font-size:30px;font-weight:800;line-height:1;letter-spacing:-0.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-variant-numeric:tabular-nums}
       .ov-cell-sub{font-size:13px;color:var(--text-3);margin-top:4px;font-weight:400}
 
       /* Earned vs spent proportional bar — Apple capsule style */
-      .ov-ep-bar-wrap{margin:2px 10px 0;display:flex;flex-direction:column;gap:3px}
+      .ov-ep-bar-wrap{margin:4px 12px 0;display:flex;flex-direction:column;gap:4px}
       .ov-ep-bar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:rgba(255,59,48,0.18)}
       .ov-ep-bar-earn{background:var(--ios-green);transition:width .6s cubic-bezier(0.34,1.56,0.64,1)}
       .ov-ep-bar-spend{display:none}
@@ -682,7 +683,7 @@
       .ov-cashflow-chip{display:inline-flex;align-items:center;gap:3px;margin-top:6px;padding:4px 10px;border-radius:20px;font-size:13px;font-weight:600}
 
       /* Meta Insights-style breakdown rows */
-      .ov-breakdown{margin-top:5px}
+      .ov-breakdown{margin-top:4px}
       .ov-breakdown-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;position:relative}
       .ov-breakdown-row+.ov-breakdown-row{border-top:0.5px solid rgba(0,0,0,.06)}
       .ov-breakdown-label{color:var(--ios-secondary);font-weight:500;letter-spacing:.01em;display:flex;align-items:center;gap:5px;font-size:12px}
@@ -1839,7 +1840,7 @@ function renderOverview() {
               <div class="ov-cell-value" style="color:var(--color-spent)">${fc0(spend)}</div>
             </div>
             <div class="ov-breakdown">
-              <div class="ov-breakdown-row"><span class="ov-breakdown-label"><span class="ov-dot" style="background:#4F46E5"></span>Fixed</span><span class="ov-breakdown-value" style="color:#4F46E5">${fc0(fixed)}</span></div>
+              <div class="ov-breakdown-row"><span class="ov-breakdown-label"><span class="ov-dot" style="background:var(--color-fixed)"></span>Fixed</span><span class="ov-breakdown-value" style="color:var(--color-fixed)">${fc0(fixed)}</span></div>
               <div class="ov-breakdown-row"><span class="ov-breakdown-label"><span class="ov-dot" style="background:var(--color-amber)"></span>Variable</span><span class="ov-breakdown-value" style="color:var(--color-amber)">${fc0(variable)}</span></div>
             </div>
           </div>
@@ -2033,7 +2034,7 @@ function renderTxns() {
               <span>· ${esc(cat.label)}</span>
             </div>
           </div>
-          <div class="txn-card-amt${isInc?' inc':''}">${isInc?'+':''}${fc(t.amount)}</div>
+          <div class="txn-card-amt${isInc?' inc':''}">${isInc?'+':''}${fc0(t.amount)}</div>
           <div class="txn-card-chevron">›</div>
         </div>`;
       }).join('');
@@ -2222,7 +2223,7 @@ function renderSplit() {
           <div style="font-size:.88rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.description)}</div>
           <div style="font-size:.75rem;color:var(--text-3);margin-top:2px">${fmtDate(t.date)} · <span style="color:${pc};font-weight:600">${esc(payer)}</span></div>
         </div>
-        <div style="font-weight:700;font-size:.9rem;flex-shrink:0">${fc(t.amount)}</div>
+        <div style="font-weight:700;font-size:.9rem;flex-shrink:0">${fc0(t.amount)}</div>
         <button class="btn-sm" onclick="unsettle('${t.id}')" style="flex-shrink:0">↩</button>
       </div>`;
     }).join('');
