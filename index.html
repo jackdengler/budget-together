@@ -426,12 +426,12 @@
         backdrop-filter:saturate(180%) blur(20px);
         border-bottom:1px solid rgba(60,60,67,0.12);
       }
-      .logo{font-size:1.6rem;font-weight:800;letter-spacing:-0.03em;width:100%;margin-bottom:2px}
+      .logo{font-size:1.25rem;font-weight:800;letter-spacing:-0.03em;width:100%;margin-bottom:2px}
       #nav{display:none}
-      .month-nav button{width:38px;height:38px;border-radius:12px;border:none;background:rgba(120,120,128,0.12);font-size:1.2rem}
-      .month-nav span{font-size:1.05rem;font-weight:700}
-      .save-status{font-size:.7rem;margin-left:auto}
-      .icon-btn{width:38px;height:38px;border:none;background:rgba(120,120,128,0.12);border-radius:12px;font-size:1.1rem}
+      .month-nav button{width:30px;height:30px;border-radius:9px;border:none;background:rgba(120,120,128,0.12);font-size:1rem}
+      .month-nav span{font-size:.9rem;font-weight:700}
+      .save-status{font-size:.65rem;margin-left:auto}
+      .icon-btn{width:32px;height:32px;border:none;background:rgba(120,120,128,0.12);border-radius:10px;font-size:.95rem}
       #review-badge{padding:4px 10px;font-size:0;border:none;background:rgba(217,119,6,0.12);border-radius:10px}
       #review-badge-count{font-size:0.78rem}
 
@@ -590,29 +590,29 @@
       .ov-person-card{display:flex;flex-direction:column;flex:1;padding:0}
       .ov-person-card .income-title{padding:16px 20px 0;font-size:.95rem;margin-bottom:0;letter-spacing:.06em}
       .ov-card-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;flex:1}
-      .ov-card-cell{display:flex;flex-direction:column;justify-content:center;padding:20px;position:relative;overflow:hidden}
+      .ov-card-cell{display:flex;flex-direction:column;justify-content:flex-end;padding:16px 18px 20px;position:relative;overflow:hidden}
       .ov-card-cell:nth-child(1){border-right:1px solid rgba(0,0,0,.06);border-bottom:1px solid rgba(0,0,0,.06)}
       .ov-card-cell:nth-child(2){border-bottom:1px solid rgba(0,0,0,.06)}
       .ov-card-cell:nth-child(3){border-right:1px solid rgba(0,0,0,.06)}
 
-      /* Cell labels — Hermès tag style */
-      .ov-cell-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);margin-bottom:8px}
-      .ov-cell-value{font-size:clamp(16px,5.2vw,32px);font-weight:300;line-height:1.05;letter-spacing:-0.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-      .ov-cell-sub{font-size:.78rem;color:var(--text-3);margin-top:6px}
+      /* Cell labels */
+      .ov-cell-label{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3);margin-bottom:6px}
+      .ov-cell-value{font-size:clamp(22px,6vw,34px);font-weight:300;line-height:1.05;letter-spacing:-0.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      .ov-cell-sub{font-size:13px;color:var(--text-3);margin-top:5px}
 
       /* Earned vs spent proportional bar */
       .ov-ep-bar{display:flex;height:3px;margin:0 20px 0;border-radius:2px;overflow:hidden}
       .ov-ep-bar-earn{background:rgba(52,199,89,0.55);transition:width .5s ease}
       .ov-ep-bar-spend{flex:1;background:rgba(255,59,48,0.35)}
 
-      /* Ring chart — thin arc, no fill background */
-      .ov-ring{position:relative;width:72px;height:72px;margin:0 auto}
+      /* Ring chart — thin arc */
+      .ov-ring{position:relative;width:90px;height:90px;margin:0 auto}
       .ov-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
       .ov-ring-bg{fill:none;stroke:rgba(0,0,0,0.06);stroke-width:3}
       .ov-ring-fill{fill:none;stroke-width:3;stroke-linecap:round;transition:stroke-dashoffset .6s ease}
       .ov-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-      .ov-ring-pct{font-size:1.2rem;font-weight:600;line-height:1}
-      .ov-ring-lbl{font-size:9px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+      .ov-ring-pct{font-size:1.5rem;font-weight:600;line-height:1}
+      .ov-ring-lbl{font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
 
       /* Breakdown lines in bottom cells */
       .ov-breakdown{margin-top:8px}
@@ -1715,7 +1715,7 @@ function renderOverview() {
             <div class="ov-cell-value">${moneyEl(isDeficit?'−':'+', Math.abs(tSaved), heroColor)}</div>
             <div class="ov-cell-sub" style="color:${cashFlowColor};font-weight:600">Cash flow ${(normalInc-spend)>=0?'+':'−'}${fc(Math.abs(normalInc-spend))}</div>
           </div>
-          <div class="ov-card-cell" style="align-items:center">
+          <div class="ov-card-cell" style="align-items:center;justify-content:center">
             <div class="ov-ring">
               <svg viewBox="0 0 100 100">
                 <circle class="ov-ring-bg" cx="50" cy="50" r="36"/>
