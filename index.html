@@ -918,7 +918,7 @@ function setSaveStatus(s) {
 let _uid = 0;
 const uid = () => Date.now().toString(36) + (++_uid).toString(36) + Math.random().toString(36).slice(2);
 const $ = id => document.getElementById(id);
-const isMobile = () => matchMedia('(max-width:700px),(pointer:coarse)').matches;
+const isMobile = () => matchMedia('(max-width:700px),(pointer:coarse)').matches || (navigator.maxTouchPoints > 0 && window.innerWidth <= 1024);
 const fc  = n => { const a = Math.abs(n); return '$' + a.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); };
 const fc0 = n => '$' + Math.round(Math.abs(n)).toLocaleString();
 function fmtDate(d) { if (!d) return ''; const [y,m,day] = d.split('-'); return `${m}/${day}/${y.slice(2)}`; }
