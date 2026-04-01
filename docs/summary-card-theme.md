@@ -24,7 +24,7 @@ Global design tokens and component specs. Every component pulls from these token
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--text-primary` | `#222` | Headings, hero numbers, titles |
+| `--text-primary` | `#3A3020` | Headings, hero numbers, titles (Deep Brown) |
 | `--text-secondary` | `#9A8A78` | Labels, descriptions, less important (Taupe) |
 | `--text-muted` | `#b0a090` | Timestamps, hints, faintest text |
 | `--text-sub` | `#7A6A58` | Breakdown values |
@@ -151,3 +151,55 @@ Prefix: `rcs-` (Ring Center Stage)
 ### Locked State
 
 Private card shows 🔒 centered with "Private" text, no data.
+
+---
+
+## Component: Header Bar
+
+Single row, full width.
+
+### Layout
+
+```
+[ BT ]  Overview  Transactions  Split  History     ‹ April 2026 ›   [3 to review] [📊] [⚙️]
+```
+
+### Decisions
+
+| Property | Value |
+|----------|-------|
+| Rows | One row |
+| Tab style | Text only — active in `--accent`, inactive `#999` |
+| Logo | Minimal "BT" — uppercase, muted, `--text-3`, letter-spacing 2px |
+| Background | Subtle Darker `#E8E4DA` |
+| Bottom border | `1px solid #ddd8cc` |
+| Month nav | Normal 16px |
+| Actions | Full — review badge + icon buttons |
+| Tab position | Left (after logo) |
+| Padding | 12px 20px |
+
+### Logo
+
+- Text: "BT"
+- Font: 13px, weight 800, letter-spacing 2px, uppercase
+- Color: `--text-3`
+
+### Tabs
+
+- Style: Plain text, no pill/border
+- Active: `--accent` color, weight 800
+- Inactive: `#999`, weight 600
+- Gap: 18px between tabs
+- Size: 13px
+
+### Month Navigation
+
+- Font: 16px, weight 900, letter-spacing -0.5px
+- Arrows: 28×28px, 2px border `--surface-border`, radius 8px
+- Arrow color: `--text-3`
+
+### Action Buttons
+
+- Review badge: `--warning-light` background, weight 800, 11px
+- Icon buttons: 32×32px, `--hover-bg` background, radius 10px, 16px emoji
+- Gap: 6px
