@@ -1798,11 +1798,19 @@ function renderOverview() {
   const catArr = Object.entries(byCat).filter(([,v])=>v>0).sort((a,b) => b[1]-a[1]);
   const mx = catArr[0]?.[1]||1;
   const noExpMsg = isMulti ? 'No expenses in this range' : 'No expenses this month';
-  // Per-person per-category for split bars
+  // Per-person per-category for split bars — post-settle shares
   const p1ByCat = {}, p2ByCat = {};
   for (const t of exp) {
-    if (t.person==='p1'||t.shared) p1ByCat[t.category] = (p1ByCat[t.category]||0) + t.amount;
-    if (t.person==='p2'||t.shared) p2ByCat[t.category] = (p2ByCat[t.category]||0) + t.amount;
+    if (t.shared) {
+      // Use catSplit ratios to determine each person's share
+      const {p1Share, p2Share} = getCatSplitAmts(t.category, t.amount);
+      p1ByCat[t.category] = (p1ByCat[t.category]||0) + p1Share;
+      p2ByCat[t.category] = (p2ByCat[t.category]||0) + p2Share;
+    } else {
+      // Solo expense — 100% to the person who paid
+      if (t.person==='p1') p1ByCat[t.category] = (p1ByCat[t.category]||0) + t.amount;
+      else p2ByCat[t.category] = (p2ByCat[t.category]||0) + t.amount;
+    }
   }
   const catTotal = catArr.reduce((s,[,v])=>s+v, 0);
   // Limit to 6 visible rows; combine remainder into "All Other"
