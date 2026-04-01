@@ -2184,14 +2184,27 @@ ${rangeToggle}
 ${viewToggle}
 ${recSectionHtml}
 <div class="rcs-row">${rc1}${rc2}${rc3}</div>
-<div style="display:flex;gap:16px;align-items:stretch;">
+<div style="display:flex;gap:16px;align-items:stretch;" id="cat-section-row">
   <div class="card" style="flex:1;min-width:0;margin-bottom:0;">
     <div class="section-title">Spending by Category</div>
     ${catBars}
     <div style="text-align:center;margin-top:10px;font-size:11px;font-weight:700;color:var(--primary);cursor:pointer;" onclick="document.querySelectorAll('.cat-hidden').forEach(e=>e.style.display='flex');this.style.display='none';">Show all categories →</div>
   </div>
-  ${catDonut ? `<div class="card" style="display:flex;align-items:center;justify-content:center;padding:24px;margin-bottom:0;aspect-ratio:1;flex-shrink:0;"><div style="width:100%;height:100%;position:relative;">${catDonut.replace(/width:140px;height:140px/,'width:100%;height:100%')}</div></div>` : ''}
+  ${catDonut ? `<div class="card" id="donut-card" style="display:flex;align-items:center;justify-content:center;padding:24px;margin-bottom:0;flex-shrink:0;"><div style="position:relative;" id="donut-inner">${catDonut.replace(/width:140px;height:140px/,'width:140px;height:140px')}</div></div>` : ''}
 </div>
+<script>
+requestAnimationFrame(function(){
+  var dc=document.getElementById('donut-card');
+  if(!dc)return;
+  var h=dc.offsetHeight-48;
+  var inner=document.getElementById('donut-inner');
+  if(inner&&h>100){
+    inner.firstElementChild.style.width=h+'px';
+    inner.firstElementChild.style.height=h+'px';
+    dc.style.width=(h+48)+'px';
+  }
+});
+</script>
 <div class="card" style="margin-top:14px"><div class="section-title">Top Merchants</div>${topMerchants.length?`<div class="merchant-grid">${merchantRows}</div>`:'<p class="text-muted" style="text-align:center;padding:18px">No transactions this month</p>'}</div>`;
 }
 
