@@ -1008,7 +1008,7 @@ const DB = {
       const res = await sheetsReq('GET', '/values:batchGet?ranges=Transactions!A1:K&ranges=Budgets!A1:B&ranges=Settings!A1:B');
       const [tSheet, bSheet, sSheet] = res.valueRanges || [];
       const transactions = (tSheet?.values||[]).slice(1).filter(r=>r[0]).map(r=>({
-        id:r[0]||'', date:r[1]||'', amount:parseFloat(r[2])||0, description:r[3]||'',
+        id:r[0]||'', date:parseDt(r[1])||r[1]||'', amount:parseFloat(r[2])||0, description:r[3]||'',
         category:r[4]||'other', person:r[5]||'p1', note:r[6]||'',
         shared:r[7]==='true', settled:r[8]==='true', splitRatio:parseFloat(r[9])||0.5, excluded:r[10]==='true',
       }));
@@ -2033,9 +2033,11 @@ function renderTxns() {
     const cardHtml = dateKeys.map(dk => {
       const dayTxns = grouped[dk];
       const [y,m,d] = dk.split('-');
-      const dateLabel = dk !== 'Unknown'
-        ? new Date(+y,+m-1,+d).toLocaleDateString('en-US',{weekday:'long', month:'short', day:'numeric'})
-        : 'Unknown Date';
+      let dateLabel = 'Unknown Date';
+      if (dk !== 'Unknown' && y && m && d) {
+        const dt = new Date(+y,+m-1,+d);
+        dateLabel = isNaN(dt.getTime()) ? dk : dt.toLocaleDateString('en-US',{weekday:'long', month:'short', day:'numeric'});
+      }
       const cards = dayTxns.map(t => {
         const cat = getCat(t.category);
         const ownerColor = t.shared ? 'var(--green)' : (t.person==='p1' ? 'var(--p1)' : 'var(--p2)');
