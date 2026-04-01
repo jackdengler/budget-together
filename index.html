@@ -2186,7 +2186,7 @@ ${viewToggle}
 ${recSectionHtml}
 <div class="rcs-row">${rc1}${rc2}${rc3}</div>
 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px;" id="cat-section-row">
-  <div class="card" style="margin-bottom:0;padding:12px;aspect-ratio:1;overflow:auto;">
+  <div class="card" style="margin-bottom:0;padding:12px;aspect-ratio:1;overflow:hidden;">
     <div class="section-title" style="margin-bottom:12px;">Spending by Category</div>
     ${catBars}
     <div style="text-align:center;margin-top:10px;font-size:11px;font-weight:700;color:var(--primary);cursor:pointer;" onclick="document.querySelectorAll('.cat-hidden').forEach(e=>e.style.display='flex');this.style.display='none';">Show all categories →</div>
