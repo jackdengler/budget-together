@@ -11,10 +11,10 @@ Budget Together is a **Google Apps Script web app**. There is no separate server
 
 ## Hosting
 
-The app is hosted entirely on Google Apps Script. The live URL looks like:
+The app is hosted entirely on Google Apps Script. The live URL is:
 
 ```
-https://script.google.com/macros/s/<deployment-id>/exec
+https://script.google.com/macros/s/AKfycbz00_wJSijk4uL7KHMHpIi3u4OlWxmJmouGlHX2X106jwh_yDZFTVC9NyW9tFq0N1KpEg/exec
 ```
 
 The web app settings (in `appsscript.json`):
@@ -57,6 +57,16 @@ clasp push           # uploads local files to the Apps Script project
 ```
 
 The `.clasp.json` file already has the `scriptId` so clasp knows which project to push to.
+
+## iOS Home Screen Launcher (GitHub Pages)
+
+To get a custom icon on the iOS home screen, we serve a lightweight launcher page from GitHub Pages that redirects to the Apps Script URL.
+
+- **Launcher URL:** `https://jackdengler.github.io/budget-together/`
+- **Files:** `docs/index.html`, `docs/manifest.json`, `docs/icon.png`
+- **How it works:** User adds the GitHub Pages URL to their home screen. iOS picks up the `apple-touch-icon` (the dog face icon). Tapping it opens the launcher, which immediately redirects to the Apps Script app.
+
+To enable: Go to **GitHub repo > Settings > Pages** and set source to "Deploy from a branch", branch `main`, folder `/docs`.
 
 ## What's NOT in this repo
 

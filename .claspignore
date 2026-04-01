@@ -5,3 +5,5 @@
 CLAUDE.md
 start.command
 node_modules/**
+docs/**
+DEPLOYMENT.md

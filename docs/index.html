@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Budget Together">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#F2F2F7">
+  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="manifest" href="manifest.json">
+  <title>Budget Together</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+      background: #F2F2F7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+    .loader {
+      text-align: center;
+      padding: 2rem;
+    }
+    .loader img {
+      width: 80px;
+      height: 80px;
+      border-radius: 18px;
+      margin-bottom: 1rem;
+    }
+    .loader p {
+      color: #8E8E93;
+      font-size: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="loader">
+    <img src="icon.png" alt="Budget Together">
+    <p>Loading Budget Together&hellip;</p>
+  </div>
+  <script>
+    // Redirect to the Apps Script web app
+    var APP_URL = 'https://script.google.com/macros/s/AKfycbz00_wJSijk4uL7KHMHpIi3u4OlWxmJmouGlHX2X106jwh_yDZFTVC9NyW9tFq0N1KpEg/exec';
+    window.location.replace(APP_URL);
+  </script>
+</body>
+</html>
