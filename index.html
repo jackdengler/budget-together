@@ -143,9 +143,9 @@
     nav button:active{transform:scale(0.97)}
     nav button.active{color:var(--primary);font-weight:800}
     nav button:hover{color:var(--text-2)}
-    .month-nav{display:flex;align-items:center;gap:8px;font-weight:900;font-size:16px;color:var(--text);white-space:nowrap;letter-spacing:-0.03em}
-    .month-nav button{width:28px;height:28px;border:2px solid var(--surface-border);border-radius:var(--radius-sm);background:transparent;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:var(--text-3);-webkit-tap-highlight-color:transparent;transition:all 0.2s var(--ease-spring);font-family:var(--font-stack);font-weight:800}
-    .month-nav button:hover{background:var(--hover-bg)}
+    .month-nav{display:flex;align-items:center;gap:6px;font-weight:900;font-size:16px;color:var(--text);white-space:nowrap;letter-spacing:-0.03em}
+    .month-nav button{border:none;background:none;cursor:pointer;color:var(--text-3);font-size:16px;padding:4px;display:flex;align-items:center;-webkit-tap-highlight-color:transparent;transition:color 0.15s}
+    .month-nav button:hover{color:var(--text-2)}
     .month-nav button:active{transform:scale(0.9)}
     .icon-btn{width:32px;height:32px;border:none;background:var(--hover-bg);border-radius:10px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text-2);-webkit-tap-highlight-color:transparent;transition:all 0.2s var(--ease-spring)}
     .icon-btn:hover{background:var(--surface-border);color:var(--text)}
@@ -858,9 +858,9 @@
       <button data-tab="history">History</button>
     </nav>
     <div class="month-nav">
-      <button id="prev-mo">‹</button>
+      <button id="prev-mo"><i class="bi bi-chevron-left"></i></button>
       <span id="mo-label">—</span>
-      <button id="next-mo">›</button>
+      <button id="next-mo"><i class="bi bi-chevron-right"></i></button>
     </div>
     <span class="save-status" id="save-status"></span>
     <div id="lock-btns" style="display:flex;gap:6px"></div>

@@ -8,6 +8,7 @@ Global design tokens and component specs. Every component pulls from these token
 - **No + sign** on positive amounts. **− sign** on losses only.
 - **Font**: DM Sans, all weights 300–900, via Google Fonts.
 - **Layout**: One row header. Full-width content (no max-width cap).
+- **Cards**: All cards use `--surface` bg + `2px solid --surface-border` + no box-shadow. Consistent everywhere.
 
 ## Color Tokens
 
