@@ -72,9 +72,27 @@ function loadAll() {
   if (lastR > 1) {
     ts.getRange(2, 1, lastR - 1, 11).getValues().forEach(r => {
       if (!r[0]) return;
+      // Google Sheets returns dates as Date objects; normalize to YYYY-MM-DD
+      const rawDate = r[1];
+      let dateStr = '';
+      if (rawDate instanceof Date && !isNaN(rawDate.getTime())) {
+        const yy = rawDate.getFullYear();
+        const mm = String(rawDate.getMonth() + 1).padStart(2, '0');
+        const dd = String(rawDate.getDate()).padStart(2, '0');
+        dateStr = yy + '-' + mm + '-' + dd;
+      } else if (rawDate) {
+        dateStr = String(rawDate);
+        // Try to normalize M/D/YYYY or MM/DD/YYYY to YYYY-MM-DD
+        const m = dateStr.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+        if (m) {
+          let [, mo, d, y] = m;
+          if (y.length === 2) y = '20' + y;
+          dateStr = y + '-' + mo.padStart(2, '0') + '-' + d.padStart(2, '0');
+        }
+      }
       transactions.push({
         id:          String(r[0]),
-        date:        String(r[1]),
+        date:        dateStr,
         amount:      parseFloat(r[2]) || 0,
         description: String(r[3]),
         category:    String(r[4]) || 'other',
