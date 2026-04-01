@@ -6,6 +6,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Budget Together</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <script>
     (function(){
       if (window.self !== window.top) {
@@ -25,25 +29,33 @@
   <style>
     :root {
       --z: 1;
-      --bg: #000;
-      --surface: #161618;
-      --elevated: #1E1E20;
-      --border: rgba(255,255,255,.06);
-      --text: #F5F5F7;
-      --text2: rgba(245,245,247,.55);
-      --text3: rgba(245,245,247,.28);
-      --accent-green: #32D74B;
-      --accent-green-soft: rgba(50,215,75,.12);
-      --accent-red: #FF453A;
-      --accent-red-soft: rgba(255,69,58,.12);
-      --accent-orange: #FFD60A;
-      --accent-blue: #0A84FF;
+      --bg: #F0EDE6;
+      --surface: #F8F2EA;
+      --surface-border: #e8ddd0;
+      --ring-track: #e8ddd0;
+      --text: #2A2520;
+      --text-2: #5A4A3A;
+      --text-3: #b0a090;
+      --text-sub: #7A6A58;
+      --primary: #D4663A;
+      --green: #3A6A3A;
+      --red: #A84A2A;
+      --yellow: #A08040;
+      --purple: #685880;
+      --p1: #6A8AAA;
+      --p1-bar: #A0B8CC;
+      --p2: #9A7A2A;
+      --p2-bar: #C4B060;
+      --radius: calc(16px * var(--z));
+      --radius-sm: calc(8px * var(--z));
+      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Rounded", "Helvetica Neue", sans-serif;
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
       background: var(--bg);
       color: var(--text);
       height: 100vh;
@@ -57,7 +69,7 @@
       flex-direction: column;
     }
 
-    /* ── Loading ── */
+    /* Loading */
     #status {
       display: flex;
       flex-direction: column;
@@ -65,27 +77,34 @@
       justify-content: center;
       height: 100vh;
       gap: calc(14px * var(--z));
-      color: var(--text3);
-      font-size: calc(13px * var(--z));
-      font-weight: 500;
-      letter-spacing: calc(0.5px * var(--z));
+    }
+    .ld-dots { display: flex; gap: calc(6px * var(--z)); }
+    .ld-dots div {
+      width: calc(6px * var(--z));
+      height: calc(6px * var(--z));
+      border-radius: 50%;
+      background: var(--primary);
+      animation: loadDot 1.4s ease-in-out infinite;
+    }
+    .ld-dots div:nth-child(2) { animation-delay: 0.16s; }
+    .ld-dots div:nth-child(3) { animation-delay: 0.32s; }
+    @keyframes loadDot {
+      0%,80%,100% { transform: scale(0.4); opacity: 0.3; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+    .ld-label {
+      color: var(--text-3);
+      font-size: calc(11px * var(--z));
+      font-weight: 700;
+      letter-spacing: calc(2px * var(--z));
       text-transform: uppercase;
     }
-    .ld-ring {
-      width: calc(28px * var(--z));
-      height: calc(28px * var(--z));
-      border: calc(2.5px * var(--z)) solid var(--border);
-      border-top-color: var(--text2);
-      border-radius: 50%;
-      animation: spin .9s cubic-bezier(.45,.05,.55,.95) infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── App ── */
+    /* App */
     #app { display: none; flex-direction: column; height: 100%; }
     #app.show { display: flex; flex: 1; }
 
-    /* ── Month bar ── */
+    /* Month bar */
     .mo-bar {
       display: flex;
       align-items: center;
@@ -98,7 +117,7 @@
     .mo-bar button {
       background: none;
       border: none;
-      color: var(--text3);
+      color: var(--text-3);
       font-size: calc(22px * var(--z));
       padding: calc(4px * var(--z)) calc(10px * var(--z));
       cursor: pointer;
@@ -108,199 +127,333 @@
     .mo-bar button:active { color: var(--text); }
     .mo-label {
       font-size: calc(17px * var(--z));
-      font-weight: 600;
+      font-weight: 800;
       letter-spacing: calc(-0.2px * var(--z));
       color: var(--text);
       min-width: calc(160px * var(--z));
       text-align: center;
     }
 
-    /* ── Carousel ── */
+    /* Carousel */
     .carousel {
       display: flex;
       overflow-x: auto;
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
-      padding: 0 calc(14px * var(--z));
+      padding: 0 calc(12px * var(--z));
       gap: calc(10px * var(--z));
       flex: 1;
       align-items: stretch;
     }
     .carousel::-webkit-scrollbar { display: none; }
 
-    /* ── Card ── */
+    /* Card */
     .card {
-      flex: 0 0 calc(100% - calc(28px * var(--z)));
+      flex: 0 0 calc(100% - calc(24px * var(--z)));
       scroll-snap-align: center;
       background: var(--surface);
-      border: calc(1px * var(--z)) solid var(--border);
-      border-radius: calc(24px * var(--z));
-      padding: calc(18px * var(--z)) calc(16px * var(--z)) calc(14px * var(--z));
+      border: calc(2px * var(--z)) solid var(--surface-border);
+      border-radius: var(--radius);
+      padding: calc(16px * var(--z));
       display: flex;
       flex-direction: column;
+      overflow: hidden;
       animation: fadeIn .35s ease both;
     }
     @keyframes fadeIn {
       from { opacity: 0; transform: scale(.97); }
       to { opacity: 1; transform: scale(1); }
     }
-    .card-who {
-      font-size: calc(12px * var(--z));
-      font-weight: 600;
-      color: var(--text3);
+
+    /* Card title */
+    .card-title {
+      font-size: calc(22px * var(--z));
+      font-weight: 800;
       letter-spacing: calc(1.5px * var(--z));
       text-transform: uppercase;
       text-align: center;
-      margin-bottom: calc(14px * var(--z));
+      margin-bottom: calc(8px * var(--z));
+    }
+
+    /* Ring center stage layout */
+    .rcs-body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: calc(8px * var(--z));
+      flex: 1;
+    }
+    .rcs-col {
+      flex: 1;
+      min-width: 0;
+    }
+    .rcs-col-right { text-align: right; }
+    .rcs-label {
+      font-size: calc(10px * var(--z));
+      font-weight: 800;
+      letter-spacing: calc(2px * var(--z));
+      text-transform: uppercase;
+      margin-bottom: calc(2px * var(--z));
+    }
+    .rcs-number {
+      font-size: calc(24px * var(--z));
+      font-weight: 900;
+      letter-spacing: calc(-1px * var(--z));
+      line-height: 1.15;
+    }
+    .rcs-breakdown {
+      margin-top: calc(4px * var(--z));
+      display: flex;
+      flex-direction: column;
+      gap: calc(1px * var(--z));
+    }
+    .rcs-breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: calc(11px * var(--z));
+    }
+    .rcs-breakdown-row .lbl { color: var(--text-3); }
+    .rcs-breakdown-row .val { font-weight: 700; color: var(--text-sub); }
+
+    /* Ring */
+    .rcs-ring-wrap {
+      position: relative;
+      width: calc(100px * var(--z));
+      height: calc(100px * var(--z));
+      flex-shrink: 0;
+    }
+    .rcs-ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .rcs-ring-inner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .rcs-ring-dollar {
+      font-size: calc(15px * var(--z));
+      font-weight: 900;
+      letter-spacing: calc(-0.5px * var(--z));
+      line-height: 1;
+    }
+    .rcs-ring-pct {
+      font-size: calc(11px * var(--z));
+      font-weight: 800;
+      margin-top: calc(1px * var(--z));
+    }
+
+    /* Category bars */
+    .cat-row {
+      display: flex;
+      align-items: center;
+      gap: calc(8px * var(--z));
+      padding: calc(4px * var(--z)) 0;
+      border-bottom: calc(1px * var(--z)) solid var(--bg);
+    }
+    .cat-icon {
+      width: calc(28px * var(--z));
+      height: calc(28px * var(--z));
+      border-radius: calc(7px * var(--z));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .cat-icon i { font-size: calc(12px * var(--z)); }
+    .cat-name {
+      width: calc(70px * var(--z));
+      font-size: calc(11px * var(--z));
+      font-weight: 700;
+      flex-shrink: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .cat-bar-wrap {
+      flex: 1;
+      height: calc(14px * var(--z));
+      background: rgba(0,0,0,0.03);
+      border-radius: calc(7px * var(--z));
+      overflow: hidden;
+      display: flex;
+    }
+    .cat-amt {
+      font-size: calc(13px * var(--z));
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+    .cat-pct {
+      font-size: calc(9px * var(--z));
+      font-weight: 700;
+      color: var(--text-3);
+      flex-shrink: 0;
+      width: calc(28px * var(--z));
+      text-align: right;
+    }
+
+    /* Merchant rows */
+    .merch-row {
+      display: flex;
+      align-items: center;
+      gap: calc(8px * var(--z));
+      padding: calc(4px * var(--z)) 0;
+      border-bottom: calc(1px * var(--z)) solid rgba(0,0,0,0.04);
+    }
+    .merch-rank {
+      width: calc(24px * var(--z));
+      height: calc(24px * var(--z));
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: calc(11px * var(--z));
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+    .merch-name {
+      flex: 1;
+      min-width: 0;
+      font-size: calc(12px * var(--z));
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .merch-meta {
+      font-size: calc(9px * var(--z));
+      color: var(--text-3);
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .merch-amt {
+      font-size: calc(14px * var(--z));
+      font-weight: 900;
+      letter-spacing: calc(-0.3px * var(--z));
       flex-shrink: 0;
     }
 
-    /* ── Layout: top hero row + bottom detail row ── */
-    .hero-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: calc(8px * var(--z));
-      flex: 1;
-      margin-bottom: calc(8px * var(--z));
+    /* Donut card */
+    .donut-wrap {
+      position: relative;
+      width: calc(140px * var(--z));
+      height: calc(140px * var(--z));
+      margin: 0 auto;
     }
-    .detail-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: calc(8px * var(--z));
-      flex: 1;
-    }
-
-    /* ── Tile ── */
-    .tile {
-      border-radius: calc(18px * var(--z));
-      background: var(--elevated);
-      padding: calc(16px * var(--z)) calc(14px * var(--z));
+    .donut-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .donut-center {
+      position: absolute;
+      inset: 0;
       display: flex;
       flex-direction: column;
-      position: relative;
-      overflow: hidden;
-    }
-    .tile-lbl {
-      font-size: calc(10px * var(--z));
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: calc(1px * var(--z));
-      margin-bottom: calc(6px * var(--z));
-    }
-    .tile-val {
-      font-size: calc(28px * var(--z));
-      font-weight: 800;
-      letter-spacing: calc(-1px * var(--z));
-      line-height: 1;
-      font-variant-numeric: tabular-nums;
-    }
-    .tile-detail {
-      margin-top: auto;
-      padding-top: calc(8px * var(--z));
-    }
-    .row {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      font-size: calc(11px * var(--z));
-      padding: calc(3px * var(--z)) 0;
-    }
-    .row-label { color: var(--text3); font-weight: 500; }
-    .row-val { color: var(--text2); font-weight: 600; font-variant-numeric: tabular-nums; }
-    .divider {
-      height: calc(1px * var(--z));
-      background: var(--border);
-      margin: calc(2px * var(--z)) 0;
-    }
-
-    /* ── P/L tile ── */
-    .tile-pl {
-      justify-content: center;
-    }
-    .tile-pl .tile-val { font-size: calc(34px * var(--z)); }
-    .tile-pl.up {
-      background: linear-gradient(160deg, rgba(50,215,75,.14), rgba(50,215,75,.03));
-      border: calc(1px * var(--z)) solid rgba(50,215,75,.1);
-    }
-    .tile-pl.up .tile-lbl { color: var(--accent-green); }
-    .tile-pl.up .tile-val { color: var(--accent-green); }
-    .tile-pl.down {
-      background: linear-gradient(160deg, rgba(255,69,58,.14), rgba(255,69,58,.03));
-      border: calc(1px * var(--z)) solid rgba(255,69,58,.1);
-    }
-    .tile-pl.down .tile-lbl { color: var(--accent-red); }
-    .tile-pl.down .tile-val { color: var(--accent-red); }
-
-    /* ── Ring tile ── */
-    .tile-ring {
-      background: transparent;
-      border: none;
       align-items: center;
       justify-content: center;
-      padding: calc(6px * var(--z));
     }
-    .ring-box { position: relative; width: 88%; max-width: calc(160px * var(--z)); }
-    .ring-box svg {
-      width: 100%;
-      display: block;
-      filter: drop-shadow(0 0 calc(8px * var(--z)) var(--ring-glow));
-    }
-    .ring-mid {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-    }
-    .ring-num {
+    .donut-total {
       font-size: calc(28px * var(--z));
+      font-weight: 900;
+      letter-spacing: calc(-1.5px * var(--z));
+    }
+    .donut-lbl {
+      font-size: calc(9px * var(--z));
       font-weight: 800;
-      letter-spacing: calc(-1px * var(--z));
+      color: var(--text-3);
+      letter-spacing: calc(1.5px * var(--z));
+      text-transform: uppercase;
+    }
+
+    /* vs avg bars */
+    .vbar-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: calc(3px * var(--z));
+      height: calc(100px * var(--z));
+      padding: 0 calc(4px * var(--z));
+    }
+    .vbar-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: calc(2px * var(--z));
+    }
+    .vbar-pair {
+      display: flex;
+      gap: calc(1px * var(--z));
+      align-items: flex-end;
+      width: 100%;
+    }
+    .vbar-cur {
+      flex: 1;
+      border-radius: calc(2px * var(--z)) calc(2px * var(--z)) 0 0;
+      min-height: 0;
+    }
+    .vbar-avg {
+      flex: 1;
+      background: #d1d5db;
+      border-radius: calc(2px * var(--z)) calc(2px * var(--z)) 0 0;
+      min-height: 0;
+    }
+    .vbar-lbl {
+      font-size: calc(10px * var(--z));
       line-height: 1;
     }
-    .ring-sub {
-      font-size: calc(8px * var(--z));
-      font-weight: 700;
+
+    /* Section title inside cards */
+    .section-title {
+      font-size: calc(22px * var(--z));
+      font-weight: 800;
+      letter-spacing: calc(1.5px * var(--z));
       text-transform: uppercase;
-      letter-spacing: calc(1.2px * var(--z));
-      color: var(--text3);
-      margin-top: calc(2px * var(--z));
+      text-align: center;
+      color: var(--primary);
+      margin-bottom: calc(6px * var(--z));
     }
 
-    /* ── Income tile ── */
-    .tile-inc .tile-lbl { color: rgba(50,215,75,.55); }
-    .tile-inc .tile-val { color: var(--accent-green); }
+    /* Scroll content cards */
+    .card-scroll {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
 
-    /* ── Spend tile ── */
-    .tile-exp .tile-lbl { color: rgba(255,69,58,.55); }
-    .tile-exp .tile-val { color: var(--accent-red); }
-
-    /* ── Dots ── */
+    /* Dots */
     .dots {
       display: flex;
       justify-content: center;
       align-items: center;
       gap: calc(6px * var(--z));
-      padding: calc(10px * var(--z)) 0;
-      padding-bottom: calc((10px + env(safe-area-inset-bottom)) * var(--z));
+      padding: calc(8px * var(--z)) 0;
+      padding-bottom: calc((8px + env(safe-area-inset-bottom)) * var(--z));
       flex-shrink: 0;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
     }
+    .dots::-webkit-scrollbar { display: none; }
     .dt {
       height: calc(5px * var(--z));
       border-radius: calc(3px * var(--z));
-      background: rgba(255,255,255,.12);
-      transition: all .3s cubic-bezier(.4,0,.2,1);
+      background: var(--surface-border);
+      transition: all .3s var(--ease-out);
       width: calc(5px * var(--z));
+      flex-shrink: 0;
     }
     .dt.on {
-      background: var(--text);
+      background: var(--primary);
       width: calc(24px * var(--z));
     }
   </style>
 </head>
 <body>
 
-<div id="status"><div class="ld-ring"></div><div>Loading</div></div>
+<div id="status">
+  <div class="ld-dots"><div></div><div></div><div></div></div>
+  <div class="ld-label">Loading</div>
+</div>
 <div id="app"></div>
 
 <script>
@@ -309,7 +462,38 @@ var D, currentMonth = new Date().toISOString().slice(0,7);
 var FIXED = {housing:1, utilities:1, subs:1, insurance:1};
 var RET_RE = /\b(401k?|roth|retirement|pension|sep[\s-]?ira|hsa contrib)\b/i;
 
+// Default category definitions matching the web version
+var CATS = {
+  groceries:   {icon:'bi-cart',        color:'#22c55e', label:'Groceries'},
+  dining:      {icon:'bi-cup-hot',     color:'#f59e0b', label:'Dining'},
+  transport:   {icon:'bi-car-front',   color:'#3b82f6', label:'Transport'},
+  shopping:    {icon:'bi-bag',         color:'#8b5cf6', label:'Shopping'},
+  entertainment:{icon:'bi-controller', color:'#ec4899', label:'Entertainment'},
+  health:      {icon:'bi-heart-pulse', color:'#ef4444', label:'Health'},
+  utilities:   {icon:'bi-lightning',   color:'#f97316', label:'Utilities'},
+  housing:     {icon:'bi-house',       color:'#6366f1', label:'Housing'},
+  subs:        {icon:'bi-arrow-repeat',color:'#14b8a6', label:'Subscriptions'},
+  income:      {icon:'bi-wallet2',     color:'#22c55e', label:'Income'},
+  insurance:   {icon:'bi-shield-check',color:'#64748b', label:'Insurance'},
+  transfer:    {icon:'bi-arrow-left-right',color:'#94a3b8', label:'Transfer'},
+  travel:      {icon:'bi-airplane',    color:'#0ea5e9', label:'Travel'},
+  personal:    {icon:'bi-person',      color:'#a855f7', label:'Personal'},
+  pets:        {icon:'bi-bug',         color:'#84cc16', label:'Pets'},
+  gifts:       {icon:'bi-gift',        color:'#f43f5e', label:'Gifts'},
+  other:       {icon:'bi-three-dots',  color:'#94a3b8', label:'Other'},
+  gambling:    {icon:'bi-dice-5',      color:'#eab308', label:'Gambling'}
+};
+
+function getCat(id) {
+  // Check custom categories first
+  var custom = (D.customCategories||[]).find(function(c){return c.id===id;});
+  if (custom) return custom;
+  return CATS[id] || {icon:'bi-three-dots', color:'#94a3b8', label:id};
+}
+
 function fc(n){ return '$'+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0}); }
+function fc0(n){ return '$'+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0}); }
+function esc(s){ var d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 
 function incType(id, desc){
   if ((D.incomeData||{})[id]) return D.incomeData[id];
@@ -319,65 +503,289 @@ function incType(id, desc){
 }
 
 function isIgnored(cat){
-  var list = [].concat([{id:'insurance',ignored:true},{id:'transfer',ignored:true}], D.customCategories||[]);
+  var list = [{id:'insurance',ignored:true},{id:'transfer',ignored:true}].concat(D.customCategories||[]);
   var f = list.find(function(c){return c.id===cat;});
   return f ? !!f.ignored : false;
 }
 
+function isFixedCat(cat){
+  return !!FIXED[cat];
+}
+
+function getCatSplitAmts(catId, amt) {
+  var splits = D.catSplits || {};
+  var ratio = splits[catId] != null ? splits[catId] : 0.5;
+  return {p1Share: amt * ratio, p2Share: amt * (1 - ratio)};
+}
+
 function compute(who){
-  var txns = (D.transactions||[]).filter(function(t){ return t.date && t.date.slice(0,7)===currentMonth; });
-  if (who !== 'all') txns = txns.filter(function(t){ return t.person===who; });
-  var spend=0, fixed=0, inc=0, ret=0, fam=0, nrm=0;
-  for (var i=0; i<txns.length; i++){
-    var t = txns[i];
-    if (t.excluded) continue;
-    if (t.amount > 0 && !isIgnored(t.category)){ spend += t.amount; if (FIXED[t.category]) fixed += t.amount; }
-    if (t.amount < 0 && t.category === 'income'){
-      var a = Math.abs(t.amount); inc += a;
-      var tp = incType(t.id, t.description);
-      if (tp==='retirement') ret += a; else if (tp==='family') fam += a; else nrm += a;
+  var txns = (D.transactions||[]).filter(function(t){ return t.date && t.date.slice(0,7)===currentMonth && !t.excluded; });
+  var exp = txns.filter(function(t){ return t.amount > 0 && !isIgnored(t.category); });
+  var inc = txns.filter(function(t){ return t.amount < 0 && t.category === 'income'; });
+
+  if (who !== 'all') {
+    // For person-specific, include solo + their share of shared
+    var personExp = exp.filter(function(t){ return t.person===who || t.shared; });
+    var personInc = inc.filter(function(t){ return t.person===who; });
+
+    var spend = 0, fixed = 0;
+    for (var i=0; i<personExp.length; i++){
+      var t = personExp[i];
+      var amt;
+      if (t.shared) {
+        var shares = getCatSplitAmts(t.category, t.amount);
+        amt = who === 'p1' ? shares.p1Share : shares.p2Share;
+      } else {
+        amt = t.amount;
+      }
+      spend += amt;
+      if (isFixedCat(t.category)) fixed += amt;
     }
+
+    var totalInc = 0, ret = 0, fam = 0;
+    for (var j=0; j<personInc.length; j++){
+      var a = Math.abs(personInc[j].amount);
+      totalInc += a;
+      var tp = incType(personInc[j].id, personInc[j].description);
+      if (tp==='retirement') ret += a;
+      else if (tp==='family') fam += a;
+    }
+
+    return {inc:totalInc, ret:ret, fam:fam, spend:spend, fixed:fixed, variable:spend-fixed};
   }
-  var pl = inc - spend, takeHome = inc - ret - fam;
-  var rate = takeHome > 0 ? Math.round(pl / takeHome * 100) : 0;
-  return {inc:inc, nrm:nrm, ret:ret, fam:fam, spend:spend, fixed:fixed, variable:spend-fixed, pl:pl, rate:rate, deficit:pl<0};
+
+  // Combined
+  var totalSpend = 0, totalFixed = 0, totalInc2 = 0, totalRet = 0, totalFam = 0;
+  for (var i=0; i<exp.length; i++){
+    totalSpend += exp[i].amount;
+    if (isFixedCat(exp[i].category)) totalFixed += exp[i].amount;
+  }
+  for (var j=0; j<inc.length; j++){
+    var a2 = Math.abs(inc[j].amount);
+    totalInc2 += a2;
+    var tp2 = incType(inc[j].id, inc[j].description);
+    if (tp2==='retirement') totalRet += a2;
+    else if (tp2==='family') totalFam += a2;
+  }
+  return {inc:totalInc2, ret:totalRet, fam:totalFam, spend:totalSpend, fixed:totalFixed, variable:totalSpend-totalFixed};
 }
 
-function ringSvg(pct, color){
-  var r=42, c=2*Math.PI*r, fill=Math.max(0,Math.min(Math.abs(pct),100)), off=c-(fill/100)*c;
-  return '<svg viewBox="0 0 100 100">'
-    +'<circle cx="50" cy="50" r="'+r+'" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="7"/>'
-    +'<circle cx="50" cy="50" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="7" stroke-linecap="round"'
-    +' stroke-dasharray="'+c+'" stroke-dashoffset="'+off+'" transform="rotate(-90 50 50)"'
-    +' style="transition:stroke-dashoffset .8s cubic-bezier(.25,.46,.45,.94)"/>'
-    +'</svg>';
-}
+function ringCard(title, titleColor, d) {
+  var normalInc = d.inc - (d.ret||0) - (d.fam||0);
+  var saved = d.inc - d.spend;
+  var sRate = normalInc > 0 ? Math.round(saved / normalInc * 100) : 0;
+  var isLoss = saved < 0;
+  var ringColor = isLoss ? 'var(--red)' : 'var(--green)';
+  var ringColorRaw = isLoss ? '#A84A2A' : '#3A6A3A';
+  var circ = 2 * Math.PI * 42;
+  var fillPct = isLoss ? 100 : Math.max(0, Math.min(sRate, 100));
+  var dashOffset = circ - (fillPct / 100) * circ;
+  var savedStr = isLoss ? ('\u2212' + fc(Math.abs(saved))) : fc(saved);
+  var pctStr = isLoss ? ('\u2212' + Math.abs(sRate) + '%') : (sRate + '%');
 
-function card(label, d){
-  var rc = d.rate<10 ? '#FF453A' : d.rate<20 ? '#FF9F0A' : '#32D74B';
-  var glow = d.rate<10 ? 'rgba(255,69,58,.3)' : d.rate<20 ? 'rgba(255,159,10,.25)' : 'rgba(50,215,75,.3)';
-  var plDir = d.deficit ? 'down' : 'up';
-  var plColor = d.deficit ? 'var(--accent-red)' : 'var(--accent-green)';
-  var plSign = d.deficit ? '-' : '+';
-
-  var incRows = '';
-  if (d.ret>0) incRows += '<div class="row"><span class="row-label">Retirement</span><span class="row-val">'+fc(d.ret)+'</span></div><div class="divider"></div>';
-  if (d.fam>0) incRows += '<div class="row"><span class="row-label">Family</span><span class="row-val">'+fc(d.fam)+'</span></div><div class="divider"></div>';
-  incRows += '<div class="row"><span class="row-label">Take-home</span><span class="row-val">'+fc(d.nrm)+'</span></div>';
+  var incLines = '<div class="rcs-breakdown-row"><span class="lbl">Regular</span><span class="val">' + fc0(d.inc - (d.ret||0) - (d.fam||0)) + '</span></div>';
+  if ((d.ret||0) > 0) incLines += '<div class="rcs-breakdown-row"><span class="lbl">Retirement</span><span class="val" style="color:var(--yellow)">' + fc0(d.ret) + '</span></div>';
+  if ((d.fam||0) > 0) incLines += '<div class="rcs-breakdown-row"><span class="lbl">Family</span><span class="val" style="color:var(--purple)">' + fc0(d.fam) + '</span></div>';
 
   return '<div class="card">'
-    +'<div class="card-who">'+label+'</div>'
-    // Top: P/L + Ring
-    +'<div class="hero-row">'
-    +'<div class="tile tile-pl '+plDir+'"><div class="tile-lbl">'+(d.deficit?'Deficit':'Saved')+'</div><div class="tile-val">'+plSign+fc(Math.abs(d.pl))+'</div></div>'
-    +'<div class="tile tile-ring" style="--ring-glow:'+glow+'"><div class="ring-box">'+ringSvg(d.rate, rc)+'<div class="ring-mid"><div class="ring-num" style="color:'+rc+'">'+d.rate+'%</div><div class="ring-sub">Savings</div></div></div></div>'
-    +'</div>'
-    // Bottom: Income + Spending
-    +'<div class="detail-row">'
-    +'<div class="tile tile-inc"><div class="tile-lbl">Income</div><div class="tile-val">'+fc(d.inc)+'</div><div class="tile-detail">'+incRows+'</div></div>'
-    +'<div class="tile tile-exp"><div class="tile-lbl">Spending</div><div class="tile-val">'+fc(d.spend)+'</div><div class="tile-detail"><div class="row"><span class="row-label">Fixed</span><span class="row-val">'+fc(d.fixed)+'</span></div><div class="divider"></div><div class="row"><span class="row-label">Variable</span><span class="row-val">'+fc(d.variable)+'</span></div></div></div>'
-    +'</div>'
-    +'</div>';
+    + '<div class="card-title" style="color:' + titleColor + '">' + title + '</div>'
+    + '<div class="rcs-body">'
+    + '<div class="rcs-col rcs-col-right">'
+    + '<div class="rcs-label" style="color:var(--green)">INCOME</div>'
+    + '<div class="rcs-number" style="color:var(--green)">' + fc0(d.inc) + '</div>'
+    + '<div class="rcs-breakdown">' + incLines + '</div>'
+    + '</div>'
+    + '<div class="rcs-ring-wrap">'
+    + '<svg viewBox="0 0 100 100">'
+    + '<circle cx="50" cy="50" r="42" fill="none" stroke="var(--ring-track)" stroke-width="8"/>'
+    + '<circle cx="50" cy="50" r="42" fill="none" stroke="' + ringColorRaw + '" stroke-width="8" stroke-linecap="round" stroke-dasharray="' + circ + '" stroke-dashoffset="' + dashOffset + '"/>'
+    + '</svg>'
+    + '<div class="rcs-ring-inner">'
+    + '<div class="rcs-ring-dollar" style="color:' + ringColor + '">' + savedStr + '</div>'
+    + '<div class="rcs-ring-pct" style="color:' + ringColor + '">' + pctStr + '</div>'
+    + '</div>'
+    + '</div>'
+    + '<div class="rcs-col">'
+    + '<div class="rcs-label" style="color:var(--red)">SPENDING</div>'
+    + '<div class="rcs-number" style="color:var(--red)">' + fc0(d.spend) + '</div>'
+    + '<div class="rcs-breakdown">'
+    + '<div class="rcs-breakdown-row"><span class="lbl">Fixed</span><span class="val">' + fc0(d.fixed) + '</span></div>'
+    + '<div class="rcs-breakdown-row"><span class="lbl">Variable</span><span class="val">' + fc0(d.variable) + '</span></div>'
+    + '</div>'
+    + '</div>'
+    + '</div>'
+    + '</div>';
+}
+
+function categoryCard(txns) {
+  var exp = txns.filter(function(t){ return t.amount > 0 && !isIgnored(t.category) && !t.excluded; });
+  var byCat = {};
+  for (var i=0; i<exp.length; i++) {
+    byCat[exp[i].category] = (byCat[exp[i].category]||0) + exp[i].amount;
+  }
+  var catArr = Object.entries(byCat).filter(function(e){return e[1]>0;}).sort(function(a,b){return b[1]-a[1];});
+  var catTotal = catArr.reduce(function(s,e){return s+e[1];}, 0);
+
+  // Per-person breakdown for split bars
+  var p1ByCat = {}, p2ByCat = {};
+  for (var i=0; i<exp.length; i++){
+    var t = exp[i];
+    if (t.shared) {
+      var shares = getCatSplitAmts(t.category, t.amount);
+      p1ByCat[t.category] = (p1ByCat[t.category]||0) + shares.p1Share;
+      p2ByCat[t.category] = (p2ByCat[t.category]||0) + shares.p2Share;
+    } else {
+      if (t.person==='p1') p1ByCat[t.category] = (p1ByCat[t.category]||0) + t.amount;
+      else p2ByCat[t.category] = (p2ByCat[t.category]||0) + t.amount;
+    }
+  }
+
+  var MAX_ROWS = 7;
+  var visible = catArr.slice(0, MAX_ROWS);
+  var overflow = catArr.slice(MAX_ROWS);
+  var overflowAmt = overflow.reduce(function(s,e){return s+e[1];},0);
+  if (overflowAmt > 0) visible.push(['_other', overflowAmt]);
+
+  var rows = '';
+  for (var i=0; i<visible.length; i++){
+    var cid = visible[i][0], amt = visible[i][1];
+    var isOther = cid === '_other';
+    var c = isOther ? {icon:'bi-three-dots', color:'#94a3b8', label:overflow.length+' Other'} : getCat(cid);
+    var pct = catTotal > 0 ? Math.round(amt/catTotal*100) : 0;
+    var barW = catTotal > 0 ? (amt/catTotal*100).toFixed(1) : 0;
+    var p1a = isOther ? overflow.reduce(function(s,e){return s+(p1ByCat[e[0]]||0);},0) : (p1ByCat[cid]||0);
+    var p2a = isOther ? overflow.reduce(function(s,e){return s+(p2ByCat[e[0]]||0);},0) : (p2ByCat[cid]||0);
+    var ptot = p1a+p2a;
+    var p1pct = ptot>0 ? (p1a/ptot*100).toFixed(0) : 50;
+    rows += '<div class="cat-row">'
+      + '<div class="cat-icon" style="background:' + c.color + '10"><i class="bi ' + c.icon + '" style="color:' + c.color + '"></i></div>'
+      + '<div class="cat-name">' + c.label + '</div>'
+      + '<div class="cat-bar-wrap"><div style="width:' + (barW*p1pct/100) + '%;background:var(--p1-bar)"></div><div style="width:' + (barW*(100-p1pct)/100) + '%;background:var(--p2-bar)"></div></div>'
+      + '<div class="cat-amt">' + fc0(amt) + '</div>'
+      + '<div class="cat-pct">' + pct + '%</div>'
+      + '</div>';
+  }
+
+  if (!rows) rows = '<div style="text-align:center;color:var(--text-3);padding:' + 18*parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--z')||'1') + 'px;font-size:13px">No expenses this month</div>';
+
+  return '<div class="card">'
+    + '<div class="section-title">Spending by Category</div>'
+    + '<div class="card-scroll">' + rows + '</div>'
+    + '</div>';
+}
+
+function donutCard(txns) {
+  var exp = txns.filter(function(t){ return t.amount > 0 && !isIgnored(t.category) && !t.excluded; });
+  var byCat = {};
+  for (var i=0; i<exp.length; i++) {
+    byCat[exp[i].category] = (byCat[exp[i].category]||0) + exp[i].amount;
+  }
+  var catArr = Object.entries(byCat).filter(function(e){return e[1]>0;}).sort(function(a,b){return b[1]-a[1];});
+  var catTotal = catArr.reduce(function(s,e){return s+e[1];}, 0);
+
+  // vs average data
+  var allMonths = {};
+  var txAll = D.transactions||[];
+  for (var i=0; i<txAll.length; i++){
+    if (txAll[i].date) allMonths[txAll[i].date.slice(0,7)] = true;
+  }
+  var pastMonths = Object.keys(allMonths).filter(function(m){ return m !== currentMonth; });
+  var excluded = D.excludedFromAvg || [];
+  pastMonths = pastMonths.filter(function(m){ return excluded.indexOf(m) === -1; });
+  var avgByCat = {};
+  if (pastMonths.length) {
+    for (var mi=0; mi<pastMonths.length; mi++){
+      var mo = pastMonths[mi];
+      var moExp = txAll.filter(function(t){ return t.date && t.date.slice(0,7)===mo && t.amount>0 && !isIgnored(t.category) && !t.excluded; });
+      for (var j=0; j<moExp.length; j++){
+        avgByCat[moExp[j].category] = (avgByCat[moExp[j].category]||0) + moExp[j].amount;
+      }
+    }
+    for (var k in avgByCat) avgByCat[k] /= pastMonths.length;
+  }
+  for (var k in avgByCat) if (avgByCat[k] <= 0) delete avgByCat[k];
+
+  // Donut arcs
+  var donutCirc = 2 * Math.PI * 42;
+  var donutOff = 0;
+  var arcs = '';
+  var legend = '';
+  var displayCats = catArr.slice(0, 8);
+  for (var i=0; i<displayCats.length; i++){
+    var cid = displayCats[i][0], amt = displayCats[i][1];
+    var c = getCat(cid);
+    var pct = catTotal > 0 ? amt/catTotal : 0;
+    var len = pct * donutCirc;
+    arcs += '<circle cx="50" cy="50" r="42" fill="none" stroke="' + c.color + '" stroke-width="14" stroke-dasharray="' + len + ' ' + (donutCirc-len) + '" stroke-dashoffset="' + (-donutOff) + '" stroke-linecap="round"/>';
+    donutOff += len + 4;
+    legend += '<div style="display:flex;align-items:center;gap:' + 6*parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--z')||'1') + 'px;font-size:' + 11*parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--z')||'1') + 'px">'
+      + '<div style="width:8px;height:8px;border-radius:50%;background:' + c.color + ';flex-shrink:0"></div>'
+      + '<span style="color:var(--text-3);font-weight:600">' + c.label + '</span>'
+      + '<span style="font-weight:700;margin-left:auto">' + Math.round(pct*100) + '%</span>'
+      + '</div>';
+  }
+
+  // vs average bars
+  var vCats = Object.keys(Object.assign({}, byCat, avgByCat)).sort(function(a,b){return (byCat[b]||0)-(byCat[a]||0);});
+  var vMax = 1;
+  for (var i=0; i<vCats.length; i++) vMax = Math.max(vMax, byCat[vCats[i]]||0, avgByCat[vCats[i]]||0);
+  var vBars = '';
+  for (var i=0; i<vCats.length; i++){
+    var cid = vCats[i], c = getCat(cid);
+    var cur = byCat[cid]||0, avg = avgByCat[cid]||0;
+    var curH = Math.max(Math.round(cur/vMax*80), cur>0?2:0);
+    var avgH = Math.max(Math.round(avg/vMax*80), avg>0?2:0);
+    vBars += '<div class="vbar-group"><div class="vbar-pair"><div class="vbar-cur" style="height:' + curH + 'px;background:' + c.color + '"></div><div class="vbar-avg" style="height:' + avgH + 'px"></div></div><div class="vbar-lbl">' + (c.emoji||'') + '</div></div>';
+  }
+
+  var hasAvg = pastMonths.length > 0 && vCats.length > 0;
+
+  return '<div class="card">'
+    + '<div class="section-title">Breakdown</div>'
+    + '<div class="card-scroll" style="display:flex;flex-direction:column;align-items:center;gap:' + 10*parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--z')||'1') + 'px">'
+    + (catTotal > 0 ? '<div class="donut-wrap">'
+      + '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="none" stroke="var(--bg)" stroke-width="14"/>' + arcs + '</svg>'
+      + '<div class="donut-center"><div class="donut-total">' + fc0(catTotal) + '</div><div class="donut-lbl">TOTAL</div></div>'
+      + '</div>'
+      + '<div style="width:100%;display:flex;flex-direction:column;gap:3px">' + legend + '</div>'
+      : '<div style="text-align:center;color:var(--text-3);padding:30px;font-size:13px">No data yet</div>')
+    + (hasAvg ? '<div style="width:100%;margin-top:auto;padding-top:8px;border-top:1px solid var(--surface-border)">'
+      + '<div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;text-align:center">vs. Average</div>'
+      + '<div class="vbar-chart">' + vBars + '</div>'
+      + '</div>' : '')
+    + '</div>'
+    + '</div>';
+}
+
+function merchantCard(txns) {
+  var exp = txns.filter(function(t){ return t.amount > 0 && !isIgnored(t.category) && !t.excluded; });
+  var merchantMap = {};
+  for (var i=0; i<exp.length; i++){
+    var key = exp[i].description.trim().toLowerCase();
+    if (!merchantMap[key]) merchantMap[key] = {label:exp[i].description, amount:0, count:0};
+    merchantMap[key].amount += exp[i].amount;
+    merchantMap[key].count++;
+  }
+  var top = Object.values(merchantMap).sort(function(a,b){return b.amount-a.amount;}).slice(0,8);
+
+  var rows = '';
+  for (var i=0; i<top.length; i++){
+    var m = top[i];
+    var op = (1 - i*0.08).toFixed(2);
+    rows += '<div class="merch-row">'
+      + '<div class="merch-rank" style="opacity:' + op + '">' + (i+1) + '</div>'
+      + '<div class="merch-name">' + esc(m.label.length>30 ? m.label.slice(0,30)+'\u2026' : m.label) + '</div>'
+      + '<div class="merch-meta">' + m.count + ' txn' + (m.count!==1?'s':'') + '</div>'
+      + '<div class="merch-amt">' + fc0(m.amount) + '</div>'
+      + '</div>';
+  }
+
+  if (!rows) rows = '<div style="text-align:center;color:var(--text-3);padding:18px;font-size:13px">No transactions yet</div>';
+
+  return '<div class="card">'
+    + '<div class="section-title">Top Merchants</div>'
+    + '<div class="card-scroll">' + rows + '</div>'
+    + '</div>';
 }
 
 function moLabel(ym){
@@ -390,40 +798,49 @@ function moShift(delta){
 }
 
 function render(){
-  var p1 = compute('p1'), p2 = compute('p2'), all = compute('all');
   var n1 = (D.settings||{}).person1||'Person 1';
   var n2 = (D.settings||{}).person2||'Person 2';
+  var d1 = compute('p1'), d2 = compute('p2'), dAll = compute('all');
 
-  var set = card(n1,p1) + card(n2,p2) + card('Combined',all);
-  var z = getComputedStyle(document.documentElement).getPropertyValue('--z').trim() || '1';
-  var gap = 10 * parseFloat(z);
+  var moTxns = (D.transactions||[]).filter(function(t){ return t.date && t.date.slice(0,7)===currentMonth; });
+
+  var cards = ringCard('Combined', 'var(--primary)', dAll)
+    + ringCard(esc(n1), 'var(--p1)', d1)
+    + ringCard(esc(n2), 'var(--p2)', d2)
+    + categoryCard(moTxns)
+    + donutCard(moTxns)
+    + merchantCard(moTxns);
 
   document.getElementById('app').innerHTML =
     '<div class="mo-bar">'
-    +'<button onclick="moShift(-1)">&#8249;</button>'
-    +'<span class="mo-label">'+moLabel(currentMonth)+'</span>'
-    +'<button onclick="moShift(1)">&#8250;</button>'
-    +'</div>'
-    +'<div class="carousel" id="car">'+set+set+set+'</div>'
-    +'<div class="dots"><div class="dt on"></div><div class="dt"></div><div class="dt"></div></div>';
+    + '<button onclick="moShift(-1)">\u2039</button>'
+    + '<span class="mo-label">' + moLabel(currentMonth) + '</span>'
+    + '<button onclick="moShift(1)">\u203A</button>'
+    + '</div>'
+    + '<div class="carousel" id="car">' + cards + '</div>'
+    + '<div class="dots" id="dots"></div>';
 
   var car = document.getElementById('car');
-  if (car && car.children.length > 0){
-    var w = car.children[0].offsetWidth + gap;
-    car.scrollLeft = w * 3;
-    var timer;
+  var numCards = 6;
+  updateDots(0, numCards);
+
+  if (car) {
     car.onscroll = function(){
-      var idx = Math.round(car.scrollLeft / w) % 3;
-      var dots = document.querySelectorAll('.dt');
-      for(var i=0;i<dots.length;i++) dots[i].className = i===idx ? 'dt on' : 'dt';
-      clearTimeout(timer);
-      timer = setTimeout(function(){
-        var ci = Math.round(car.scrollLeft / w);
-        if (ci < 3){ car.style.scrollBehavior='auto'; car.scrollLeft += w*3; car.style.scrollBehavior=''; }
-        else if (ci >= 6){ car.style.scrollBehavior='auto'; car.scrollLeft -= w*3; car.style.scrollBehavior=''; }
-      }, 150);
+      var w = car.children[0] ? car.children[0].offsetWidth + 10*parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--z')||'1') : car.offsetWidth;
+      var idx = Math.round(car.scrollLeft / w);
+      idx = Math.max(0, Math.min(numCards-1, idx));
+      updateDots(idx, numCards);
     };
   }
+}
+
+function updateDots(active, total){
+  var html = '';
+  for (var i=0; i<total; i++){
+    html += '<div class="dt' + (i===active?' on':'') + '"></div>';
+  }
+  var el = document.getElementById('dots');
+  if (el) el.innerHTML = html;
 }
 
 google.script.run
@@ -432,11 +849,11 @@ google.script.run
     document.getElementById('status').style.display = 'none';
     document.getElementById('app').className = 'show';
     try { render(); } catch(e){
-      document.getElementById('app').innerHTML = '<div style="padding:2rem;color:#FF453A;font-size:calc(14px * var(--z));word-break:break-all"><b>Error:</b><br>'+e.message+'</div>';
+      document.getElementById('app').innerHTML = '<div style="padding:2rem;color:var(--red);font-size:14px;word-break:break-all"><b>Error:</b><br>'+e.message+'</div>';
     }
   })
   .withFailureHandler(function(e){
-    document.getElementById('status').innerHTML = '<div style="color:#FF453A">Load failed: '+(e.message||e)+'</div>';
+    document.getElementById('status').innerHTML = '<div style="color:var(--red)">Load failed: '+(e.message||e)+'</div>';
   })
   .loadAll();
 </script>
