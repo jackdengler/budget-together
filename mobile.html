@@ -461,18 +461,31 @@
     }
 
     // ── Boot ──
-    google.script.run
-      .withSuccessHandler(function(data) {
-        D = data;
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('app').style.display = '';
-        render();
-      })
-      .withFailureHandler(function(err) {
-        document.getElementById('loading').innerHTML =
-          '<p style="color:var(--red);font-size:15px;padding:2rem">Failed to load data.<br>' + err.message + '</p>';
-      })
-      .loadAll();
+    try {
+      document.getElementById('loading').innerHTML =
+        '<div class="spinner"></div><p style="color:var(--text-3);font-size:13px;margin-top:12px">Loading...</p>';
+      google.script.run
+        .withSuccessHandler(function(data) {
+          try {
+            D = data;
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('app').style.display = '';
+            render();
+          } catch(e) {
+            document.getElementById('loading').style.display = '';
+            document.getElementById('loading').innerHTML =
+              '<p style="color:red;font-size:15px;padding:2rem;word-break:break-all">Render error:<br>' + e.message + '<br><br>' + e.stack + '</p>';
+          }
+        })
+        .withFailureHandler(function(err) {
+          document.getElementById('loading').innerHTML =
+            '<p style="color:red;font-size:15px;padding:2rem">Failed to load data:<br>' + (err.message || err) + '</p>';
+        })
+        .loadAll();
+    } catch(e) {
+      document.body.innerHTML =
+        '<p style="color:red;font-size:15px;padding:2rem;word-break:break-all">Boot error:<br>' + e.message + '</p>';
+    }
   </script>
 </body>
 </html>
