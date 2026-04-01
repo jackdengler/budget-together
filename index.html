@@ -1823,10 +1823,10 @@ function renderOverview() {
     const p2a = isOther ? overflowP2 : (p2ByCat[cid]||0);
     const ptot = p1a+p2a;
     const p1pct = ptot>0 ? (p1a/ptot*100).toFixed(0) : 50;
-    return `<div style="display:flex;align-items:center;gap:10px;">
+    return `<div style="display:flex;align-items:center;gap:10px;padding-bottom:4px;border-bottom:1px solid var(--bg);">
       <div style="width:32px;height:32px;border-radius:8px;background:${c.color}10;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="bi ${c.icon}" style="font-size:14px;color:${c.color};"></i></div>
       <div style="width:80px;font-size:12px;font-weight:700;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.label}</div>
-      <div style="flex:1;height:14px;background:rgba(0,0,0,0.04);border-radius:7px;overflow:hidden;display:flex;"><div style="width:${barW*p1pct/100}%;background:var(--p1);"></div><div style="width:${barW*(100-p1pct)/100}%;background:var(--p2);"></div></div>
+      <div style="flex:1;height:18px;background:rgba(0,0,0,0.04);border-radius:9px;overflow:hidden;display:flex;"><div style="width:${barW*p1pct/100}%;background:var(--p1);"></div><div style="width:${barW*(100-p1pct)/100}%;background:var(--p2);"></div></div>
       <div style="font-size:15px;font-weight:900;">${fc0(displayAmt)}</div>
       <div style="font-size:10px;font-weight:700;color:var(--text-3);">${pct}%</div>
       <i class="bi bi-chevron-right" style="font-size:10px;color:#ddd;"></i>
@@ -1884,6 +1884,7 @@ function renderOverview() {
   for (const t of exp) { const key = t.description.trim().toLowerCase(); if (!merchantMap[key]) merchantMap[key]={label:t.description,amount:0,count:0}; merchantMap[key].amount+=t.amount; merchantMap[key].count++; }
   const topMerchants = Object.values(merchantMap).sort((a,b) => b.amount-a.amount).slice(0,10);
   const merchantRows = topMerchants.map((m,i) => `<div class="merchant-row"><div class="merchant-rank">#${i+1}</div><div class="merchant-name" title="${esc(m.label)}">${esc(m.label.length>36?m.label.slice(0,36)+'…':m.label)}</div><div class="merchant-meta">${m.count} txn${m.count!==1?'s':''}</div><div class="merchant-amt">${fc(m.amount)}</div></div>`).join('');
+  const merchantCircleRows = topMerchants.slice(0,6).map((m,i) => { const op = (1 - i*0.13).toFixed(2); const last = i < Math.min(topMerchants.length,6)-1; return `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;${last?'border-bottom:1px solid rgba(0,0,0,0.04);':''}"><div style="width:28px;height:28px;border-radius:50%;background:var(--primary);opacity:${op};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;flex-shrink:0;">${i+1}</div><div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(m.label)}</div><div style="font-size:10px;color:var(--text-2);font-weight:600;">${m.count} transaction${m.count!==1?'s':''}</div></div><div style="font-size:16px;font-weight:900;letter-spacing:-0.03em;">${fc0(m.amount)}</div></div>`; }).join('');
   // Recurring income management section
   const recRules = S.recurringIncome || [];
   const recSectionHtml = recRules.length ? `
@@ -2205,11 +2206,11 @@ ${recSectionHtml}
 <div class="rcs-row">${rc1}${rc2}${rc3}</div>
 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px;" id="cat-section-row">
   <div class="card" style="margin-bottom:0;padding:12px;aspect-ratio:1;overflow:hidden;display:flex;flex-direction:column;">
-    <div class="section-title" style="margin-bottom:8px;flex-shrink:0;">Spending by Category</div>
-    <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;">
+    <div class="section-title" style="margin-bottom:4px;flex-shrink:0;">Spending by Category</div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:space-evenly;">
       ${catBars}
+      ${overflowCats.length ? `<div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-3);">+${overflowCats.length} more categories</div>` : ''}
     </div>
-    <div style="text-align:center;padding-top:8px;font-size:11px;font-weight:700;color:var(--primary);cursor:pointer;flex-shrink:0;border-top:1px solid var(--bg);" onclick="document.querySelectorAll('.cat-hidden').forEach(e=>e.style.display='flex');this.style.display='none';">Show all categories →</div>
   </div>
   <div class="card" style="margin-bottom:0;padding:12px;aspect-ratio:1;"></div>
   <div class="card" style="margin-bottom:0;padding:14px;aspect-ratio:1;display:flex;flex-direction:column;">
