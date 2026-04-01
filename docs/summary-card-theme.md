@@ -7,6 +7,7 @@ Global design tokens and component specs. Every component pulls from these token
 - **No decimals** on dollar values anywhere in the frontend. Whole numbers only (`$4,231` not `$4,231.00`).
 - **No + sign** on positive amounts. **− sign** on losses only.
 - **Font**: DM Sans, all weights 300–900, via Google Fonts.
+- **Icons**: Bootstrap Icons via CDN CSS font. No emojis.
 - **Layout**: One row header. Full-width content (no max-width cap).
 - **Cards**: All cards use `--surface` bg + `2px solid --surface-border` + no box-shadow. Consistent everywhere.
 
@@ -16,27 +17,28 @@ Global design tokens and component specs. Every component pulls from these token
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--page-bg` | `#F0EDE6` | Main page background (Stone) |
-| `--card-bg` | `#F8F2EA` | Card backgrounds (Almond) |
-| `--card-border` | `#e8ddd0` | Card border, 2px solid |
+| `--bg` | `#F0EDE6` | Main page background (Stone) |
+| `--surface` | `#F8F2EA` | Card backgrounds (Almond) |
+| `--surface-border` | `#e8ddd0` | Card border, 2px solid |
 | `--hover-bg` | `#F8F2EA` | Button hover, interactive fills |
+| `--ring-track` | `#e8ddd0` | Unfilled portion of savings ring |
 
 ### Text Hierarchy
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--text-primary` | `#3A3020` | Headings, hero numbers, titles (Deep Brown) |
-| `--text-secondary` | `#9A8A78` | Labels, descriptions, less important (Taupe) |
-| `--text-muted` | `#b0a090` | Timestamps, hints, faintest text |
+| `--text` | `#3A3020` | Headings, hero numbers, titles (Deep Brown) |
+| `--text-2` | `#9A8A78` | Labels, descriptions (Taupe) |
+| `--text-3` | `#b0a090` | Timestamps, hints, faintest text |
 | `--text-sub` | `#7A6A58` | Breakdown values |
+| `--text-inverse` | `#fff` | Text on dark backgrounds |
 
 ### Borders & Separators
 
 | Token | Value | Usage |
 |-------|-------|-------|
 | `--border` | `#f0ede6` | Lines between sections, separators |
-| `--card-border` | `#e8ddd0` | Card outlines (slightly stronger) |
-| `--ring-track` | `#e8ddd0` | Unfilled portion of savings ring |
+| `--border-strong` | `#e8ddd0` | Card outlines (slightly stronger) |
 
 ### Semantic Colors
 
@@ -47,13 +49,26 @@ Global design tokens and component specs. Every component pulls from these token
 | `--yellow` | `#A08040` | Retirement income breakdown |
 | `--purple` | `#685880` | Family income breakdown |
 
-### Brand & People
+### Brand & Accent
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--accent` | `#D4663A` | Brand color, active tabs, links (Burnt Orange) |
-| `--person1` | `#6A8AAA` | Jack's color — titles, badges (Dusty Blue) |
-| `--person2` | `#9A7A2A` | Jordan's color — titles, badges (Dark Gold) |
+| `--primary` | `#D4663A` | Brand color, active tabs, links (Burnt Orange) |
+| `--primary-hover` | `#C05A30` | Hover state |
+| `--primary-light` | `rgba(212,102,58,0.08)` | Light tint |
+
+### Person Colors
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--p1` | `#6A8AAA` | Jack — titles, badges, dots (Dusty Blue) |
+| `--p1-light` | `rgba(106,138,170,0.08)` | Jack — background tints |
+| `--p1-bar` | `#A0B8CC` | Jack — bar fills (Pastel Blue) |
+| `--p2` | `#9A7A2A` | Jordan — titles, badges, dots (Dark Gold) |
+| `--p2-light` | `rgba(154,122,42,0.08)` | Jordan — background tints |
+| `--p2-bar` | `#C4B060` | Jordan — bar fills (Pastel Gold) |
+
+Person color constraints: Jordan cannot use red, orange, green, blue, pink, purple, or magenta — those overlap with semantic colors and Jack's blue.
 
 ### Navigation
 
@@ -61,12 +76,36 @@ Global design tokens and component specs. Every component pulls from these token
 |-------|-------|-------|
 | `--nav-active-bg` | `#D4663A` | Active tab fill (uses accent) |
 | `--nav-active-text` | `#fff` | Active tab text |
-| `--nav-inactive-text` | `#999` | Inactive tab text |
+| `--nav-inactive` | `#999` | Inactive tab text |
 | `--nav-track` | `rgba(0,0,0,0.05)` | Pill track background |
+
+### Warning
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--warning` | `#A08040` | Review badge, warnings |
+| `--warning-light` | `rgba(160,128,64,0.1)` | Warning backgrounds |
+
+### Shadows & Radii
+
+| Token | Value |
+|-------|-------|
+| `--radius` | `16px` |
+| `--radius-lg` | `20px` |
+| `--radius-pill` | `12px` |
+| `--radius-sm` | `8px` |
+
+### Motion
+
+| Token | Value |
+|-------|-------|
+| `--ease-spring` | `cubic-bezier(0.34, 1.56, 0.64, 1)` |
+| `--ease-out` | `cubic-bezier(0.16, 1, 0.3, 1)` |
+| `--ease-smooth` | `cubic-bezier(0.25, 0.46, 0.45, 0.94)` |
 
 ---
 
-## Component: Summary Card (Ring Center Stage)
+## Component: Summary Cards (Ring Center Stage)
 
 Three cards spanning full screen width: Combined, Person 1, Person 2.
 
@@ -95,12 +134,12 @@ Three cards spanning full screen width: Combined, Person 1, Person 2.
 
 | Element | Size | Weight | Extras |
 |---------|------|--------|--------|
-| Card title | 18px | 900 | letter-spacing -0.3px |
-| Hero numbers (income/spending) | 40px | 900 | letter-spacing -1.5px |
-| Ring dollar | 20px | 900 | letter-spacing -0.5px |
-| Ring percent | 20px | 800 | margin-top 5px |
-| Labels (INCOME/SPENDING) | 12px | 800 | letter-spacing 2px, uppercase |
-| Breakdown items | 14px | 700 | |
+| Card title | 17px | 900 | letter-spacing -0.3px |
+| Hero numbers | 26px | 900 | letter-spacing -1.5px |
+| Ring dollar | 19px | 900 | letter-spacing -0.5px |
+| Ring percent | 16-20px | 800 | margin-top 5px |
+| Labels | 9px | 800 | letter-spacing 2px, uppercase |
+| Breakdown items | 10px | 700 | |
 
 ### Ring Behavior
 
@@ -112,12 +151,12 @@ Three cards spanning full screen width: Combined, Person 1, Person 2.
 
 | Property | Value |
 |----------|-------|
-| Card padding | 28px 32px |
+| Card padding | 24px |
 | Gap between cards | 16px |
-| Column gap (income / ring / spending) | 22px |
-| Ring size | 130px × 130px |
+| Column gap | 20px |
+| Ring size | 120px × 120px |
 | Ring stroke | 8px |
-| $ to % gap inside ring | 5px |
+| $ to % gap | 5px |
 | Card border-radius | 16px |
 | Responsive | Stacks to 1 column below 900px |
 
@@ -125,189 +164,106 @@ Three cards spanning full screen width: Combined, Person 1, Person 2.
 
 | Card | Color Token |
 |------|-------------|
-| Combined | `--accent` |
-| Person 1 | `--person1` |
-| Person 2 | `--person2` |
+| Combined | `--primary` |
+| Person 1 | `--p1` |
+| Person 2 | `--p2` |
 
-### CSS Classes
+### CSS Classes: `rcs-` prefix
 
-Prefix: `rcs-` (Ring Center Stage)
-
-| Class | Purpose |
-|-------|---------|
-| `.rcs-row` | 3-column grid, full width |
-| `.rcs-card` | Individual card |
-| `.rcs-title` | Person name |
-| `.rcs-body` | Flexbox (income \| ring \| spending) |
-| `.rcs-col` / `.rcs-col-right` | Data columns |
-| `.rcs-label` | INCOME / SPENDING |
-| `.rcs-number` | Hero dollar amounts |
-| `.rcs-breakdown` | Sub-items |
-| `.rcs-ring-wrap` | Ring container |
-| `.rcs-ring-svg` | SVG element |
-| `.rcs-ring-inner` | Centered text overlay |
-| `.rcs-ring-dollar` | Dollar inside ring |
-| `.rcs-ring-pct` | Percent inside ring |
-
-### Locked State
-
-Private card shows 🔒 centered with "Private" text, no data.
+`.rcs-row` `.rcs-card` `.rcs-title` `.rcs-body` `.rcs-col` `.rcs-col-right` `.rcs-label` `.rcs-number` `.rcs-breakdown` `.rcs-ring-wrap` `.rcs-ring-svg` `.rcs-ring-inner` `.rcs-ring-dollar` `.rcs-ring-pct`
 
 ---
 
 ## Component: Header Bar
 
-Single row, full width.
-
 ### Layout
 
 ```
-[ BT ]  Overview  Transactions  Split  History     ‹ April 2026 ›   [3 to review] [📊] [⚙️]
+Overview  Transactions  Split  History     ‹ April 2026 ›   [3 to review] [📊] [⚙️]
 ```
-
-### Decisions
 
 | Property | Value |
 |----------|-------|
 | Rows | One row |
-| Tab style | Text only — active in `--accent`, inactive `#999` |
-| Logo | Minimal "BT" — uppercase, muted, `--text-3`, letter-spacing 2px |
-| Background | Subtle Darker `#E8E4DA` |
-| Bottom border | `1px solid #ddd8cc` |
-| Month nav | Normal 16px |
+| Tab style | Text only — active in `--primary`, inactive `#999` |
+| Logo | Hidden (display:none) |
+| Background | `#E8E4DA` (Subtle Darker) |
+| Border | `1px solid #ddd8cc` |
+| Month nav | Compact bare chevrons (`bi-chevron-left/right`), no border |
 | Actions | Full — review badge + icon buttons |
-| Tab position | Left (after logo) |
-| Padding | 12px 20px |
-
-### Logo
-
-- Text: "BT"
-- Font: 13px, weight 800, letter-spacing 2px, uppercase
-- Color: `--text-3`
-
-### Tabs
-
-- Style: Plain text, no pill/border
-- Active: `--accent` color, weight 800
-- Inactive: `#999`, weight 600
-- Gap: 18px between tabs
-- Size: 13px
-
-### Month Navigation
-
-- Font: 16px, weight 900, letter-spacing -0.5px
-- Arrows: 28×28px, 2px border `--surface-border`, radius 8px
-- Arrow color: `--text-3`
-
-### Action Buttons
-
-- Review badge: `--warning-light` background, weight 800, 11px
-- Icon buttons: 32×32px, `--hover-bg` background, radius 10px, 16px emoji
-- Gap: 6px
+| Tab gap | 18px |
+| Height | 48px |
 
 ---
 
 ## Component: Range Filter
 
-Single row with bottom border, inline Total/Avg toggle on the right.
-
-### Layout
-
 ```
-Overview  2026  All  Custom                    Total  Avg/mo
-─────────────────────────────────────────────────────────────
+Mar  2026  All  Custom                    Total  Avg/mo
+─────────────────────────────────────────────────────────
 ```
-
-### Decisions
-
----
-
-## Component: Category Rows
-
-### Row Layout
-
-```
-[🛒]  Groceries  ████████████████░░░░  $892  21%
-```
-
-### Decisions
-
-| Element | Winner |
-|---------|--------|
-| Base row | Icon in colored circle (32px, 8px radius, tinted bg) + name + amount + % |
-| Bar style | Inline bar — bar sits on same line as name and amount |
-| Metadata | Hover/expand only — clean by default, details on interaction |
-| Person split | Bar itself is split-colored — blue (Jack) / berry (Jordan) proportional |
-
-### Row Anatomy
-
-- **Icon**: 14px Bootstrap icon inside 32×32px rounded square with `{color}10` tinted background
-- **Name**: 12px, weight 700, flex grows
-- **Bar**: 7px tall, inline between name and amount, category-colored, split by person
-- **Amount**: 13px, weight 900
-- **Percentage**: 10px, weight 700, `--text-3`
-- **Chevron**: 10px `bi-chevron-right`, very faint, hints at expandability
-- **On expand/hover**: shows vs avg, txn count, fixed/variable tag
-
-### Person Split in Bar
-
-- Jack portion: `--p1` color (`#4A6AAA`)
-- Jordan portion: `--p2` color (`#9A3A6A`)
-- Legend row at bottom with small color keys
-
-### Section Layout: Donut + Rows
-
-Donut chart on right, category rows on left.
-
-```
-SPENDING BY CATEGORY
-[icon] Housing   ██████████  $1,850  44%     ┌──────┐
-[icon] Groceries ████░░░░░░  $892    21%     │$4,231│
-[icon] Dining    ███░░░░░░░  $446    11%     │TOTAL │
-[icon] Transport ██░░░░░░░░  $318     8%     └──────┘
-[icon] Shopping  █░░░░░░░░░  $267     6%
-              Show all categories →
-```
-
-### Donut Specs
 
 | Property | Value |
 |----------|-------|
-| Position | Right of rows |
-| Size | 140px × 140px |
-| Stroke | 10px, with gaps between segments |
-| Center | `$4,231` at 20px weight 900 + "TOTAL" at 7px |
-| Alignment | Vertically centered with rows |
-| Gap to rows | 10px |
-
-### Section Specs
-
-| Property | Value |
-|----------|-------|
-| Title | Uppercase spaced, 11px, weight 800, letter-spacing 2px |
-| Sort | None |
-| Row separator | 1px line |
-| Row padding | 5px tight |
-| Icon | 32px circle with tinted background |
-| Bar | 10px fat, split-colored by person (blue/berry) |
-| Amount | 15px, weight 900 |
-| Name width | 60px narrow |
-| Show more | Accent text "Show all categories →" |
-| Person legend | None (removed) |
-| Card padding | 16px |
-
----
-
-### Range Filter
-
-| Property | Value |
-|----------|-------|
-| Style | Underline — plain text, active has bottom border in `--accent` |
-| Active tab | `--accent` color, weight 800, 2px bottom border |
-| Inactive tab | `#999`, weight 600 |
+| Style | Underline — active has `--primary` bottom border |
 | Tab size | 13px |
-| Gap | 18px between tabs |
+| Gap | 18px |
 | Bottom rule | `1px solid --border-strong` |
-| Total/Avg | Inline right side, only visible when multi-month |
-| Total/Avg size | 12px |
-| Padding-bottom | 8px |
+| Total/Avg | Inline right, only visible multi-month |
+
+---
+
+## Component: Loading Screen
+
+```
+Budget Together
+  • • •
+```
+
+| Property | Value |
+|----------|-------|
+| Title | "Budget" in `--text`, "Together" in `--primary` — two-tone |
+| Title size | 38px, weight 900 |
+| Animation | 3 bouncing dots in `--primary` |
+| Dot size | 6px |
+| Dot gap | 6px |
+| Background | `--bg` |
+
+---
+
+## Component: Category Section
+
+Three square cards in a row (aspect-ratio: 1). First = category bars, second + third = blank (reserved).
+
+### Category Row Specs
+
+| Property | Value |
+|----------|-------|
+| Icon | 32px circle with `{color}10` tinted bg |
+| Name width | 80px |
+| Bar height | 18px XL |
+| Bar fills | `--p1-bar` (Pastel Blue) + `--p2-bar` (Pastel Gold) — post-settle shares |
+| Amount | 15px, weight 900 |
+| Percentage | 10px, weight 700, `--text-3` |
+| Chevron | `bi-chevron-right`, 10px, `#ddd` |
+| Row separator | 1px solid `--bg` |
+| Max visible rows | 7 (rest combined as "X Other") |
+
+### Card Layout
+
+| Property | Value |
+|----------|-------|
+| Distribution | `space-evenly` |
+| Card padding | 12px |
+| Title margin | 4px |
+| Overflow | Hidden (no scroll) |
+| "X Other" row | Combined remainder, `bi-three-dots` icon, `#94a3b8` color |
+
+### Bar Scale
+
+Bars represent percentage of total spending (not relative to max category). Housing at 54% fills 54%.
+
+### Person Split Logic
+
+- **Shared expenses**: Use `getCatSplitAmts()` ratios (post-settle shares)
+- **Solo expenses**: 100% to the person who paid
