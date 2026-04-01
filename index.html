@@ -1804,7 +1804,7 @@ function renderOverview() {
   }
   const catTotal = catArr.reduce((s,[,v])=>s+v, 0);
   // Limit to 6 visible rows; combine remainder into "All Other"
-  const MAX_CAT_ROWS = 8;
+  const MAX_CAT_ROWS = 7;
   const visibleCats = catArr.slice(0, MAX_CAT_ROWS);
   const overflowCats = catArr.slice(MAX_CAT_ROWS);
   const overflowAmt = overflowCats.reduce((s,[,v])=>s+v, 0);
