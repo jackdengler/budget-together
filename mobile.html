@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Budget Together</title>
+  <style>
+    :root {
+      --bg: #F2F2F7;
+      --card: #FFFFFF;
+      --text: #000000;
+      --text-2: #6C6C70;
+      --text-3: #8E8E93;
+      --green: #34C759;
+      --yellow: #FF9500;
+      --red: #FF3B30;
+      --blue: #007AFF;
+      --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      min-height: 100dvh;
+      overscroll-behavior: none;
+      -webkit-text-size-adjust: 100%;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Loading spinner */
+    #loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      height: 100dvh;
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid rgba(0,0,0,0.1);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Main app (hidden until loaded) */
+    #app { display: none; }
+
+    /* Month header */
+    .month-header {
+      text-align: center;
+      padding: 16px 0 12px;
+      padding-top: calc(16px + env(safe-area-inset-top));
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      position: relative;
+    }
+    .month-hint {
+      opacity: 0;
+      transition: opacity 0.4s;
+      color: var(--text-3);
+      font-weight: 400;
+    }
+    .month-hint.show { opacity: 1; }
+
+    /* Edge tap zones for month nav */
+    .edge-left, .edge-right {
+      position: fixed;
+      top: 0; bottom: 0;
+      width: 20%;
+      z-index: 50;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .edge-left { left: 0; }
+    .edge-right { right: 0; }
+
+    /* Carousel */
+    .carousel {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding: 0 5%;
+      gap: 12px;
+    }
+    .carousel::-webkit-scrollbar { display: none; }
+
+    /* Card */
+    .card {
+      flex: 0 0 90%;
+      scroll-snap-align: center;
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      padding: 16px;
+      min-height: 0;
+    }
+    .card-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 12px;
+      aspect-ratio: 1 / 1;
+    }
+    .quadrant {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 10px;
+      border-radius: 12px;
+      background: rgba(120,120,128,0.06);
+    }
+    .q-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-3);
+      margin-bottom: 6px;
+    }
+    .q-big {
+      font-size: 1.5rem;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+    .q-sub {
+      font-size: 12px;
+      color: var(--text-2);
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+    .q-sub-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    /* Savings ring (top-right quadrant) */
+    .ring-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+    }
+    .ring-svg {
+      width: 80%;
+      max-width: 120px;
+    }
+    .ring-pct {
+      font-size: 1.3rem;
+      font-weight: 800;
+    }
+    .ring-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-3);
+      margin-top: 2px;
+    }
+
+    /* Dot indicators */
+    .dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 0 20px;
+    }
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--text-3);
+      opacity: 0.25;
+      transition: opacity 0.2s;
+    }
+    .dot.active { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div id="loading"><div class="spinner"></div></div>
+  <div id="app"></div>
+
+  <script>
+    // ── State ──
+    var D = {};
+    var currentMonth = new Date().toISOString().slice(0, 7);
+
+    // ── Categories (mirror from index.html) ──
+    var BASE_CATS = [
+      {id:'groceries',label:'Groceries',emoji:'\u{1F6D2}',color:'#10b981'},
+      {id:'dining',label:'Dining',emoji:'\u{1F37D}\uFE0F',color:'#f43f5e'},
+      {id:'transport',label:'Transport',emoji:'\u{1F697}',color:'#3b82f6'},
+      {id:'entertain',label:'Entertainment',emoji:'\u{1F3AC}',color:'#8b5cf6'},
+      {id:'subs',label:'Subscriptions',emoji:'\u{1F504}',color:'#6366f1'},
+      {id:'shopping',label:'Shopping',emoji:'\u{1F6CD}\uFE0F',color:'#f59e0b'},
+      {id:'health',label:'Health',emoji:'\u{1F48A}',color:'#ef4444'},
+      {id:'housing',label:'Housing',emoji:'\u{1F3E0}',color:'#06b6d4'},
+      {id:'utilities',label:'Utilities',emoji:'\u{1F4A1}',color:'#84cc16'},
+      {id:'travel',label:'Travel',emoji:'\u2708\uFE0F',color:'#0284c7'},
+      {id:'skiing',label:'Skiing',emoji:'\u26F7\uFE0F',color:'#38bdf8'},
+      {id:'investing',label:'Investments',emoji:'\u{1F4B9}',color:'#16a34a'},
+      {id:'income',label:'Income',emoji:'\u{1F4B5}',color:'#22c55e'},
+      {id:'insurance',label:'Insurance',emoji:'\u{1F6E1}\uFE0F',color:'#0ea5e9',ignored:true},
+      {id:'transfer',label:'Transfer',emoji:'\u2194\uFE0F',color:'#a8b4c0',ignored:true},
+      {id:'other',label:'Other',emoji:'\u{1F4B3}',color:'#94a3b8'},
+      {id:'gambling',label:'Gambling',emoji:'\u{1F3B0}',color:'#dc2626',hidden:true},
+      {id:'cash',label:'Cash Withdrawal',emoji:'\u{1F3E7}',color:'#b45309',hidden:true},
+    ];
+    var FIXED_CATS = new Set(['housing', 'utilities', 'subs', 'insurance']);
+    function getAllCats() { return [].concat(BASE_CATS, D.customCategories || []); }
+    function getCat(id) { return getAllCats().find(function(c) { return c.id === id; }) || {id:'other',label:'Other',emoji:'\u{1F4B3}',color:'#94a3b8'}; }
+
+    // ── Income classification ──
+    var RETIREMENT_KW = /\b(401k?|roth|retirement|pension|sep[\s-]?ira|hsa contrib)\b/i;
+    function normalizeDesc(d) { return (d || '').trim().toLowerCase().replace(/\s+/g, ' '); }
+    function getIncomeType(txnId, desc) {
+      if ((D.incomeData || {})[txnId]) return D.incomeData[txnId];
+      var key = normalizeDesc(desc);
+      if (key && (D.incomeTypeRules || {})[key]) return D.incomeTypeRules[key];
+      return RETIREMENT_KW.test(desc) ? 'retirement' : 'normal';
+    }
+
+    // ── Format currency ──
+    function fc(n) {
+      return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
+
+    // ── Compute card data for a given person filter ──
+    function computeCard(personFilter) {
+      var txns = D.transactions.filter(function(t) {
+        return t.date && t.date.startsWith(currentMonth);
+      });
+      if (personFilter !== 'all') {
+        txns = txns.filter(function(t) { return t.person === personFilter; });
+      }
+
+      var expenses = txns.filter(function(t) {
+        var cat = getCat(t.category);
+        return t.amount > 0 && !cat.ignored && !t.excluded;
+      });
+      var totalSpend = expenses.reduce(function(s, t) { return s + t.amount; }, 0);
+      var fixedSpend = expenses.filter(function(t) { return FIXED_CATS.has(t.category); })
+        .reduce(function(s, t) { return s + t.amount; }, 0);
+      var variableSpend = totalSpend - fixedSpend;
+
+      var incTxns = txns.filter(function(t) {
+        return t.amount < 0 && t.category === 'income' && !t.excluded;
+      });
+      var totalIncome = incTxns.reduce(function(s, t) { return s + Math.abs(t.amount); }, 0);
+
+      var retirementInc = 0, familyInc = 0, normalInc = 0;
+      incTxns.forEach(function(t) {
+        var type = getIncomeType(t.id, t.description);
+        var amt = Math.abs(t.amount);
+        if (type === 'retirement') retirementInc += amt;
+        else if (type === 'family') familyInc += amt;
+        else normalInc += amt;
+      });
+
+      var pl = totalIncome - totalSpend;
+      var takeHome = totalIncome - retirementInc - familyInc;
+      var savingsRate = takeHome > 0 ? Math.round(pl / takeHome * 100) : 0;
+
+      return {
+        totalIncome: totalIncome,
+        normalInc: normalInc,
+        retirementInc: retirementInc,
+        familyInc: familyInc,
+        totalSpend: totalSpend,
+        fixedSpend: fixedSpend,
+        variableSpend: variableSpend,
+        pl: pl,
+        savingsRate: savingsRate,
+        isDeficit: pl < 0
+      };
+    }
+
+    // ── Month helpers ──
+    function monthLabel(ym) {
+      var parts = ym.split('-');
+      var d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, 1);
+      return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    }
+    function shiftMonth(ym, delta) {
+      var parts = ym.split('-');
+      var d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1 + delta, 1);
+      var y = d.getFullYear();
+      var m = String(d.getMonth() + 1).padStart(2, '0');
+      return y + '-' + m;
+    }
+    function prevMonth() { currentMonth = shiftMonth(currentMonth, -1); render(); }
+    function nextMonth() { currentMonth = shiftMonth(currentMonth, +1); render(); }
+
+    // ── Ring SVG ──
+    function ringSvg(pct, color) {
+      var r = 42, circ = 2 * Math.PI * r;
+      var fill = Math.max(0, Math.min(Math.abs(pct), 100));
+      var offset = circ - (fill / 100) * circ;
+      return '<svg class="ring-svg" viewBox="0 0 100 100">'
+        + '<circle cx="50" cy="50" r="' + r + '" fill="none" stroke="rgba(120,120,128,0.12)" stroke-width="9"/>'
+        + '<circle cx="50" cy="50" r="' + r + '" fill="none" stroke="' + color + '" stroke-width="9"'
+        + ' stroke-linecap="round" stroke-dasharray="' + circ + '" stroke-dashoffset="' + offset + '"'
+        + ' transform="rotate(-90 50 50)" style="transition:stroke-dashoffset 0.6s ease"/>'
+        + '<text x="50" y="46" text-anchor="middle" font-size="16" font-weight="800" fill="' + color + '">'
+        + pct + '%</text>'
+        + '<text x="50" y="60" text-anchor="middle" font-size="7" font-weight="600" fill="#8E8E93">savings</text>'
+        + '</svg>';
+    }
+
+    // ── Card HTML ──
+    function cardHtml(label, data) {
+      var plColor = data.isDeficit ? 'var(--red)' : 'var(--green)';
+      var plSign = data.isDeficit ? '-' : '+';
+      var ringColor = data.savingsRate < 10 ? '#FF3B30' : data.savingsRate < 20 ? '#FF9500' : '#34C759';
+
+      var incSubs = '';
+      if (data.retirementInc > 0) incSubs += '<div class="q-sub-line"><span>Retirement</span><span>' + fc(data.retirementInc) + '</span></div>';
+      if (data.familyInc > 0) incSubs += '<div class="q-sub-line"><span>Family</span><span>' + fc(data.familyInc) + '</span></div>';
+      incSubs += '<div class="q-sub-line"><span>Normal</span><span>' + fc(data.normalInc) + '</span></div>';
+
+      return '<div class="card">'
+        + '<div class="card-label">' + label + '</div>'
+        + '<div class="grid">'
+        + '<div class="quadrant">'
+        + '<div class="q-label">' + (data.isDeficit ? 'Deficit' : 'Saved') + '</div>'
+        + '<div class="q-big" style="color:' + plColor + '">' + plSign + fc(Math.abs(data.pl)) + '</div>'
+        + '</div>'
+        + '<div class="quadrant">'
+        + '<div class="ring-wrap">' + ringSvg(data.savingsRate, ringColor) + '</div>'
+        + '</div>'
+        + '<div class="quadrant">'
+        + '<div class="q-label">Income</div>'
+        + '<div class="q-big" style="color:var(--green)">' + fc(data.totalIncome) + '</div>'
+        + '<div class="q-sub">' + incSubs + '</div>'
+        + '</div>'
+        + '<div class="quadrant">'
+        + '<div class="q-label">Spending</div>'
+        + '<div class="q-big" style="color:var(--red)">' + fc(data.totalSpend) + '</div>'
+        + '<div class="q-sub">'
+        + '<div class="q-sub-line"><span>Fixed</span><span>' + fc(data.fixedSpend) + '</span></div>'
+        + '<div class="q-sub-line"><span>Variable</span><span>' + fc(data.variableSpend) + '</span></div>'
+        + '</div>'
+        + '</div>'
+        + '</div></div>';
+    }
+
+    // ── Render ──
+    function render() {
+      var p1 = computeCard('p1');
+      var p2 = computeCard('p2');
+      var combined = computeCard('all');
+      var p1Name = (D.settings || {}).person1 || 'Person 1';
+      var p2Name = (D.settings || {}).person2 || 'Person 2';
+
+      var set = cardHtml(p1Name, p1) + cardHtml(p2Name, p2) + cardHtml('Combined', combined);
+      var cards = set + set + set;
+
+      document.getElementById('app').innerHTML =
+        '<div class="month-header">'
+        + '<span class="month-hint" id="hint-l">\u2039 </span>'
+        + '<span id="month-label">' + monthLabel(currentMonth) + '</span>'
+        + '<span class="month-hint" id="hint-r"> \u203A</span>'
+        + '</div>'
+        + '<div class="edge-left" onclick="prevMonth()"></div>'
+        + '<div class="edge-right" onclick="nextMonth()"></div>'
+        + '<div class="carousel" id="carousel">' + cards + '</div>'
+        + '<div class="dots" id="dots">'
+        + '<div class="dot active"></div><div class="dot"></div><div class="dot"></div>'
+        + '</div>';
+
+      var carousel = document.getElementById('carousel');
+      var cardEl = carousel.children[0];
+      var gap = 12;
+      var cardW = cardEl.offsetWidth + gap;
+      carousel.scrollLeft = cardW * 3;
+
+      var scrollTimer = null;
+      carousel.addEventListener('scroll', function() {
+        updateDots();
+        clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(function() {
+          var pos = carousel.scrollLeft;
+          var idx = Math.round(pos / cardW);
+          if (idx < 3) {
+            carousel.style.scrollBehavior = 'auto';
+            carousel.scrollLeft = pos + cardW * 3;
+            carousel.style.scrollBehavior = '';
+          } else if (idx >= 6) {
+            carousel.style.scrollBehavior = 'auto';
+            carousel.scrollLeft = pos - cardW * 3;
+            carousel.style.scrollBehavior = '';
+          }
+        }, 150);
+      });
+
+      updateDots();
+      showHints();
+    }
+
+    var hintsShown = false;
+    function showHints() {
+      if (hintsShown) return;
+      hintsShown = true;
+      var l = document.getElementById('hint-l');
+      var r = document.getElementById('hint-r');
+      if (!l || !r) return;
+      l.classList.add('show');
+      r.classList.add('show');
+      setTimeout(function() {
+        l.classList.remove('show');
+        r.classList.remove('show');
+      }, 1500);
+    }
+
+    function updateDots() {
+      var carousel = document.getElementById('carousel');
+      if (!carousel || !carousel.firstElementChild) return;
+      var cardW = carousel.firstElementChild.offsetWidth + 12;
+      var idx = Math.round(carousel.scrollLeft / cardW) % 3;
+      var dots = document.querySelectorAll('.dot');
+      dots.forEach(function(d, i) {
+        d.classList.toggle('active', i === idx);
+      });
+    }
+
+    // ── Boot ──
+    google.script.run
+      .withSuccessHandler(function(data) {
+        D = data;
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('app').style.display = '';
+        render();
+      })
+      .withFailureHandler(function(err) {
+        document.getElementById('loading').innerHTML =
+          '<p style="color:var(--red);font-size:15px;padding:2rem">Failed to load data.<br>' + err.message + '</p>';
+      })
+      .loadAll();
+  </script>
+</body>
+</html>
