@@ -81,8 +81,10 @@
       /* Person Colors */
       --p1: #6A8AAA;
       --p1-light: rgba(106,138,170,0.08);
+      --p1-bar: #A0B8CC;
       --p2: #9A7A2A;
       --p2-light: rgba(154,122,42,0.08);
+      --p2-bar: #C4B060;
 
       /* Navigation */
       --nav-active-bg: #D4663A;
@@ -1826,7 +1828,7 @@ function renderOverview() {
     return `<div style="display:flex;align-items:center;gap:10px;padding-bottom:4px;border-bottom:1px solid var(--bg);">
       <div style="width:32px;height:32px;border-radius:8px;background:${c.color}10;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="bi ${c.icon}" style="font-size:14px;color:${c.color};"></i></div>
       <div style="width:80px;font-size:12px;font-weight:700;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.label}</div>
-      <div style="flex:1;height:18px;background:rgba(0,0,0,0.04);border-radius:9px;overflow:hidden;display:flex;"><div style="width:${barW*p1pct/100}%;background:var(--p1);"></div><div style="width:${barW*(100-p1pct)/100}%;background:var(--p2);"></div></div>
+      <div style="flex:1;height:18px;background:rgba(0,0,0,0.04);border-radius:9px;overflow:hidden;display:flex;"><div style="width:${barW*p1pct/100}%;background:var(--p1-bar);"></div><div style="width:${barW*(100-p1pct)/100}%;background:var(--p2-bar);"></div></div>
       <div style="font-size:15px;font-weight:900;">${fc0(displayAmt)}</div>
       <div style="font-size:10px;font-weight:700;color:var(--text-3);">${pct}%</div>
       <i class="bi bi-chevron-right" style="font-size:10px;color:#ddd;"></i>
