@@ -209,18 +209,18 @@
     .rcs-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
     .rcs-card{background:var(--surface);border-radius:var(--radius);padding:28px 32px;border:2px solid var(--surface-border);transition:transform 0.2s var(--ease-spring)}
     .rcs-card:hover{transform:translateY(-2px)}
-    .rcs-title{font-family:'DM Sans',sans-serif;font-size:20px;font-weight:900;color:#222;letter-spacing:-0.3px;margin-bottom:18px}
-    .rcs-body{display:flex;gap:24px;align-items:center;justify-content:center}
+    .rcs-title{font-family:'DM Sans',sans-serif;font-size:18px;font-weight:900;color:#222;letter-spacing:-0.3px;margin-bottom:14px}
+    .rcs-body{display:flex;gap:22px;align-items:center;justify-content:center}
     .rcs-col{flex:1;min-width:0}
     .rcs-col-right{text-align:right}
-    .rcs-label{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
-    .rcs-number{font-family:'DM Sans',sans-serif;font-size:32px;font-weight:900;letter-spacing:-1.5px;line-height:1.15}
-    .rcs-breakdown{margin-top:8px;display:flex;flex-direction:column;gap:2px;font-family:'DM Sans',sans-serif}
-    .rcs-ring-wrap{position:relative;width:150px;height:150px;flex-shrink:0}
+    .rcs-label{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+    .rcs-number{font-family:'DM Sans',sans-serif;font-size:40px;font-weight:900;letter-spacing:-1.5px;line-height:1.15}
+    .rcs-breakdown{margin-top:10px;display:flex;flex-direction:column;gap:3px;font-family:'DM Sans',sans-serif}
+    .rcs-ring-wrap{position:relative;width:130px;height:130px;flex-shrink:0}
     .rcs-ring-svg{width:100%;height:100%;transform:rotate(-90deg)}
     .rcs-ring-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-    .rcs-ring-dollar{font-family:'DM Sans',sans-serif;font-size:24px;font-weight:900;letter-spacing:-0.5px}
-    .rcs-ring-pct{font-family:'DM Sans',sans-serif;font-size:24px;font-weight:800;margin-top:5px}
+    .rcs-ring-dollar{font-family:'DM Sans',sans-serif;font-size:20px;font-weight:900;letter-spacing:-0.5px}
+    .rcs-ring-pct{font-family:'DM Sans',sans-serif;font-size:20px;font-weight:800;margin-top:5px}
     @media(max-width:900px){.rcs-row{grid-template-columns:1fr}}
 
     /* Charts row */
@@ -2152,9 +2152,9 @@ ${dots}`;
     const pctStr = isLoss ? `−${Math.abs(sRate)}%` : `${sRate}%`;
     // Income breakdown
     const incLines = [];
-    incLines.push(`<div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--text-3);">Regular</span><span style="font-weight:700;color:var(--text-sub);">${fc0(inc - ret - fam)}</span></div>`);
-    if (ret > 0) incLines.push(`<div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--text-3);">Retirement</span><span style="font-weight:700;color:var(--yellow);">${fc0(ret)}</span></div>`);
-    if (fam > 0) incLines.push(`<div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--text-3);">Family</span><span style="font-weight:700;color:var(--purple);">${fc0(fam)}</span></div>`);
+    incLines.push(`<div style="display:flex;justify-content:space-between;font-size:14px;"><span style="color:var(--text-3);">Regular</span><span style="font-weight:700;color:var(--text-sub);">${fc0(inc - ret - fam)}</span></div>`);
+    if (ret > 0) incLines.push(`<div style="display:flex;justify-content:space-between;font-size:14px;"><span style="color:var(--text-3);">Retirement</span><span style="font-weight:700;color:var(--yellow);">${fc0(ret)}</span></div>`);
+    if (fam > 0) incLines.push(`<div style="display:flex;justify-content:space-between;font-size:14px;"><span style="color:var(--text-3);">Family</span><span style="font-weight:700;color:var(--purple);">${fc0(fam)}</span></div>`);
 
     return `<div class="rcs-card">
       <div class="rcs-title" style="color:${titleColor}">${title}</div>
@@ -2179,8 +2179,8 @@ ${dots}`;
           <div class="rcs-label" style="color:var(--red);">SPENDING</div>
           <div class="rcs-number" style="color:var(--red);">${fc0(spend)}</div>
           <div class="rcs-breakdown">
-            <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--text-3);">Fixed</span><span style="font-weight:700;color:var(--text-sub);">${fc0(fixed)}</span></div>
-            <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--text-3);">Variable</span><span style="font-weight:700;color:var(--text-sub);">${fc0(variable)}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:14px;"><span style="color:var(--text-3);">Fixed</span><span style="font-weight:700;color:var(--text-sub);">${fc0(fixed)}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:14px;"><span style="color:var(--text-3);">Variable</span><span style="font-weight:700;color:var(--text-sub);">${fc0(variable)}</span></div>
           </div>
         </div>
       </div>

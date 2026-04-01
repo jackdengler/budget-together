@@ -95,12 +95,12 @@ Three cards spanning full screen width: Combined, Person 1, Person 2.
 
 | Element | Size | Weight | Extras |
 |---------|------|--------|--------|
-| Card title | 20px | 900 | letter-spacing -0.3px |
-| Hero numbers (income/spending) | 32px | 900 | letter-spacing -1.5px |
-| Ring dollar | 24px | 900 | letter-spacing -0.5px |
-| Ring percent | 24px | 800 | margin-top 5px |
-| Labels (INCOME/SPENDING) | 11px | 800 | letter-spacing 2px, uppercase |
-| Breakdown items | 13px | 700 | |
+| Card title | 18px | 900 | letter-spacing -0.3px |
+| Hero numbers (income/spending) | 40px | 900 | letter-spacing -1.5px |
+| Ring dollar | 20px | 900 | letter-spacing -0.5px |
+| Ring percent | 20px | 800 | margin-top 5px |
+| Labels (INCOME/SPENDING) | 12px | 800 | letter-spacing 2px, uppercase |
+| Breakdown items | 14px | 700 | |
 
 ### Ring Behavior
 
@@ -114,8 +114,8 @@ Three cards spanning full screen width: Combined, Person 1, Person 2.
 |----------|-------|
 | Card padding | 28px 32px |
 | Gap between cards | 16px |
-| Column gap (income / ring / spending) | 24px |
-| Ring size | 150px × 150px |
+| Column gap (income / ring / spending) | 22px |
+| Ring size | 130px × 130px |
 | Ring stroke | 8px |
 | $ to % gap inside ring | 5px |
 | Card border-radius | 16px |

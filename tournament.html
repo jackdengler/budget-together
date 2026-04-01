@@ -300,73 +300,106 @@ function shuffle(arr) {
   return arr;
 }
 
+let alive = []; // indices still in the tournament
+let eliminated = []; // { name, round }
+let roundNum = 0;
+let finished = false;
+
 function initTournament() {
-  wins = {};
-  VARIANTS.forEach(v => wins[v.name] = 0);
   matchHistory = [];
-  champion = 0;
-  challengers = shuffle(VARIANTS.map((_,i) => i).filter(i => i !== champion));
+  alive = shuffle(VARIANTS.map((_,i) => i));
+  eliminated = [];
+  champion = alive[0];
+  roundNum = 1;
+  finished = false;
   render();
 }
 
 function pickWinner(side) {
+  if (finished) return;
   const champIdx = champion;
-  const challIdx = challengers[0];
+  const challIdx = alive.find(i => i !== champion);
   const winnerIdx = side === 'left' ? champIdx : challIdx;
   const loserIdx = side === 'left' ? challIdx : champIdx;
 
-  wins[VARIANTS[winnerIdx].name]++;
-  matchHistory.unshift({ winner: VARIANTS[winnerIdx].name, loser: VARIANTS[loserIdx].name });
+  matchHistory.unshift({ winner: VARIANTS[winnerIdx].name, loser: VARIANTS[loserIdx].name, round: roundNum });
+
+  // Eliminate the loser
+  alive = alive.filter(i => i !== loserIdx);
+  eliminated.unshift({ name: VARIANTS[loserIdx].name, round: roundNum });
 
   champion = winnerIdx;
-  challengers.shift();
+  roundNum++;
 
-  if (challengers.length === 0) {
-    // All challengers exhausted — reshuffle (excluding champ)
-    challengers = shuffle(VARIANTS.map((_,i) => i).filter(i => i !== champion));
+  if (alive.length === 1) {
+    finished = true;
   }
 
   render();
 }
 
 function render() {
-  const champVar = VARIANTS[champion];
-  const challVar = VARIANTS[challengers[0]];
+  const remaining = alive.length;
+  const total = VARIANTS.length;
 
-  document.getElementById('arena').innerHTML = `
-    <div class="contender">
-      <div class="contender-label champ">Champion</div>
-      <div class="card-wrap" onclick="pickWinner('left')" title="Pick ${champVar.name}">
-        ${buildCard(champVar, DATA)}
-      </div>
-      <div style="font-size:14px;font-weight:800;color:var(--text)">${champVar.name}</div>
-    </div>
-    <div class="vs">VS</div>
-    <div class="contender">
-      <div class="contender-label">Challenger</div>
-      <div class="card-wrap" onclick="pickWinner('right')" title="Pick ${challVar.name}">
-        ${buildCard(challVar, DATA)}
-      </div>
-      <div style="font-size:14px;font-weight:800;color:var(--text)">${challVar.name}</div>
-    </div>`;
+  if (finished) {
+    const winner = VARIANTS[champion];
+    document.getElementById('arena').innerHTML = `
+      <div style="text-align:center;width:100%">
+        <div style="font-size:14px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:16px">Tournament Winner</div>
+        <div style="max-width:500px;margin:0 auto">
+          ${buildCard(winner, DATA)}
+        </div>
+        <div style="font-size:22px;font-weight:900;color:var(--text);margin-top:16px">${winner.name}</div>
+        <div style="font-size:14px;color:var(--text-3);margin-top:6px">Won ${total - 1} matches to claim the title</div>
+      </div>`;
 
-  // Scoreboard
-  const sorted = Object.entries(wins).sort((a,b) => b[1] - a[1]);
-  document.getElementById('scoreboard').innerHTML = sorted
-    .filter(([,w]) => w > 0)
-    .map(([name,w]) => `<span>${name}: <span class="num">${w}</span></span>`)
-    .join('') || '<span>No matches yet</span>';
-
-  // History
-  const histEl = document.getElementById('history');
-  if (matchHistory.length) {
-    histEl.innerHTML = `<h3>Match History</h3>` +
-      matchHistory.slice(0, 10).map(m =>
-        `<div class="history-item"><span class="winner-name">${m.winner}</span> beat <span class="loser-name">${m.loser}</span></div>`
-      ).join('');
+    document.getElementById('scoreboard').innerHTML =
+      `<span style="color:var(--accent);font-size:16px">Tournament Complete — <span class="num">${VARIANTS[champion].name}</span> wins!</span>`;
   } else {
-    histEl.innerHTML = '';
+    const champVar = VARIANTS[champion];
+    const challIdx = alive.find(i => i !== champion);
+    const challVar = VARIANTS[challIdx];
+
+    document.getElementById('arena').innerHTML = `
+      <div class="contender">
+        <div class="contender-label champ">Champion</div>
+        <div class="card-wrap" onclick="pickWinner('left')" title="Pick ${champVar.name}">
+          ${buildCard(champVar, DATA)}
+        </div>
+        <div style="font-size:14px;font-weight:800;color:var(--text)">${champVar.name}</div>
+      </div>
+      <div class="vs">VS</div>
+      <div class="contender">
+        <div class="contender-label">Challenger</div>
+        <div class="card-wrap" onclick="pickWinner('right')" title="Pick ${challVar.name}">
+          ${buildCard(challVar, DATA)}
+        </div>
+        <div style="font-size:14px;font-weight:800;color:var(--text)">${challVar.name}</div>
+      </div>`;
+
+    document.getElementById('scoreboard').innerHTML =
+      `<span>Round <span class="num">${roundNum}</span></span>` +
+      `<span>Remaining: <span class="num">${remaining}</span> / ${total}</span>` +
+      `<span>Eliminated: <span class="num">${eliminated.length}</span></span>`;
   }
+
+  // History + eliminated
+  const histEl = document.getElementById('history');
+  let html = '';
+  if (eliminated.length) {
+    html += `<h3>Eliminated</h3>` +
+      eliminated.map(e =>
+        `<div class="history-item"><span class="loser-name">${e.name}</span><span style="font-size:11px;color:var(--text-3)">Round ${e.round}</span></div>`
+      ).join('');
+  }
+  if (matchHistory.length) {
+    html += `<h3 style="margin-top:20px">Match History</h3>` +
+      matchHistory.map(m =>
+        `<div class="history-item"><span class="winner-name">${m.winner}</span> beat <span class="loser-name">${m.loser}</span><span style="font-size:11px;color:var(--text-3)">R${m.round}</span></div>`
+      ).join('');
+  }
+  histEl.innerHTML = html;
 }
 
 function resetTournament() { initTournament(); }
