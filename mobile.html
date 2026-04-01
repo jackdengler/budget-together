@@ -6,6 +6,25 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Budget Together</title>
+  <script>
+    (function(){
+      // Force viewport meta inside GAS iframe
+      if (window.self !== window.top) {
+        var vp = document.querySelector('meta[name="viewport"]');
+        if (vp) vp.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover';
+        try { parent.document.querySelector('.apps-script-banner')?.remove(); } catch(e){}
+      }
+      // GAS iframe renders at a virtual ~980px viewport then scales the page down to fit
+      // the real device screen (~390px). Compensate with CSS zoom.
+      if (navigator.maxTouchPoints > 0 && window.screen.width > 0) {
+        var _sw = window.screen.width;
+        var _iw = window.innerWidth;
+        if (_iw > _sw * 1.5) {
+          document.documentElement.style.zoom = _iw / _sw;
+        }
+      }
+    })();
+  </script>
   <style>
     :root {
       --bg: #F2F2F7;
