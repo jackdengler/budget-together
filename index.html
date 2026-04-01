@@ -1795,7 +1795,7 @@ function renderOverview() {
   // Net per category: use visible transactions only so categories don't leak private amounts
   const byCat = {};
   for (const t of txns.filter(t => !getCat(t.category).ignored && !t.excluded && isVisible(t))) byCat[t.category] = (byCat[t.category]||0)+t.amount;
-  const catArr = Object.entries(byCat).filter(([,v])=>v>0).sort((a,b) => b[1]-a[1]);
+  const catArr = Object.entries(byCat).filter(([cid,v])=>v>0 && cid!=='housing').sort((a,b) => b[1]-a[1]);
   const mx = catArr[0]?.[1]||1;
   const noExpMsg = isMulti ? 'No expenses in this range' : 'No expenses this month';
   // Per-person per-category for split bars — post-settle shares
