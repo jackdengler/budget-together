@@ -4126,7 +4126,7 @@ function saveGoogleConfig() {
   if (!sid) { alert('Enter your Sheet ID'); return; }
   CFG.clientId = cid;
   CFG.sheetId = sid;
-  $('loading').innerHTML = `<div class="load-logo">💕</div><div class="load-title">Budget Together</div><div class="load-bar-track"><div class="load-bar-fill"></div></div><p>Connecting…</p>`;
+  $('loading').innerHTML = `<div class="load-title"><span style="color:var(--text);">Budget</span> <span style="color:var(--primary);">Together</span></div><div class="load-dots"><div></div><div></div><div></div></div>`;
   loadData();
 }
 
@@ -4162,7 +4162,7 @@ function getDemoData() {
 }
 
 function loadData() {
-  $('loading').innerHTML = `<div class="load-logo">💕</div><div class="load-title">Budget Together</div><div class="load-bar-track"><div class="load-bar-fill"></div></div><p>Loading your budget…</p>`;
+  $('loading').innerHTML = `<div class="load-title"><span style="color:var(--text);">Budget</span> <span style="color:var(--primary);">Together</span></div><div class="load-dots"><div></div><div></div><div></div></div>`;
   // Demo mode: no Google connection available (preview / localhost without credentials)
   if (!USE_GAS() && !localStorage.getItem('bt_client_id')) {
     setTimeout(() => {
