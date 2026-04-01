@@ -24,7 +24,7 @@ jobs:
 
       - name: Stamp build info
         run: |
-          STAMP="Git push: $(date -u +'%b %d %Y %H:%M') UTC | Deploy: $(date -u +'%b %d %Y %H:%M') UTC"
+          STAMP="Git push: $(TZ='America/Los_Angeles' date +'%b %d %Y %I:%M %p %Z') | Deploy: $(TZ='America/Los_Angeles' date +'%b %d %Y %I:%M %p %Z')"
           sed -i "s#__BUILD_TIMESTAMP__#$STAMP#g" index.html
 
       - name: Push to Apps Script
