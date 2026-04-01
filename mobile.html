@@ -32,17 +32,17 @@
       --text2: rgba(235,235,245,.6);
       --text3: rgba(235,235,245,.3);
       --green: #30D158;
+      --green-dim: rgba(48,209,88,.5);
       --red: #FF453A;
+      --red-dim: rgba(255,69,58,.5);
       --orange: #FF9F0A;
       --blue: #0A84FF;
-      --teal: #64D2FF;
-      --separator: rgba(84,84,88,.36);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
       background: var(--bg);
       color: var(--text);
       height: 100vh;
@@ -64,17 +64,18 @@
       justify-content: center;
       height: 100vh;
       gap: calc(16px * var(--z));
-      color: var(--text2);
-      font-size: calc(15px * var(--z));
+      color: var(--text3);
+      font-size: calc(14px * var(--z));
       font-weight: 500;
+      letter-spacing: calc(0.2px * var(--z));
     }
-    .spinner {
-      width: calc(32px * var(--z));
-      height: calc(32px * var(--z));
-      border: calc(2.5px * var(--z)) solid rgba(255,255,255,.1);
+    .ld-ring {
+      width: calc(40px * var(--z));
+      height: calc(40px * var(--z));
+      border: calc(3px * var(--z)) solid rgba(255,255,255,.08);
       border-top-color: var(--blue);
       border-radius: 50%;
-      animation: spin .7s linear infinite;
+      animation: spin .8s cubic-bezier(.45,.05,.55,.95) infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -82,40 +83,37 @@
     #app { display: none; flex-direction: column; height: 100%; }
     #app.show { display: flex; flex: 1; }
 
-    /* ── Month nav ── */
+    /* ── Month bar ── */
     .month-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: calc(12px * var(--z)) calc(20px * var(--z)) calc(8px * var(--z));
-      padding-top: calc((12px + env(safe-area-inset-top)) * var(--z));
+      padding: calc(10px * var(--z)) calc(20px * var(--z)) calc(6px * var(--z));
+      padding-top: calc((8px + env(safe-area-inset-top)) * var(--z));
       flex-shrink: 0;
     }
     .month-label {
-      font-size: calc(20px * var(--z));
+      font-size: calc(22px * var(--z));
       font-weight: 700;
       letter-spacing: calc(-0.4px * var(--z));
     }
-    .month-arrows {
-      display: flex;
-      gap: calc(2px * var(--z));
-    }
+    .month-arrows { display: flex; gap: calc(6px * var(--z)); }
     .mo-btn {
-      width: calc(36px * var(--z));
-      height: calc(36px * var(--z));
+      width: calc(34px * var(--z));
+      height: calc(34px * var(--z));
       border-radius: 50%;
-      border: none;
-      background: var(--card);
-      color: var(--text);
-      font-size: calc(18px * var(--z));
+      border: calc(1px * var(--z)) solid rgba(255,255,255,.08);
+      background: transparent;
+      color: var(--text2);
+      font-size: calc(16px * var(--z));
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
-      transition: background .15s;
+      transition: all .15s;
     }
-    .mo-btn:active { background: var(--card-raised); }
+    .mo-btn:active { background: var(--card); transform: scale(.92); }
 
     /* ── Carousel ── */
     .carousel {
@@ -124,7 +122,7 @@
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
-      padding: 0 calc(16px * var(--z));
+      padding: calc(4px * var(--z)) calc(16px * var(--z)) 0;
       gap: calc(12px * var(--z));
       flex: 1;
       align-items: stretch;
@@ -136,23 +134,30 @@
       flex: 0 0 calc(100% - calc(32px * var(--z)));
       scroll-snap-align: center;
       background: var(--card);
-      border-radius: calc(20px * var(--z));
-      padding: calc(18px * var(--z));
+      border-radius: calc(22px * var(--z));
+      padding: calc(16px * var(--z));
       display: flex;
       flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+    /* Subtle top-edge highlight like a real iOS card */
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: calc(20px * var(--z)); right: calc(20px * var(--z));
+      height: calc(1px * var(--z));
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
     }
     .card-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: calc(14px * var(--z));
+      margin-bottom: calc(10px * var(--z));
       flex-shrink: 0;
     }
     .card-name {
-      font-size: calc(17px * var(--z));
+      font-size: calc(13px * var(--z));
       font-weight: 600;
-      color: var(--text2);
-      letter-spacing: calc(0.4px * var(--z));
+      color: var(--text3);
+      letter-spacing: calc(1.2px * var(--z));
       text-transform: uppercase;
     }
 
@@ -161,11 +166,11 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       grid-template-rows: 1fr 1fr;
-      gap: calc(10px * var(--z));
+      gap: calc(8px * var(--z));
       flex: 1;
     }
 
-    /* ── Quadrant (tile) ── */
+    /* ── Tile base ── */
     .tile {
       border-radius: calc(16px * var(--z));
       background: var(--card-raised);
@@ -176,107 +181,130 @@
       overflow: hidden;
     }
     .tile-label {
-      font-size: calc(11px * var(--z));
-      font-weight: 600;
+      font-size: calc(10.5px * var(--z));
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: calc(0.6px * var(--z));
+      letter-spacing: calc(0.8px * var(--z));
       color: var(--text3);
-      margin-bottom: calc(6px * var(--z));
+      margin-bottom: calc(4px * var(--z));
     }
     .tile-big {
       font-size: calc(26px * var(--z));
       font-weight: 800;
-      letter-spacing: calc(-0.5px * var(--z));
+      letter-spacing: calc(-0.8px * var(--z));
       line-height: 1.1;
+      font-variant-numeric: tabular-nums;
     }
     .tile-sub {
       margin-top: auto;
-      padding-top: calc(8px * var(--z));
+      padding-top: calc(6px * var(--z));
     }
     .tile-row {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
-      font-size: calc(12px * var(--z));
+      font-size: calc(11.5px * var(--z));
       color: var(--text2);
-      padding: calc(2px * var(--z)) 0;
+      padding: calc(1.5px * var(--z)) 0;
     }
     .tile-row span:last-child {
       font-weight: 600;
       font-variant-numeric: tabular-nums;
     }
+    /* Thin separator between breakdown rows */
+    .tile-sep {
+      height: calc(1px * var(--z));
+      background: rgba(255,255,255,.04);
+      margin: calc(3px * var(--z)) 0;
+    }
 
-    /* ── Saved/Deficit tile — gradient accent ── */
-    .tile-pl { justify-content: center; }
-    .tile-pl .tile-big { font-size: calc(30px * var(--z)); }
-    .tile-pl.surplus { background: linear-gradient(135deg, rgba(48,209,88,.15) 0%, rgba(48,209,88,.05) 100%); }
-    .tile-pl.deficit { background: linear-gradient(135deg, rgba(255,69,58,.15) 0%, rgba(255,69,58,.05) 100%); }
+    /* ── P/L tile ── */
+    .tile-pl {
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .tile-pl .tile-big { font-size: calc(32px * var(--z)); }
+    .tile-pl.surplus {
+      background: linear-gradient(145deg, rgba(48,209,88,.18) 0%, rgba(48,209,88,.04) 100%);
+    }
+    .tile-pl.surplus .tile-label { color: var(--green-dim); }
+    .tile-pl.deficit {
+      background: linear-gradient(145deg, rgba(255,69,58,.18) 0%, rgba(255,69,58,.04) 100%);
+    }
+    .tile-pl.deficit .tile-label { color: var(--red-dim); }
 
     /* ── Ring tile ── */
     .tile-ring {
       align-items: center;
       justify-content: center;
-      padding: calc(10px * var(--z));
+      padding: calc(8px * var(--z));
+      background: transparent;
     }
-    .ring-container { position: relative; width: 100%; max-width: calc(140px * var(--z)); }
-    .ring-container svg { width: 100%; display: block; }
+    .ring-outer { position: relative; width: 85%; max-width: calc(150px * var(--z)); }
+    .ring-outer svg { width: 100%; display: block; filter: drop-shadow(0 0 calc(6px * var(--z)) var(--ring-glow)); }
     .ring-center {
       position: absolute;
-      top: 50%;
-      left: 50%;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       text-align: center;
     }
     .ring-pct {
-      font-size: calc(24px * var(--z));
+      font-size: calc(26px * var(--z));
       font-weight: 800;
-      letter-spacing: calc(-0.5px * var(--z));
+      letter-spacing: calc(-0.8px * var(--z));
       line-height: 1;
     }
     .ring-word {
-      font-size: calc(9px * var(--z));
+      font-size: calc(8.5px * var(--z));
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: calc(0.8px * var(--z));
+      letter-spacing: calc(1px * var(--z));
       color: var(--text3);
-      margin-top: calc(2px * var(--z));
+      margin-top: calc(1px * var(--z));
     }
 
     /* ── Income tile ── */
     .tile-inc .tile-big { color: var(--green); }
-    .tile-inc .tile-label { color: rgba(48,209,88,.6); }
+    .tile-inc .tile-label { color: var(--green-dim); }
 
     /* ── Spending tile ── */
     .tile-spend .tile-big { color: var(--red); }
-    .tile-spend .tile-label { color: rgba(255,69,58,.6); }
+    .tile-spend .tile-label { color: var(--red-dim); }
 
     /* ── Dots ── */
     .dots {
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: calc(8px * var(--z));
-      padding: calc(12px * var(--z)) 0 calc(14px * var(--z));
-      padding-bottom: calc((14px + env(safe-area-inset-bottom)) * var(--z));
+      gap: calc(6px * var(--z));
+      padding: calc(10px * var(--z)) 0 calc(12px * var(--z));
+      padding-bottom: calc((12px + env(safe-area-inset-bottom)) * var(--z));
       flex-shrink: 0;
     }
     .dot {
-      width: calc(7px * var(--z));
-      height: calc(7px * var(--z));
-      border-radius: 50%;
-      background: rgba(255,255,255,.2);
-      transition: all .25s ease;
+      width: calc(6px * var(--z));
+      height: calc(6px * var(--z));
+      border-radius: calc(3px * var(--z));
+      background: rgba(255,255,255,.15);
+      transition: all .3s cubic-bezier(.4,0,.2,1);
     }
     .dot.on {
       background: #FFF;
-      width: calc(20px * var(--z));
-      border-radius: calc(4px * var(--z));
+      width: calc(22px * var(--z));
+      border-radius: calc(3px * var(--z));
     }
+
+    /* ── Fade-in animation ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(calc(8px * var(--z))); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .card { animation: fadeUp .4s ease-out both; }
   </style>
 </head>
 <body>
 
-<div id="status"><div class="spinner"></div><div>Loading...</div></div>
+<div id="status"><div class="ld-ring"></div><div>Loading</div></div>
 <div id="app"></div>
 
 <script>
@@ -322,22 +350,23 @@ function compute(who){
 function ringSvg(pct, color){
   var r=42, c=2*Math.PI*r, fill=Math.max(0,Math.min(Math.abs(pct),100)), off=c-(fill/100)*c;
   return '<svg viewBox="0 0 100 100">'
-    +'<circle cx="50" cy="50" r="'+r+'" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="8"/>'
-    +'<circle cx="50" cy="50" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="8" stroke-linecap="round"'
+    +'<circle cx="50" cy="50" r="'+r+'" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="7"/>'
+    +'<circle cx="50" cy="50" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="7" stroke-linecap="round"'
     +' stroke-dasharray="'+c+'" stroke-dashoffset="'+off+'" transform="rotate(-90 50 50)"'
-    +' style="transition:stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)"/>'
+    +' style="transition:stroke-dashoffset .8s cubic-bezier(.25,.46,.45,.94)"/>'
     +'</svg>';
 }
 
 function card(label, d){
   var rc = d.rate<10 ? '#FF453A' : d.rate<20 ? '#FF9F0A' : '#30D158';
+  var glow = d.rate<10 ? 'rgba(255,69,58,.25)' : d.rate<20 ? 'rgba(255,159,10,.2)' : 'rgba(48,209,88,.25)';
   var plClass = d.deficit ? 'deficit' : 'surplus';
   var plColor = d.deficit ? 'var(--red)' : 'var(--green)';
   var plSign = d.deficit ? '-' : '+';
 
   var incRows = '';
-  if (d.ret>0) incRows += '<div class="tile-row"><span>Retirement</span><span>'+fc(d.ret)+'</span></div>';
-  if (d.fam>0) incRows += '<div class="tile-row"><span>Family</span><span>'+fc(d.fam)+'</span></div>';
+  if (d.ret>0) incRows += '<div class="tile-row"><span>Retirement</span><span>'+fc(d.ret)+'</span></div><div class="tile-sep"></div>';
+  if (d.fam>0) incRows += '<div class="tile-row"><span>Family</span><span>'+fc(d.fam)+'</span></div><div class="tile-sep"></div>';
   incRows += '<div class="tile-row"><span>Take-home</span><span>'+fc(d.nrm)+'</span></div>';
 
   return '<div class="card">'
@@ -349,8 +378,8 @@ function card(label, d){
     +'<div class="tile-big" style="color:'+plColor+'">'+plSign+fc(Math.abs(d.pl))+'</div>'
     +'</div>'
     // Ring
-    +'<div class="tile tile-ring">'
-    +'<div class="ring-container">'+ringSvg(d.rate, rc)
+    +'<div class="tile tile-ring" style="--ring-glow:'+glow+'">'
+    +'<div class="ring-outer">'+ringSvg(d.rate, rc)
     +'<div class="ring-center"><div class="ring-pct" style="color:'+rc+'">'+d.rate+'%</div><div class="ring-word">Savings</div></div>'
     +'</div></div>'
     // Income
@@ -365,6 +394,7 @@ function card(label, d){
     +'<div class="tile-big">'+fc(d.spend)+'</div>'
     +'<div class="tile-sub">'
     +'<div class="tile-row"><span>Fixed</span><span>'+fc(d.fixed)+'</span></div>'
+    +'<div class="tile-sep"></div>'
     +'<div class="tile-row"><span>Variable</span><span>'+fc(d.variable)+'</span></div>'
     +'</div></div>'
     +'</div></div>';
@@ -392,8 +422,8 @@ function render(){
     '<div class="month-bar">'
     +'<span class="month-label">'+moLabel(currentMonth)+'</span>'
     +'<div class="month-arrows">'
-    +'<button class="mo-btn" onclick="moShift(-1)">&lsaquo;</button>'
-    +'<button class="mo-btn" onclick="moShift(1)">&rsaquo;</button>'
+    +'<button class="mo-btn" onclick="moShift(-1)">&#8249;</button>'
+    +'<button class="mo-btn" onclick="moShift(1)">&#8250;</button>'
     +'</div></div>'
     +'<div class="carousel" id="car">'+set+set+set+'</div>'
     +'<div class="dots"><div class="dot on"></div><div class="dot"></div><div class="dot"></div></div>';
@@ -423,7 +453,7 @@ google.script.run
     document.getElementById('status').style.display = 'none';
     document.getElementById('app').className = 'show';
     try { render(); } catch(e){
-      document.getElementById('app').innerHTML = '<div style="padding:2rem;color:red;font-size:14px;word-break:break-all"><b>Error:</b><br>'+e.message+'<br><br>'+e.stack+'</div>';
+      document.getElementById('app').innerHTML = '<div style="padding:2rem;color:#FF453A;font-size:calc(14px * var(--z));word-break:break-all"><b>Error:</b><br>'+e.message+'</div>';
     }
   })
   .withFailureHandler(function(e){
