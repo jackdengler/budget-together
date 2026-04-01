@@ -165,6 +165,24 @@
     .income-amt.r{color:var(--ios-red)}
     @media(max-width:700px),(pointer:coarse){.income-row{grid-template-columns:1fr}}
 
+    /* ── Summary Card (Ring Center Stage) — "Almond" theme ── */
+    .rcs-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+    .rcs-card{background:#F8F2EA;border-radius:16px;padding:20px;border:2px solid #e8ddd0;transition:transform 0.2s var(--ease-spring)}
+    .rcs-card:hover{transform:translateY(-2px)}
+    .rcs-title{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:900;color:#222;letter-spacing:-0.3px;margin-bottom:14px}
+    .rcs-body{display:flex;gap:16px;align-items:center}
+    .rcs-col{flex:1;min-width:0}
+    .rcs-col-right{text-align:right}
+    .rcs-label{font-family:'DM Sans',sans-serif;font-size:8px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+    .rcs-number{font-family:'DM Sans',sans-serif;font-size:22px;font-weight:900;letter-spacing:-1.5px;line-height:1.15}
+    .rcs-breakdown{margin-top:6px;display:flex;flex-direction:column;gap:2px;font-family:'DM Sans',sans-serif}
+    .rcs-ring-wrap{position:relative;width:105px;height:105px;flex-shrink:0}
+    .rcs-ring-svg{width:100%;height:100%;transform:rotate(-90deg)}
+    .rcs-ring-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .rcs-ring-dollar{font-family:'DM Sans',sans-serif;font-size:17px;font-weight:900;letter-spacing:-0.5px}
+    .rcs-ring-pct{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:800;margin-top:5px}
+    @media(max-width:900px){.rcs-row{grid-template-columns:1fr}}
+
     /* Charts row */
     .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     @media(max-width:700px),(pointer:coarse){.charts-row{grid-template-columns:1fr}}
@@ -2007,24 +2025,74 @@ ${dots}`;
   }
 
   // ── Desktop: standard overview ──────────────────────────
+  // Compute fixed vs variable for desktop
+  const dFixedTotal = scaleNum(exp.filter(t => isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0));
+  const dVarTotal = scaleNum(total) - dFixedTotal;
+  const dP1Fixed = scaleNum(exp.filter(t => (t.person==='p1'||t.shared) && isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0));
+  const dP1Var = scaleNum(exp.filter(t => (t.person==='p1'||t.shared) && !isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0));
+  const dP2Fixed = scaleNum(exp.filter(t => (t.person==='p2'||t.shared) && isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0));
+  const dP2Var = scaleNum(exp.filter(t => (t.person==='p2'||t.shared) && !isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0));
+
+  // Ring Center Stage card builder
+  function ringCard(title, titleColor, inc, spend, locked, ret, fam, fixed, variable) {
+    if (locked) return `<div class="rcs-card"><div class="rcs-title" style="color:${titleColor}">${title}</div><div style="padding:40px 0;text-align:center;color:#b0a090;font-size:1.2rem">🔒 Private</div></div>`;
+    fam = fam || 0; ret = ret || 0;
+    const normalInc = inc - ret - fam;
+    const saved = inc - spend;
+    const sRate = normalInc > 0 ? Math.round(saved / normalInc * 100) : 0;
+    const isLoss = saved < 0;
+    const ringColor = isLoss ? '#A84A2A' : '#3A6A3A';
+    const circ = 2 * Math.PI * 42;
+    const fillPct = isLoss ? 100 : Math.max(0, Math.min(sRate, 100));
+    const dashOffset = circ - (fillPct / 100) * circ;
+    const savedStr = isLoss ? `−${fc(Math.abs(saved))}` : `${fc(saved)}`;
+    const pctStr = isLoss ? `−${Math.abs(sRate)}%` : `${sRate}%`;
+    // Income breakdown
+    const incLines = [];
+    incLines.push(`<div style="display:flex;justify-content:space-between;font-size:10px;"><span style="color:#b0a090;">Regular</span><span style="font-weight:700;color:#7A6A58;">${fc0(inc - ret - fam)}</span></div>`);
+    if (ret > 0) incLines.push(`<div style="display:flex;justify-content:space-between;font-size:10px;"><span style="color:#b0a090;">Retirement</span><span style="font-weight:700;color:#A08040;">${fc0(ret)}</span></div>`);
+    if (fam > 0) incLines.push(`<div style="display:flex;justify-content:space-between;font-size:10px;"><span style="color:#b0a090;">Family</span><span style="font-weight:700;color:#685880;">${fc0(fam)}</span></div>`);
+
+    return `<div class="rcs-card">
+      <div class="rcs-title" style="color:${titleColor}">${title}</div>
+      <div class="rcs-body">
+        <div class="rcs-col rcs-col-right">
+          <div class="rcs-label" style="color:#3A6A3A;">INCOME</div>
+          <div class="rcs-number" style="color:#3A6A3A;">${fc0(inc)}</div>
+          <div class="rcs-breakdown">${incLines.join('')}</div>
+        </div>
+        <div class="rcs-ring-wrap">
+          <svg viewBox="0 0 100 100" class="rcs-ring-svg">
+            <circle cx="50" cy="50" r="42" fill="none" stroke="#e8ddd0" stroke-width="8"/>
+            <circle cx="50" cy="50" r="42" fill="none" stroke="${ringColor}" stroke-width="8"
+              stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${dashOffset}"/>
+          </svg>
+          <div class="rcs-ring-inner">
+            <div class="rcs-ring-dollar" style="color:${ringColor}">${savedStr}</div>
+            <div class="rcs-ring-pct" style="color:${ringColor}">${pctStr}</div>
+          </div>
+        </div>
+        <div class="rcs-col">
+          <div class="rcs-label" style="color:#A84A2A;">SPENDING</div>
+          <div class="rcs-number" style="color:#A84A2A;">${fc0(spend)}</div>
+          <div class="rcs-breakdown">
+            <div style="display:flex;justify-content:space-between;font-size:10px;"><span style="color:#b0a090;">Fixed</span><span style="font-weight:700;color:#7A6A58;">${fc0(fixed)}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;"><span style="color:#b0a090;">Variable</span><span style="font-weight:700;color:#7A6A58;">${fc0(variable)}</span></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  const rc1 = ringCard('Combined', '#E8593A', scaleNum(totalInc), scaleNum(p1sp+p2sp+shared), false, scaleNum(retTot), scaleNum(famTot), dFixedTotal, dVarTotal);
+  const rc2 = ringCard(esc(S.settings.person1), '#2D6BE4', scaleNum(p1inc), scaleNum(p1sp+sharedP1), p1Locked, scaleNum(p1ret), scaleNum(p1fam), dP1Fixed, dP1Var);
+  const rc3 = ringCard(esc(S.settings.person2), '#E4407A', scaleNum(p2inc), scaleNum(p2sp+sharedP2), p2Locked, scaleNum(p2ret), scaleNum(p2fam), dP2Fixed, dP2Var);
+
   return `
 ${rangeToggle}
 ${viewToggle}
 ${recSectionHtml}
-<div class="income-row">
-  <div class="income-card ic-combined">
-    <div class="income-title">Combined</div>
-    ${personSummaryHtml(scaleNum(totalInc), scaleNum(p1sp+p2sp), scaleNum(shared), false, scaleNum(retTot), false, scaleNum(famTot))}
-  </div>
-  <div class="income-card ic-p1">
-    <div class="income-title" style="color:var(--p1)">${esc(S.settings.person1)}</div>
-    ${personSummaryHtml(scaleNum(p1inc), scaleNum(p1sp), scaleNum(sharedP1), p1Locked, scaleNum(p1ret), true, scaleNum(p1fam))}
-  </div>
-  <div class="income-card ic-p2">
-    <div class="income-title" style="color:var(--p2)">${esc(S.settings.person2)}</div>
-    ${personSummaryHtml(scaleNum(p2inc), scaleNum(p2sp), scaleNum(sharedP2), p2Locked, scaleNum(p2ret), true, scaleNum(p2fam))}
-  </div>
-</div>
+<div class="rcs-row">${rc1}${rc2}${rc3}</div>
 <div class="charts-row">
   <div class="card"><div class="section-title">Spending by Category</div>${catBars}</div>
   <div class="card"><div class="section-title" style="margin-bottom:10px">Spending vs. Avg${pastMonths.length?`<span class="text-muted" style="font-weight:400;font-size:0.78rem;margin-left:6px">(${pastMonths.length}-mo history)</span>`:''}</div>${vCats.length?`<div class="vert-legend"><span><span class="vert-dot" style="background:var(--primary)"></span>This month</span><span><span class="vert-dot" style="background:#d1d5db"></span>${pastMonths.length?`${pastMonths.length}-mo avg`:'Avg'}</span></div><div class="vert-chart">${vBars}</div>`:'<p class="text-muted" style="text-align:center;padding:24px">No expenses this month</p>'}</div>
