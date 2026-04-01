@@ -1832,17 +1832,16 @@ function renderOverview() {
 
   // ── Range toggle row ────────────────────────────────────────────────────────
   const shortMo = new Date(S.currentMonth + '-02').toLocaleDateString('en-US', {month:'short'});
-  const pill = (label, active, fn) =>
-    `<button onclick="${fn}" style="height:32px;padding:0 16px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:${active?'white':'transparent'};color:${active?'var(--text)':'var(--text-2)'};white-space:nowrap;-webkit-tap-highlight-color:transparent;min-width:44px;${active?'box-shadow:0 1px 3px rgba(0,0,0,0.12)':''}">${active?'✓ ':''}${label}</button>`;
+  const rangeTab = (label, active, fn) =>
+    `<span onclick="${fn}" style="font-size:13px;font-weight:${active?'800':'600'};color:${active?'var(--primary)':'#999'};cursor:pointer;${active?'border-bottom:2px solid var(--primary);padding-bottom:6px;margin-bottom:-9px;':''};-webkit-tap-highlight-color:transparent">${label}</span>`;
+  const avgTab = (label, active, fn) =>
+    `<span onclick="${fn}" style="font-size:12px;font-weight:${active?'800':'600'};color:${active?'var(--primary)':'#999'};cursor:pointer;-webkit-tap-highlight-color:transparent">${label}</span>`;
   const r = S.overviewRange;
 
-  // In multi-month mode, contextual nav arrows live in the top-right of this row.
-  // YTD → shift years. Custom → shift whole range by its duration. All → no nav.
   const activeYear = S.overviewYear || S.currentMonth.slice(0,4);
   const allYears   = [...new Set(S.transactions.map(t => t.date.slice(0,4)))].filter(Boolean).sort();
-  const yearIdx    = allYears.indexOf(activeYear);
   const navArrow   = (fn, dis, ch) =>
-    `<button onclick="${fn}" ${dis?'disabled':''} style="border:none;background:none;font-size:1.15rem;cursor:pointer;color:${dis?'var(--border)':'var(--text-2)'};padding:1px 6px;line-height:1">${ch}</button>`;
+    `<button onclick="${fn}" ${dis?'disabled':''} style="border:none;background:none;font-size:1.15rem;cursor:pointer;color:${dis?'var(--border-strong)':'var(--text-2)'};padding:1px 6px;line-height:1">${ch}</button>`;
   let multiNav = '';
   if (r === 'custom') {
     multiNav = navArrow('shiftCustomRange(-1)', false, '‹') +
@@ -1852,21 +1851,20 @@ function renderOverview() {
     ? `<div style="display:flex;align-items:center;gap:2px">${multiNav}</div>`
     : '';
 
-  const rangeToggle = `<div style="display:flex;align-items:center;gap:5px;margin-bottom:14px">
-    <div style="display:flex;gap:2px;flex:1;background:#E4E4EB;border-radius:9px;padding:2px">
-      ${pill(shortMo, r==='1mo', 'setOverviewRange(&quot;1mo&quot;)')}
-      ${pill(activeYear, r==='ytd', 'setOverviewRange(&quot;ytd&quot;)')}
-      ${pill('All',    r==='all', 'setOverviewRange(&quot;all&quot;)')}
-      ${pill('Custom', r==='custom', 'showOverviewCustomPicker()')}
-    </div>
+  const viewToggleInline = isMulti
+    ? `<div style="display:flex;gap:14px;margin-left:auto">${avgTab('Total', S.overviewView==='total', 'setOverviewView(&quot;total&quot;)')}${avgTab('Avg/mo', S.overviewView==='avg', 'setOverviewView(&quot;avg&quot;)')}</div>`
+    : '';
+
+  const rangeToggle = `<div style="display:flex;align-items:center;gap:18px;margin-bottom:14px;border-bottom:1px solid var(--border-strong);padding-bottom:8px">
+    ${rangeTab(shortMo, r==='1mo', 'setOverviewRange(&quot;1mo&quot;)')}
+    ${rangeTab(activeYear, r==='ytd', 'setOverviewRange(&quot;ytd&quot;)')}
+    ${rangeTab('All', r==='all', 'setOverviewRange(&quot;all&quot;)')}
+    ${rangeTab('Custom', r==='custom', 'showOverviewCustomPicker()')}
     ${navRight}
+    ${viewToggleInline}
   </div>`;
 
-  // Total/Avg toggle — always rendered to reserve space and prevent layout jump
-  const viewToggle = `<div style="display:flex;gap:5px;margin-bottom:14px;visibility:${isMulti?'visible':'hidden'}">
-    ${pill('Total',    S.overviewView==='total', 'setOverviewView(&quot;total&quot;)')}
-    ${pill('Avg / mo', S.overviewView==='avg',   'setOverviewView(&quot;avg&quot;)')}
-  </div>`;
+  const viewToggle = '';
 
   // Update header label: YTD shows the year, custom/all shows range span, 1M shows month
   requestAnimationFrame(() => {

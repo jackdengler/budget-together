@@ -203,3 +203,30 @@ Single row, full width.
 - Review badge: `--warning-light` background, weight 800, 11px
 - Icon buttons: 32×32px, `--hover-bg` background, radius 10px, 16px emoji
 - Gap: 6px
+
+---
+
+## Component: Range Filter
+
+Single row with bottom border, inline Total/Avg toggle on the right.
+
+### Layout
+
+```
+Overview  2026  All  Custom                    Total  Avg/mo
+─────────────────────────────────────────────────────────────
+```
+
+### Decisions
+
+| Property | Value |
+|----------|-------|
+| Style | Underline — plain text, active has bottom border in `--accent` |
+| Active tab | `--accent` color, weight 800, 2px bottom border |
+| Inactive tab | `#999`, weight 600 |
+| Tab size | 13px |
+| Gap | 18px between tabs |
+| Bottom rule | `1px solid --border-strong` |
+| Total/Avg | Inline right side, only visible when multi-month |
+| Total/Avg size | 12px |
+| Padding-bottom | 8px |
