@@ -1383,7 +1383,10 @@ const BUILD_TIMESTAMP = '__BUILD_TIMESTAMP__';
 // Tap (short click): briefly show deploy timestamp.
 let _lpTimer = null;
 let _lpFired = false;
+let _lpInited = false;
 function _initLongPress() {
+  if (_lpInited) return;
+  _lpInited = true;
   const el = document.getElementById('logo-el');
   if (!el) return;
   const start = () => {
