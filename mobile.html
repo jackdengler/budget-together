@@ -224,28 +224,28 @@
 
     // ── Categories (mirror from index.html) ──
     var BASE_CATS = [
-      {id:'groceries',label:'Groceries',emoji:'\u{1F6D2}',color:'#10b981'},
-      {id:'dining',label:'Dining',emoji:'\u{1F37D}\uFE0F',color:'#f43f5e'},
-      {id:'transport',label:'Transport',emoji:'\u{1F697}',color:'#3b82f6'},
-      {id:'entertain',label:'Entertainment',emoji:'\u{1F3AC}',color:'#8b5cf6'},
-      {id:'subs',label:'Subscriptions',emoji:'\u{1F504}',color:'#6366f1'},
-      {id:'shopping',label:'Shopping',emoji:'\u{1F6CD}\uFE0F',color:'#f59e0b'},
-      {id:'health',label:'Health',emoji:'\u{1F48A}',color:'#ef4444'},
-      {id:'housing',label:'Housing',emoji:'\u{1F3E0}',color:'#06b6d4'},
-      {id:'utilities',label:'Utilities',emoji:'\u{1F4A1}',color:'#84cc16'},
-      {id:'travel',label:'Travel',emoji:'\u2708\uFE0F',color:'#0284c7'},
-      {id:'skiing',label:'Skiing',emoji:'\u26F7\uFE0F',color:'#38bdf8'},
-      {id:'investing',label:'Investments',emoji:'\u{1F4B9}',color:'#16a34a'},
-      {id:'income',label:'Income',emoji:'\u{1F4B5}',color:'#22c55e'},
-      {id:'insurance',label:'Insurance',emoji:'\u{1F6E1}\uFE0F',color:'#0ea5e9',ignored:true},
-      {id:'transfer',label:'Transfer',emoji:'\u2194\uFE0F',color:'#a8b4c0',ignored:true},
-      {id:'other',label:'Other',emoji:'\u{1F4B3}',color:'#94a3b8'},
-      {id:'gambling',label:'Gambling',emoji:'\u{1F3B0}',color:'#dc2626',hidden:true},
-      {id:'cash',label:'Cash Withdrawal',emoji:'\u{1F3E7}',color:'#b45309',hidden:true},
+      {id:'groceries',label:'Groceries',emoji:'🛒',color:'#10b981'},
+      {id:'dining',label:'Dining',emoji:'🍽️',color:'#f43f5e'},
+      {id:'transport',label:'Transport',emoji:'🚗',color:'#3b82f6'},
+      {id:'entertain',label:'Entertainment',emoji:'🎬',color:'#8b5cf6'},
+      {id:'subs',label:'Subscriptions',emoji:'🔄',color:'#6366f1'},
+      {id:'shopping',label:'Shopping',emoji:'🛍️',color:'#f59e0b'},
+      {id:'health',label:'Health',emoji:'💊',color:'#ef4444'},
+      {id:'housing',label:'Housing',emoji:'🏠',color:'#06b6d4'},
+      {id:'utilities',label:'Utilities',emoji:'💡',color:'#84cc16'},
+      {id:'travel',label:'Travel',emoji:'✈️',color:'#0284c7'},
+      {id:'skiing',label:'Skiing',emoji:'⛷️',color:'#38bdf8'},
+      {id:'investing',label:'Investments',emoji:'💹',color:'#16a34a'},
+      {id:'income',label:'Income',emoji:'💵',color:'#22c55e'},
+      {id:'insurance',label:'Insurance',emoji:'🛡️',color:'#0ea5e9',ignored:true},
+      {id:'transfer',label:'Transfer',emoji:'↔️',color:'#a8b4c0',ignored:true},
+      {id:'other',label:'Other',emoji:'💳',color:'#94a3b8'},
+      {id:'gambling',label:'Gambling',emoji:'🎰',color:'#dc2626',hidden:true},
+      {id:'cash',label:'Cash Withdrawal',emoji:'🏧',color:'#b45309',hidden:true},
     ];
     var FIXED_CATS = new Set(['housing', 'utilities', 'subs', 'insurance']);
     function getAllCats() { return [].concat(BASE_CATS, D.customCategories || []); }
-    function getCat(id) { return getAllCats().find(function(c) { return c.id === id; }) || {id:'other',label:'Other',emoji:'\u{1F4B3}',color:'#94a3b8'}; }
+    function getCat(id) { return getAllCats().find(function(c) { return c.id === id; }) || {id:'other',label:'Other',emoji:'💳',color:'#94a3b8'}; }
 
     // ── Income classification ──
     var RETIREMENT_KW = /\b(401k?|roth|retirement|pension|sep[\s-]?ira|hsa contrib)\b/i;
@@ -394,9 +394,9 @@
 
       document.getElementById('app').innerHTML =
         '<div class="month-header">'
-        + '<span class="month-hint" id="hint-l">\u2039 </span>'
+        + '<span class="month-hint" id="hint-l">&#8249; </span>'
         + '<span id="month-label">' + monthLabel(currentMonth) + '</span>'
-        + '<span class="month-hint" id="hint-r"> \u203A</span>'
+        + '<span class="month-hint" id="hint-r"> &#8250;</span>'
         + '</div>'
         + '<div class="edge-left" onclick="prevMonth()"></div>'
         + '<div class="edge-right" onclick="nextMonth()"></div>'
