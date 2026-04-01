@@ -39,6 +39,7 @@
     })();
   </script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <style>
     /* ═══════════════════════════════════════════════════════════
        BUDGET TOGETHER — "Cupertino Finance" Design System
@@ -841,7 +842,7 @@
 </head>
 <body>
 <div id="loading">
-  <div class="load-logo">💕</div>
+  <div class="load-logo" style="font-size:1rem;color:var(--primary);"><i data-lucide="heart" style="width:48px;height:48px;stroke-width:2.5;"></i></div>
   <div class="load-title">Budget Together</div>
   <div class="load-bar-track"><div class="load-bar-fill"></div></div>
   <p>Preparing your finances</p>
@@ -866,8 +867,8 @@
     <button id="review-badge" onclick="showCardReview()" title="Review pending transactions">
       <span id="review-badge-count">0</span> to review
     </button>
-    <button class="icon-btn" id="sheets-btn" title="Open Google Sheet">📊</button>
-    <button class="icon-btn" id="settings-btn" title="Settings">⚙️</button>
+    <button class="icon-btn" id="sheets-btn" title="Open Google Sheet"><i data-lucide="table-2" style="width:18px;height:18px;"></i></button>
+    <button class="icon-btn" id="settings-btn" title="Settings"><i data-lucide="settings" style="width:18px;height:18px;"></i></button>
   </header>
   <main id="main"></main>
 </div>
@@ -885,26 +886,43 @@
 <script>
 // ── Constants ──────────────────────────────────────────────
 const BASE_CATS = [
-  {id:'groceries', label:'Groceries',    emoji:'🛒', color:'#10b981'},
-  {id:'dining',    label:'Dining',       emoji:'🍽️', color:'#f43f5e'},
-  {id:'transport', label:'Transport',    emoji:'🚗', color:'#3b82f6'},
-  {id:'entertain', label:'Entertainment',emoji:'🎬', color:'#8b5cf6'},
-  {id:'subs',      label:'Subscriptions',emoji:'🔄', color:'#6366f1'},
-  {id:'shopping',  label:'Shopping',     emoji:'🛍️', color:'#f59e0b'},
-  {id:'health',    label:'Health',       emoji:'💊', color:'#ef4444'},
-  {id:'housing',   label:'Housing',      emoji:'🏠', color:'#06b6d4'},
-  {id:'utilities', label:'Utilities',    emoji:'💡', color:'#84cc16'},
-  {id:'travel',    label:'Travel',       emoji:'✈️', color:'#0284c7'},
-  {id:'skiing',    label:'Skiing',       emoji:'⛷️', color:'#38bdf8'},
-  {id:'investing', label:'Investments',  emoji:'💹', color:'#16a34a'},
-  {id:'income',    label:'Income',       emoji:'💵', color:'#22c55e'},
-  {id:'insurance', label:'Insurance',    emoji:'🛡️', color:'#0ea5e9', ignored:true},
-  {id:'transfer',  label:'Transfer',     emoji:'↔️', color:'#a8b4c0', ignored:true},
-  {id:'other',     label:'Other',        emoji:'💳', color:'#94a3b8'},
-  {id:'gambling',  label:'Gambling',     emoji:'🎰', color:'#dc2626', hidden:true},
-  {id:'cash',      label:'Cash Withdrawal', emoji:'🏧', color:'#b45309', hidden:true},
+  {id:'groceries', label:'Groceries',    icon:'shopping-cart', color:'#10b981'},
+  {id:'dining',    label:'Dining',       icon:'utensils',      color:'#f43f5e'},
+  {id:'transport', label:'Transport',    icon:'car',           color:'#3b82f6'},
+  {id:'entertain', label:'Entertainment',icon:'film',          color:'#8b5cf6'},
+  {id:'subs',      label:'Subscriptions',icon:'repeat',        color:'#6366f1'},
+  {id:'shopping',  label:'Shopping',     icon:'shopping-bag',  color:'#f59e0b'},
+  {id:'health',    label:'Health',       icon:'heart-pulse',   color:'#ef4444'},
+  {id:'housing',   label:'Housing',      icon:'home',          color:'#06b6d4'},
+  {id:'utilities', label:'Utilities',    icon:'zap',           color:'#84cc16'},
+  {id:'travel',    label:'Travel',       icon:'plane',         color:'#0284c7'},
+  {id:'skiing',    label:'Skiing',       icon:'mountain-snow', color:'#38bdf8'},
+  {id:'investing', label:'Investments',  icon:'trending-up',   color:'#16a34a'},
+  {id:'income',    label:'Income',       icon:'wallet',        color:'#22c55e'},
+  {id:'insurance', label:'Insurance',    icon:'shield',        color:'#0ea5e9', ignored:true},
+  {id:'transfer',  label:'Transfer',     icon:'arrow-left-right', color:'#a8b4c0', ignored:true},
+  {id:'other',     label:'Other',        icon:'credit-card',   color:'#94a3b8'},
+  {id:'gambling',  label:'Gambling',     icon:'dice-5',        color:'#dc2626', hidden:true},
+  {id:'cash',      label:'Cash Withdrawal', icon:'landmark',   color:'#b45309', hidden:true},
 ];
 const PRESET_COLORS = ['#10b981','#f43f5e','#3b82f6','#8b5cf6','#f59e0b','#ef4444','#06b6d4','#84cc16','#6366f1','#ec4899','#14b8a6','#f97316'];
+// Icon helper — renders Lucide icon as inline SVG string
+function catIcon(cat, size) {
+  size = size || 16;
+  const name = cat.icon || 'circle';
+  // lucide.icons is a map of icon-name → [tag, attrs, children]
+  if (typeof lucide !== 'undefined' && lucide.icons && lucide.icons[name]) {
+    const [tag, attrs, children] = lucide.icons[name];
+    const svgAttrs = `width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${cat.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`;
+    const inner = children.map(([t, a]) => `<${t} ${Object.entries(a).map(([k,v])=>`${k}="${v}"`).join(' ')}/>`).join('');
+    return `<svg ${svgAttrs}>${inner}</svg>`;
+  }
+  // Fallback: colored dot
+  return `<span style="display:inline-block;width:${size}px;height:${size}px;border-radius:50%;background:${cat.color};flex-shrink:0;"></span>`;
+}
+// Backward compat: anywhere that used c.emoji now gets the icon
+Object.defineProperty(Object.prototype, '_iconFallback', {value: function() { return ''; }, configurable: true});
+BASE_CATS.forEach(c => { if (!c.emoji) Object.defineProperty(c, 'emoji', { get() { return catIcon(this, 16); }, configurable: true }); });
 // Fixed vs Variable expense categorization
 const FIXED_CATS = new Set(['housing','utilities','subs','insurance']);
 function isFixedCat(catId) { return FIXED_CATS.has(catId); }
@@ -1626,6 +1644,8 @@ function render() {
   else if (S.activeTab === 'transactions') main.innerHTML = renderTxns();
   else if (S.activeTab === 'split') main.innerHTML = renderSplit();
   else if (S.activeTab === 'history') main.innerHTML = renderHistory();
+  // Activate any Lucide icons in the rendered content
+  if (typeof lucide !== 'undefined') try { lucide.createIcons(); } catch(e) {}
 }
 
 // ── Overview ───────────────────────────────────────────────
@@ -4161,6 +4181,7 @@ function loadData() {
       $('loading').style.display = 'none';
       $('app').style.display = 'flex';
       _initLongPress();
+      if (typeof lucide !== 'undefined') try { lucide.createIcons(); } catch(e) {}
       render();
       updateReviewBadge();
       if (S.settings.person1 === 'Person 1') showSetup();
@@ -4312,6 +4333,8 @@ try {
 } catch(e) {}
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Activate Lucide icons in loading screen
+  if (typeof lucide !== 'undefined') try { lucide.createIcons(); } catch(e) {}
   if (USE_GAS()) { init(); return; }
   waitForGIS(init);
 });
