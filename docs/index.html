@@ -91,11 +91,35 @@
       border: none;
       display: none;
     }
+    /* Fallback strip shown after iframe load — visible only if iframe is blank (e.g. auth required) */
+    #auth-fallback {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 12px 20px;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom));
+      background: rgba(242,242,247,0.95);
+      border-top: 0.5px solid #C6C6C8;
+      text-align: center;
+      font-size: 14px;
+      color: #8E8E93;
+      display: none;
+    }
+    #auth-fallback a {
+      color: #007AFF;
+      font-weight: 600;
+      text-decoration: none;
+    }
   </style>
 </head>
 <body>
   <!-- Fullscreen iframe — used in standalone mode to avoid cross-origin navigation breaking PWA -->
   <iframe id="app-frame" src="" allow="fullscreen" sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-top-navigation-by-user-activation"></iframe>
+  <!-- Shown after iframe loads in case Google auth blocked it (accounts.google.com blocks cross-origin iframes) -->
+  <div id="auth-fallback">
+    App not loading? <a id="auth-link" href="">Open in browser to sign in →</a>
+  </div>
 
   <div class="container" id="install-view" style="display:none;">
     <img src="icon.png" alt="Budget Together">
@@ -117,8 +141,18 @@
       // Launched from home screen — load app in iframe to stay on same origin
       // and avoid iOS breaking out of standalone mode on cross-origin navigation
       var frame = document.getElementById('app-frame');
+      var fallback = document.getElementById('auth-fallback');
+      document.getElementById('auth-link').href = APP_URL;
       frame.src = APP_URL;
       frame.style.display = 'block';
+      // Show fallback strip after iframe loads — if Google auth was required and
+      // got blocked (accounts.google.com refuses cross-origin iframes), the iframe
+      // will be blank and the user can tap the fallback link to sign in via Safari.
+      frame.addEventListener('load', function() {
+        fallback.style.display = 'block';
+        // After 3s, if user hasn't tapped it, hide the strip (app loaded fine)
+        setTimeout(function() { fallback.style.display = 'none'; }, 3000);
+      });
     } else {
       // Opened in Safari — show "Add to Home Screen" instructions
       document.getElementById('install-view').style.display = '';
