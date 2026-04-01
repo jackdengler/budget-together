@@ -4152,6 +4152,12 @@ function loadData() {
       S.incomeData       = data.incomeData       || {};
       S.incomeTypeRules  = data.incomeTypeRules  || {};
       materializeRecurring();
+      // If current month has no transactions, jump to most recent month with data
+      const curMoTxns = S.transactions.filter(t => t.date && t.date.startsWith(S.currentMonth));
+      if (curMoTxns.length === 0 && S.transactions.length > 0) {
+        const allMonths = [...new Set(S.transactions.map(t => t.date?.slice(0,7)).filter(Boolean))].sort();
+        if (allMonths.length) S.currentMonth = allMonths[allMonths.length - 1];
+      }
       $('loading').style.display = 'none';
       $('app').style.display = 'flex';
       _initLongPress();
