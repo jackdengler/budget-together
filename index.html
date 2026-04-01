@@ -1843,16 +1843,19 @@ function renderOverview() {
     const len = pct * donutCirc;
     const o = donutOff;
     donutOff += len + 4;
-    return `<circle cx="50" cy="50" r="42" fill="none" stroke="${c.color}" stroke-width="10" stroke-dasharray="${len} ${donutCirc-len}" stroke-dashoffset="${-o}" stroke-linecap="round"/>`;
+    const label = isOther ? 'All Other' : c.label || cid;
+    const dispAmt = fc0(scaleNum(amt));
+    const dispPct = catTotal > 0 ? Math.round(amt/catTotal*100) : 0;
+    return `<circle cx="50" cy="50" r="42" fill="none" stroke="${c.color}" stroke-width="14" stroke-dasharray="${len} ${donutCirc-len}" stroke-dashoffset="${-o}" stroke-linecap="round" style="cursor:pointer;transition:opacity 0.15s"><title>${label}: ${dispAmt} (${dispPct}%)</title></circle>`;
   }).join('');
   const catDonut = displayCats.length ? `<div style="position:relative;width:140px;height:140px;flex-shrink:0;">
     <svg viewBox="0 0 100 100" style="transform:rotate(-90deg);width:100%;height:100%;">
-      <circle cx="50" cy="50" r="42" fill="none" stroke="var(--bg)" stroke-width="10"/>
+      <circle cx="50" cy="50" r="42" fill="none" stroke="var(--bg)" stroke-width="14"/>
       ${donutArcs}
     </svg>
     <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-      <div style="font-size:28px;font-weight:900;">${fc0(scaleNum(catTotal))}</div>
-      <div style="font-size:7px;font-weight:700;color:var(--text-3);letter-spacing:1px;">TOTAL</div>
+      <div style="font-size:38px;font-weight:900;letter-spacing:-2px;">${fc0(scaleNum(catTotal))}</div>
+      <div style="font-size:9px;font-weight:800;color:var(--text-3);letter-spacing:1.5px;">TOTAL</div>
     </div>
   </div>` : '';
   // Historical per-category averages — exclude the months in the current range so we compare apples to apples
