@@ -2212,10 +2212,16 @@ ${recSectionHtml}
     <div style="text-align:center;padding-top:8px;font-size:11px;font-weight:700;color:var(--primary);cursor:pointer;flex-shrink:0;border-top:1px solid var(--bg);" onclick="document.querySelectorAll('.cat-hidden').forEach(e=>e.style.display='flex');this.style.display='none';">Show all categories →</div>
   </div>
   <div class="card" style="margin-bottom:0;padding:12px;aspect-ratio:1;"></div>
-  <div class="card" style="margin-bottom:0;padding:12px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">
+  <div class="card" style="margin-bottom:0;padding:14px;aspect-ratio:1;display:flex;flex-direction:column;">
+    <div style="font-size:22px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;text-align:center;margin-bottom:8px;color:var(--text);">Top Merchants</div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+      ${topMerchants.length ? topMerchants.slice(0,6).map((m,i) => {
+        const op = (1 - i*0.13).toFixed(2);
+        return `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;${i<Math.min(topMerchants.length,6)-1?'border-bottom:1px solid rgba(0,0,0,0.04);':''}"><div style="width:28px;height:28px;border-radius:50%;background:var(--accent);opacity:${op};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;flex-shrink:0;">${i+1}</div><div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(m.label)}</div><div style="font-size:10px;color:var(--text-2);font-weight:600;">${m.count} transaction${m.count!==1?'s':''}</div></div><div style="font-size:16px;font-weight:900;letter-spacing:-0.03em;">${fc0(m.amount)}</div></div>`;
+      }).join('') : '<p style="text-align:center;color:var(--text-3);font-size:13px;padding:18px;">No transactions yet</p>'}
+    </div>
   </div>
-</div>
-<div class="card" style="margin-top:14px"><div class="section-title">Top Merchants</div>${topMerchants.length?`<div class="merchant-grid">${merchantRows}</div>`:'<p class="text-muted" style="text-align:center;padding:18px">No transactions this month</p>'}</div>`;
+</div>`;
 }
 
 // ── Transactions ───────────────────────────────────────────
