@@ -52,8 +52,8 @@ Global design tokens and component specs. Every component pulls from these token
 | Token | Value | Usage |
 |-------|-------|-------|
 | `--accent` | `#D4663A` | Brand color, active tabs, links (Burnt Orange) |
-| `--person1` | `#4A6AAA` | Jack's color — titles, badges (Slate Blue) |
-| `--person2` | `#9A3A6A` | Jordan's color — titles, badges (Berry) |
+| `--person1` | `#6A8AAA` | Jack's color — titles, badges (Dusty Blue) |
+| `--person2` | `#9A7A2A` | Jordan's color — titles, badges (Dark Gold) |
 
 ### Navigation
 
