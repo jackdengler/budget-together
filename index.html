@@ -1632,13 +1632,13 @@ function render() {
   else if (S.activeTab === 'transactions') main.innerHTML = renderTxns();
   else if (S.activeTab === 'split') main.innerHTML = renderSplit();
   else if (S.activeTab === 'history') main.innerHTML = renderHistory();
-  // Size donut card to be square based on its stretched height
+  // Size donut card to be square, capped at 220px ring
   requestAnimationFrame(function(){
     var dc=document.getElementById('donut-card');
     if(!dc)return;
-    var h=dc.offsetHeight-48;
+    var h=Math.min(dc.offsetHeight-48, 220);
     var inner=document.getElementById('donut-inner');
-    if(inner&&inner.firstElementChild&&h>100){
+    if(inner&&inner.firstElementChild&&h>80){
       inner.firstElementChild.style.width=h+'px';
       inner.firstElementChild.style.height=h+'px';
       dc.style.width=(h+48)+'px';
