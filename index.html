@@ -1795,7 +1795,50 @@ function renderOverview() {
   const catArr = Object.entries(byCat).filter(([,v])=>v>0).sort((a,b) => b[1]-a[1]);
   const mx = catArr[0]?.[1]||1;
   const noExpMsg = isMulti ? 'No expenses in this range' : 'No expenses this month';
-  const catBars = catArr.map(([cid,amt]) => { const c = getCat(cid); const displayAmt = scaleNum(amt); return `<div class="cat-row"><div class="cat-name">${c.emoji} ${c.label}</div><div class="cat-track"><div class="cat-fill" style="width:${(amt/mx*100).toFixed(1)}%;background:${c.color}"></div></div><div class="cat-amt">${fc0(displayAmt)}</div></div>`; }).join('') || `<p class="text-muted" style="text-align:center;padding:18px">${noExpMsg}</p>`;
+  // Per-person per-category for split bars
+  const p1ByCat = {}, p2ByCat = {};
+  for (const t of exp) {
+    if (t.person==='p1'||t.shared) p1ByCat[t.category] = (p1ByCat[t.category]||0) + t.amount;
+    if (t.person==='p2'||t.shared) p2ByCat[t.category] = (p2ByCat[t.category]||0) + t.amount;
+  }
+  const catTotal = catArr.reduce((s,[,v])=>s+v, 0);
+  const catBars = catArr.map(([cid,amt]) => {
+    const c = getCat(cid);
+    const displayAmt = scaleNum(amt);
+    const pct = catTotal > 0 ? Math.round(amt/catTotal*100) : 0;
+    const barW = (amt/mx*100).toFixed(1);
+    const p1a = p1ByCat[cid]||0, p2a = p2ByCat[cid]||0, ptot = p1a+p2a;
+    const p1pct = ptot>0 ? (p1a/ptot*100).toFixed(0) : 50;
+    return `<div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--bg);">
+      <div style="width:32px;height:32px;border-radius:8px;background:${c.color}10;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="bi ${c.icon}" style="font-size:14px;color:${c.color};"></i></div>
+      <div style="width:60px;font-size:12px;font-weight:700;">${c.label}</div>
+      <div style="flex:1;height:10px;background:rgba(0,0,0,0.04);border-radius:5px;overflow:hidden;display:flex;"><div style="width:${barW*p1pct/100}%;background:var(--p1);"></div><div style="width:${barW*(100-p1pct)/100}%;background:var(--p2);"></div></div>
+      <div style="font-size:15px;font-weight:900;">${fc0(displayAmt)}</div>
+      <div style="font-size:10px;font-weight:700;color:var(--text-3);">${pct}%</div>
+      <i class="bi bi-chevron-right" style="font-size:10px;color:#ddd;"></i>
+    </div>`;
+  }).join('') || `<p class="text-muted" style="text-align:center;padding:18px">${noExpMsg}</p>`;
+  // Category donut SVG
+  const donutCirc = 2 * Math.PI * 42;
+  let donutOff = 0;
+  const donutArcs = catArr.map(([cid,amt]) => {
+    const c = getCat(cid);
+    const pct = catTotal > 0 ? amt/catTotal : 0;
+    const len = pct * donutCirc;
+    const o = donutOff;
+    donutOff += len + 4;
+    return `<circle cx="50" cy="50" r="42" fill="none" stroke="${c.color}" stroke-width="10" stroke-dasharray="${len} ${donutCirc-len}" stroke-dashoffset="${-o}" stroke-linecap="round"/>`;
+  }).join('');
+  const catDonut = catArr.length ? `<div style="position:relative;width:140px;height:140px;flex-shrink:0;">
+    <svg viewBox="0 0 100 100" style="transform:rotate(-90deg);width:100%;height:100%;">
+      <circle cx="50" cy="50" r="42" fill="none" stroke="var(--bg)" stroke-width="10"/>
+      ${donutArcs}
+    </svg>
+    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+      <div style="font-size:20px;font-weight:900;">${fc0(scaleNum(catTotal))}</div>
+      <div style="font-size:7px;font-weight:700;color:var(--text-3);letter-spacing:1px;">TOTAL</div>
+    </div>
+  </div>` : '';
   // Historical per-category averages — exclude the months in the current range so we compare apples to apples
   const pastMonths = [...new Set(S.transactions.map(t => t.date.slice(0,7)))].filter(m => !rangeMonths.includes(m) && !S.excludedFromAvg.includes(m));
   const avgByCat = {};
@@ -2141,9 +2184,14 @@ ${rangeToggle}
 ${viewToggle}
 ${recSectionHtml}
 <div class="rcs-row">${rc1}${rc2}${rc3}</div>
-<div class="charts-row">
-  <div class="card"><div class="section-title">Spending by Category</div>${catBars}</div>
-  <div class="card"><div class="section-title" style="margin-bottom:10px">Spending vs. Avg${pastMonths.length?`<span class="text-muted" style="font-weight:400;font-size:0.78rem;margin-left:6px">(${pastMonths.length}-mo history)</span>`:''}</div>${vCats.length?`<div class="vert-legend"><span><span class="vert-dot" style="background:var(--primary)"></span>This month</span><span><span class="vert-dot" style="background:#d1d5db"></span>${pastMonths.length?`${pastMonths.length}-mo avg`:'Avg'}</span></div><div class="vert-chart">${vBars}</div>`:'<p class="text-muted" style="text-align:center;padding:24px">No expenses this month</p>'}</div>
+<div class="card">
+  <div class="section-title">Spending by Category</div>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <div style="flex:1;">${catBars}
+      <div style="text-align:center;margin-top:10px;font-size:11px;font-weight:700;color:var(--primary);cursor:pointer;" onclick="document.querySelectorAll('.cat-hidden').forEach(e=>e.style.display='flex');this.style.display='none';">Show all categories →</div>
+    </div>
+    ${catDonut}
+  </div>
 </div>
 <div class="card" style="margin-top:14px"><div class="section-title">Top Merchants</div>${topMerchants.length?`<div class="merchant-grid">${merchantRows}</div>`:'<p class="text-muted" style="text-align:center;padding:18px">No transactions this month</p>'}</div>`;
 }

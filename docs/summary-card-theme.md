@@ -220,6 +220,86 @@ Overview  2026  All  Custom                    Total  Avg/mo
 
 ### Decisions
 
+---
+
+## Component: Category Rows
+
+### Row Layout
+
+```
+[🛒]  Groceries  ████████████████░░░░  $892  21%
+```
+
+### Decisions
+
+| Element | Winner |
+|---------|--------|
+| Base row | Icon in colored circle (32px, 8px radius, tinted bg) + name + amount + % |
+| Bar style | Inline bar — bar sits on same line as name and amount |
+| Metadata | Hover/expand only — clean by default, details on interaction |
+| Person split | Bar itself is split-colored — blue (Jack) / berry (Jordan) proportional |
+
+### Row Anatomy
+
+- **Icon**: 14px Bootstrap icon inside 32×32px rounded square with `{color}10` tinted background
+- **Name**: 12px, weight 700, flex grows
+- **Bar**: 7px tall, inline between name and amount, category-colored, split by person
+- **Amount**: 13px, weight 900
+- **Percentage**: 10px, weight 700, `--text-3`
+- **Chevron**: 10px `bi-chevron-right`, very faint, hints at expandability
+- **On expand/hover**: shows vs avg, txn count, fixed/variable tag
+
+### Person Split in Bar
+
+- Jack portion: `--p1` color (`#4A6AAA`)
+- Jordan portion: `--p2` color (`#9A3A6A`)
+- Legend row at bottom with small color keys
+
+### Section Layout: Donut + Rows
+
+Donut chart on right, category rows on left.
+
+```
+SPENDING BY CATEGORY
+[icon] Housing   ██████████  $1,850  44%     ┌──────┐
+[icon] Groceries ████░░░░░░  $892    21%     │$4,231│
+[icon] Dining    ███░░░░░░░  $446    11%     │TOTAL │
+[icon] Transport ██░░░░░░░░  $318     8%     └──────┘
+[icon] Shopping  █░░░░░░░░░  $267     6%
+              Show all categories →
+```
+
+### Donut Specs
+
+| Property | Value |
+|----------|-------|
+| Position | Right of rows |
+| Size | 140px × 140px |
+| Stroke | 10px, with gaps between segments |
+| Center | `$4,231` at 20px weight 900 + "TOTAL" at 7px |
+| Alignment | Vertically centered with rows |
+| Gap to rows | 10px |
+
+### Section Specs
+
+| Property | Value |
+|----------|-------|
+| Title | Uppercase spaced, 11px, weight 800, letter-spacing 2px |
+| Sort | None |
+| Row separator | 1px line |
+| Row padding | 5px tight |
+| Icon | 32px circle with tinted background |
+| Bar | 10px fat, split-colored by person (blue/berry) |
+| Amount | 15px, weight 900 |
+| Name width | 60px narrow |
+| Show more | Accent text "Show all categories →" |
+| Person legend | None (removed) |
+| Card padding | 16px |
+
+---
+
+### Range Filter
+
 | Property | Value |
 |----------|-------|
 | Style | Underline — plain text, active has bottom border in `--accent` |
