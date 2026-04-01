@@ -1818,7 +1818,7 @@ function renderOverview() {
     const c = isOther ? {icon:'bi-three-dots',color:'#94a3b8',label:overflowCats.length+' Other'} : getCat(cid);
     const displayAmt = scaleNum(amt);
     const pct = catTotal > 0 ? Math.round(amt/catTotal*100) : 0;
-    const barW = (amt/mx*100).toFixed(1);
+    const barW = catTotal > 0 ? (amt/catTotal*100).toFixed(1) : 0;
     const p1a = isOther ? overflowP1 : (p1ByCat[cid]||0);
     const p2a = isOther ? overflowP2 : (p2ByCat[cid]||0);
     const ptot = p1a+p2a;
