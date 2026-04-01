@@ -1722,7 +1722,7 @@ function renderOverview() {
   // ── Range toggle row ────────────────────────────────────────────────────────
   const shortMo = new Date(S.currentMonth + '-02').toLocaleDateString('en-US', {month:'short'});
   const pill = (label, active, fn) =>
-    `<button onclick="${fn}" style="height:44px;padding:0 20px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;border:${active?'none':'1.5px solid rgba(120,120,128,0.28)'};background:${active?'var(--primary)':'transparent'};color:${active?'white':'var(--text-2)'};white-space:nowrap;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s,border-color .15s;min-width:44px">${active?'✓ ':''}${label}</button>`;
+    `<button onclick="${fn}" style="height:32px;padding:0 16px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:${active?'white':'transparent'};color:${active?'var(--text)':'var(--text-2)'};white-space:nowrap;-webkit-tap-highlight-color:transparent;min-width:44px;${active?'box-shadow:0 1px 3px rgba(0,0,0,0.12)':''}">${active?'✓ ':''}${label}</button>`;
   const r = S.overviewRange;
 
   // In multi-month mode, contextual nav arrows live in the top-right of this row.
@@ -1742,7 +1742,7 @@ function renderOverview() {
     : '';
 
   const rangeToggle = `<div style="display:flex;align-items:center;gap:5px;margin-bottom:14px">
-    <div style="display:flex;gap:5px;flex:1">
+    <div style="display:flex;gap:2px;flex:1;background:#E4E4EB;border-radius:9px;padding:2px">
       ${pill(shortMo, r==='1mo', 'setOverviewRange(&quot;1mo&quot;)')}
       ${pill(activeYear, r==='ytd', 'setOverviewRange(&quot;ytd&quot;)')}
       ${pill('All',    r==='all', 'setOverviewRange(&quot;all&quot;)')}
@@ -1847,7 +1847,7 @@ function renderOverview() {
               </div>
             </div>
           </div>
-          <div class="ov-card-cell" style="background:var(--color-earned-bg);border-radius:0 0 0 20px;justify-content:space-between">
+          <div class="ov-card-cell" style="background:var(--color-earned-bg);border-radius:0 0 0 12px;justify-content:space-between">
             <div>
               <div class="ov-cell-label" style="color:var(--color-earned)">Earned</div>
               <div class="ov-cell-value" style="color:var(--color-earned)">+${fc0(inc)}</div>
@@ -1856,7 +1856,7 @@ function renderOverview() {
               ${earnedRows.length ? earnedRows.map(r => `<div class="ov-breakdown-row"><span class="ov-breakdown-label"><span class="ov-dot" style="background:${r.c}"></span>${r.l}</span><span class="ov-breakdown-value" style="color:${r.c}">${r.v}</span></div>`).join('') : ''}
             </div>
           </div>
-          <div class="ov-card-cell" style="background:rgba(255,59,48,0.07);border-radius:0 0 20px 0;justify-content:space-between">
+          <div class="ov-card-cell" style="background:rgba(255,59,48,0.07);border-radius:0 0 12px 0;justify-content:space-between">
             <div>
               <div class="ov-cell-label" style="color:var(--color-spent)">Spent</div>
               <div class="ov-cell-value" style="color:var(--color-spent)">${fc0(spend)}</div>
