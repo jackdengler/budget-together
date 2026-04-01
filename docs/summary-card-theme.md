@@ -1,0 +1,153 @@
+# Budget Together — "Almond" Design System
+
+Global design tokens and component specs. Every component pulls from these tokens.
+
+## Global Rules
+
+- **No decimals** on dollar values anywhere in the frontend. Whole numbers only (`$4,231` not `$4,231.00`).
+- **No + sign** on positive amounts. **− sign** on losses only.
+- **Font**: DM Sans, all weights 300–900, via Google Fonts.
+- **Layout**: One row header. Full-width content (no max-width cap).
+
+## Color Tokens
+
+### Page & Surfaces
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--page-bg` | `#F0EDE6` | Main page background (Stone) |
+| `--card-bg` | `#F8F2EA` | Card backgrounds (Almond) |
+| `--card-border` | `#e8ddd0` | Card border, 2px solid |
+| `--hover-bg` | `#F8F2EA` | Button hover, interactive fills |
+
+### Text Hierarchy
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--text-primary` | `#222` | Headings, hero numbers, titles |
+| `--text-secondary` | `#9A8A78` | Labels, descriptions, less important (Taupe) |
+| `--text-muted` | `#b0a090` | Timestamps, hints, faintest text |
+| `--text-sub` | `#7A6A58` | Breakdown values |
+
+### Borders & Separators
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--border` | `#f0ede6` | Lines between sections, separators |
+| `--card-border` | `#e8ddd0` | Card outlines (slightly stronger) |
+| `--ring-track` | `#e8ddd0` | Unfilled portion of savings ring |
+
+### Semantic Colors
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--green` | `#3A6A3A` | Income, savings, positive state |
+| `--red` | `#A84A2A` | Spending, loss, negative state |
+| `--yellow` | `#A08040` | Retirement income breakdown |
+| `--purple` | `#685880` | Family income breakdown |
+
+### Brand & People
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--accent` | `#D4663A` | Brand color, active tabs, links (Burnt Orange) |
+| `--person1` | `#4A6AAA` | Jack's color — titles, badges (Slate Blue) |
+| `--person2` | `#9A3A6A` | Jordan's color — titles, badges (Berry) |
+
+### Navigation
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--nav-active-bg` | `#D4663A` | Active tab fill (uses accent) |
+| `--nav-active-text` | `#fff` | Active tab text |
+| `--nav-inactive-text` | `#999` | Inactive tab text |
+| `--nav-track` | `rgba(0,0,0,0.05)` | Pill track background |
+
+---
+
+## Component: Summary Card (Ring Center Stage)
+
+Three cards spanning full screen width: Combined, Person 1, Person 2.
+
+### Layout
+
+```
+┌─────────────────────────────────────────────┐
+│  Combined                                   │
+│                                             │
+│   INCOME        ┌──────┐       SPENDING     │
+│   $6,800       │$2,569 │       $4,231       │
+│                │       │                    │
+│  Reg   $5,200  │  38%  │    Fixed   $1,850  │
+│  Ret   $1,200  │       │    Var     $2,381  │
+│  Fam     $400  └──────┘                    │
+│                                             │
+└─────────────────────────────────────────────┘
+```
+
+- **Left column**: Income total + breakdown (Regular / Retirement / Family), right-aligned
+- **Center**: Savings ring with $ amount and % inside (5px gap), no label — green = saving, red = loss
+- **Right column**: Spending total + breakdown (Fixed / Variable), left-aligned
+- **Title**: Person name top-left
+
+### Typography
+
+| Element | Size | Weight | Extras |
+|---------|------|--------|--------|
+| Card title | 17px | 900 | letter-spacing -0.3px |
+| Hero numbers (income/spending) | 26px | 900 | letter-spacing -1.5px |
+| Ring dollar | 19px | 900 | letter-spacing -0.5px |
+| Ring percent | 16px | 800 | margin-top 5px |
+| Labels (INCOME/SPENDING) | 9px | 800 | letter-spacing 2px, uppercase |
+| Breakdown items | 10px | 700 | |
+
+### Ring Behavior
+
+- **Saving**: Ring fills green, dollar and % in `--green`
+- **Loss**: Ring fills red at 100%, dollar with `−` prefix, both in `--red`
+- **No label text** inside ring — color alone communicates state
+
+### Spacing
+
+| Property | Value |
+|----------|-------|
+| Card padding | 24px |
+| Gap between cards | 16px |
+| Column gap (income / ring / spending) | 20px |
+| Ring size | 120px × 120px |
+| Ring stroke | 8px |
+| $ to % gap inside ring | 5px |
+| Card border-radius | 16px |
+| Responsive | Stacks to 1 column below 900px |
+
+### Title Colors
+
+| Card | Color Token |
+|------|-------------|
+| Combined | `--accent` |
+| Person 1 | `--person1` |
+| Person 2 | `--person2` |
+
+### CSS Classes
+
+Prefix: `rcs-` (Ring Center Stage)
+
+| Class | Purpose |
+|-------|---------|
+| `.rcs-row` | 3-column grid, full width |
+| `.rcs-card` | Individual card |
+| `.rcs-title` | Person name |
+| `.rcs-body` | Flexbox (income \| ring \| spending) |
+| `.rcs-col` / `.rcs-col-right` | Data columns |
+| `.rcs-label` | INCOME / SPENDING |
+| `.rcs-number` | Hero dollar amounts |
+| `.rcs-breakdown` | Sub-items |
+| `.rcs-ring-wrap` | Ring container |
+| `.rcs-ring-svg` | SVG element |
+| `.rcs-ring-inner` | Centered text overlay |
+| `.rcs-ring-dollar` | Dollar inside ring |
+| `.rcs-ring-pct` | Percent inside ring |
+
+### Locked State
+
+Private card shows 🔒 centered with "Private" text, no data.
