@@ -1823,7 +1823,7 @@ function renderOverview() {
     const p2a = isOther ? overflowP2 : (p2ByCat[cid]||0);
     const ptot = p1a+p2a;
     const p1pct = ptot>0 ? (p1a/ptot*100).toFixed(0) : 50;
-    return `<div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--bg);">
+    return `<div style="display:flex;align-items:center;gap:10px;">
       <div style="width:32px;height:32px;border-radius:8px;background:${c.color}10;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="bi ${c.icon}" style="font-size:14px;color:${c.color};"></i></div>
       <div style="width:80px;font-size:12px;font-weight:700;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.label}</div>
       <div style="flex:1;height:14px;background:rgba(0,0,0,0.04);border-radius:7px;overflow:hidden;display:flex;"><div style="width:${barW*p1pct/100}%;background:var(--p1);"></div><div style="width:${barW*(100-p1pct)/100}%;background:var(--p2);"></div></div>
@@ -2204,10 +2204,12 @@ ${viewToggle}
 ${recSectionHtml}
 <div class="rcs-row">${rc1}${rc2}${rc3}</div>
 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px;" id="cat-section-row">
-  <div class="card" style="margin-bottom:0;padding:12px;aspect-ratio:1;overflow:hidden;">
-    <div class="section-title" style="margin-bottom:12px;">Spending by Category</div>
-    ${catBars}
-    <div style="text-align:center;margin-top:10px;font-size:11px;font-weight:700;color:var(--primary);cursor:pointer;" onclick="document.querySelectorAll('.cat-hidden').forEach(e=>e.style.display='flex');this.style.display='none';">Show all categories →</div>
+  <div class="card" style="margin-bottom:0;padding:12px;aspect-ratio:1;overflow:hidden;display:flex;flex-direction:column;">
+    <div class="section-title" style="margin-bottom:8px;flex-shrink:0;">Spending by Category</div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;">
+      ${catBars}
+    </div>
+    <div style="text-align:center;padding-top:8px;font-size:11px;font-weight:700;color:var(--primary);cursor:pointer;flex-shrink:0;border-top:1px solid var(--bg);" onclick="document.querySelectorAll('.cat-hidden').forEach(e=>e.style.display='flex');this.style.display='none';">Show all categories →</div>
   </div>
   <div class="card" style="margin-bottom:0;padding:12px;aspect-ratio:1;"></div>
   <div class="card" style="margin-bottom:0;padding:12px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">
