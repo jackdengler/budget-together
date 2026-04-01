@@ -380,12 +380,6 @@
     .btn-sm{padding:5px 14px;font-size:12px;font-weight:700;background:rgba(0,0,0,0.04);border:none;border-radius:10px;cursor:pointer;color:var(--text-2);-webkit-tap-highlight-color:transparent;transition:all 0.2s}
     .btn-sm:hover{background:rgba(0,0,0,0.07)}
     .btn-sm:active{transform:scale(0.96)}
-    .hv-toggle{display:flex;gap:0;background:rgba(0,0,0,0.05);border:none;border-radius:12px;padding:3px}
-    .hv-btn{padding:5px 14px;font-size:13px;font-weight:700;border:none;border-radius:10px;cursor:pointer;background:transparent;color:var(--text-3);-webkit-tap-highlight-color:transparent;transition:all 0.2s var(--ease-out)}
-    .hv-btn:active{transform:scale(0.96)}
-    .hv-btn.hv-active{background:white;color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,0.08)}
-    .hv-btn.hv-active.hv-p1{color:var(--ios-blue)}
-    .hv-btn.hv-active.hv-p2{color:var(--p2)}
     select.split-sel{padding:5px 10px;border:none;border-radius:10px;font-size:13px;font-weight:600;background:rgba(0,0,0,0.04);font-family:var(--font-stack)}
 
     /* Modals — Sheet on mobile, centered on desktop */
@@ -425,39 +419,6 @@
     ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.12);border-radius:3px}
     ::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,0.2)}
 
-    /* History tab */
-    .hist-hero{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
-    @media(max-width:720px){.hist-hero{grid-template-columns:1fr 1fr}}
-    .hist-hero-card{background:var(--surface);border-radius:var(--radius);border:2px solid var(--surface-border);box-shadow:none;padding:20px;position:relative;overflow:hidden;transition:transform 0.2s var(--ease-spring)}
-    .hist-hero-card:hover{transform:translateY(-1px)}
-    .hist-hero-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0}
-    .hist-hero-card.hh-spent::before{background:linear-gradient(90deg, var(--ios-accent), #FF8A6B)}
-    .hist-hero-card.hh-avg::before{background:linear-gradient(90deg, var(--ios-blue), #5B9CF6)}
-    .hist-hero-card.hh-income::before{background:linear-gradient(90deg, var(--ios-green), #4DD67F)}
-    .hist-hero-card.hh-best::before{background:linear-gradient(90deg, var(--ios-orange), #F5B84D)}
-    .hist-hero-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);margin-bottom:8px}
-    .hist-hero-val{font-size:28px;font-weight:800;line-height:1;margin-bottom:6px;letter-spacing:-0.03em;font-variant-numeric:tabular-nums}
-    .hist-hero-sub{font-size:12px;color:var(--text-3);font-weight:500}
-    .hist-chart-scroll{overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch}
-    .hist-chart{display:flex;align-items:flex-end;gap:8px;height:240px;padding:12px 6px 0;padding-left:36px}
-    .hist-bar-col{display:flex;flex-direction:column;align-items:center;cursor:pointer;flex:1;min-width:46px;max-width:80px;-webkit-tap-highlight-color:transparent;transition:opacity 0.15s}
-    .hist-bar-col:hover{opacity:0.8}
-    .hist-bar-col:active{transform:scale(0.97)}
-    .hist-bar-outer{flex:1;display:flex;align-items:flex-end;width:100%;position:relative}
-    .hist-bar-inner{width:100%;border-radius:8px 8px 0 0;transition:height .4s var(--ease-out);min-height:4px;position:relative}
-    .hist-bar-inner.hb-cur{box-shadow:0 0 0 2px white,0 0 0 3px var(--ios-accent)}
-    .hist-inc-dot{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--ios-green);border:2px solid white;left:50%;transform:translateX(-50%);z-index:3}
-    .hist-bar-lbl{font-size:11px;font-weight:600;color:var(--text-3);text-align:center;margin-top:8px;line-height:1.3;white-space:nowrap;letter-spacing:0.01em}
-    .hm-tbl{width:100%;border-collapse:separate;border-spacing:0}
-    .hm-tbl th{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);padding:10px 8px;border-bottom:1px solid rgba(0,0,0,0.05);text-align:right;white-space:nowrap}
-    .hm-tbl th:first-child,.hm-tbl th:nth-child(2){text-align:left}
-    .hm-tbl td{padding:7px 8px;border-bottom:1px solid rgba(0,0,0,0.03);vertical-align:middle}
-    .hm-tbl tr:last-child td{border-bottom:none}
-    .hm-cell{border-radius:10px;padding:6px 10px;text-align:right;font-weight:700;font-size:12px;white-space:nowrap;display:block;letter-spacing:-0.01em;font-variant-numeric:tabular-nums}
-    .hm-cell:active{transform:scale(0.97)}
-    .chip-up{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:700;color:var(--ios-red);background:rgba(220,53,69,0.08);border-radius:20px;padding:4px 12px;letter-spacing:0.01em}
-    .chip-down{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:700;color:var(--ios-green);background:rgba(28,165,86,0.08);border-radius:20px;padding:4px 12px;letter-spacing:0.01em}
-    .chip-flat{display:inline-flex;align-items:center;font-size:12px;font-weight:600;color:var(--text-3);background:rgba(0,0,0,0.04);border-radius:20px;padding:4px 12px}
 
     /* Review badge */
     #review-badge{display:none;align-items:center;gap:6px;padding:4px 10px;border:none;background:var(--warning-light);border-radius:var(--radius-sm);cursor:pointer;font-size:11px;font-weight:800;color:#7A6030;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent;transition:all 0.2s;letter-spacing:0.02em}
@@ -603,7 +564,7 @@
       main{padding:8px 16px}
 
       /* Cards — Refined mobile */
-      .card,.stat-card,.income-card,.bud-card,.scc,.table-wrap,.hist-hero-card{
+      .card,.stat-card,.income-card,.bud-card,.scc,.table-wrap{
         border:2px solid var(--surface-border) !important;
         box-shadow:none !important;
         border-radius:var(--radius) !important;
@@ -656,7 +617,7 @@
 
       /* Prevent horizontal scroll on page */
       main{touch-action:pan-y}
-      .rev-wrap,.vert-chart,.hist-chart-scroll,.table-wrap{-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+      .rev-wrap,.vert-chart,.table-wrap{-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 
       /* Toggles */
       .toggle{width:51px;height:31px}
@@ -699,28 +660,6 @@
       .filter-pill:active{transform:scale(0.96)}
       .filter-pill.active{background:var(--ios-accent);color:white;font-weight:700;box-shadow:0 4px 12px rgba(232,89,58,0.2)}
 
-      /* History month cards */
-      .month-card-list{display:flex;flex-direction:column;gap:0;background:white;border-radius:var(--radius);overflow:visible;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
-      .month-card{padding:14px 18px;background:white;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform 0.15s var(--ease-spring)}
-      .month-card:active{transform:scale(0.99)}
-      .month-card+.month-card{border-top:1px solid rgba(0,0,0,0.04)}
-      .month-card-top{display:flex;justify-content:space-between;align-items:baseline}
-      .month-card-title{font-size:16px;font-weight:700;color:var(--text);letter-spacing:-0.02em}
-      .month-card-title .cur-badge{font-size:11px;background:rgba(45,107,228,0.08);color:var(--ios-blue);padding:3px 8px;border-radius:10px;font-weight:700;margin-left:6px;vertical-align:middle;letter-spacing:0.02em}
-      .month-card-amt{font-size:20px;font-weight:800;color:var(--text);letter-spacing:-0.03em;font-variant-numeric:tabular-nums}
-      .month-card-row2{display:flex;align-items:center;gap:10px;margin-top:5px;font-size:12px;color:var(--text-3);font-weight:500}
-      .month-card-detail{padding:12px 18px 18px;border-top:1px solid rgba(0,0,0,0.04);background:rgba(0,0,0,0.01)}
-      .month-card-detail-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;font-size:12px;font-weight:500}
-      .month-card-expand{font-size:12px;color:var(--ios-blue);font-weight:700;margin-top:8px;display:flex;align-items:center;gap:3px}
-
-      /* Heatmap mobile (vertical category list) */
-      .hm-mobile-list{display:flex;flex-direction:column;gap:0;background:white;border-radius:var(--radius);overflow:visible;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
-      .hm-mobile-row{display:flex;align-items:center;gap:14px;padding:14px 18px;background:white}
-      .hm-mobile-row+.hm-mobile-row{border-top:1px solid rgba(0,0,0,0.04)}
-      .hm-mobile-cat{font-size:16px;font-weight:700;display:flex;align-items:center;gap:10px;flex:1;min-width:0;letter-spacing:-0.02em}
-      .hm-mobile-vals{display:flex;align-items:center;gap:12px;flex-shrink:0}
-      .hm-mobile-amt{font-size:16px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
-      .hm-mobile-trend{font-size:14px;font-weight:700}
 
       /* Section styling */
       .ios-section-header{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);padding:22px 18px 8px}
@@ -815,10 +754,6 @@
       .merchant-amt{font-size:16px;font-weight:700}
       .merchant-rank{font-size:11px;font-weight:700}
       .section-title{font-size:11px;font-weight:700;letter-spacing:0.08em}
-      .month-card-title{font-size:16px}
-      .month-card-amt{font-size:20px}
-      .hm-mobile-cat{font-size:16px}
-      .hm-mobile-amt{font-size:16px}
       .split-big{font-size:36px;font-weight:800;letter-spacing:-0.04em}
       .split-lbl{font-size:15px;font-weight:500}
       .filter-sel,.search-input{font-size:16px !important}
@@ -854,7 +789,6 @@
       <button class="active" data-tab="overview">Overview</button>
       <button data-tab="transactions">Transactions</button>
       <button data-tab="split">Split</button>
-      <button data-tab="history">History</button>
     </nav>
     <div class="month-nav">
       <button id="prev-mo"><i class="bi bi-chevron-left"></i></button>
@@ -876,7 +810,6 @@
   <button data-tab="overview"><span class="bnav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span><span class="bnav-label">Overview</span></button>
   <button data-tab="transactions"><span class="bnav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span><span class="bnav-label">Spend</span></button>
   <button data-tab="split"><span class="bnav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span><span class="bnav-label">Split</span></button>
-  <button data-tab="history"><span class="bnav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span class="bnav-label">History</span></button>
 </nav>
 
 <div class="toast" id="toast"></div>
@@ -956,13 +889,11 @@ const S = {
   incomeData: {},        // { [txnId]: 'normal'|'retirement'|'family' }  explicit overrides
   incomeTypeRules: {},   // { [normalizedDesc]: 'normal'|'retirement'|'family' }  learned from user
   excludedFromAvg: [], // months (YYYY-MM) excluded from average calculations
-  historyView: 'combined', // 'combined' | 'p1' | 'p2'
   overviewRange: '1mo',        // '1mo' | 'ytd' | 'all' | 'custom'
   overviewCustomMonths: [],   // ['YYYY-MM', ...] individually selected months for custom range
   overviewView: 'total',      // 'total' | 'avg' — only relevant in multi-month mode
   overviewYear: null,         // YYYY string for YTD year; null = current year
   recurringIncome: [], // [{ id, description, amount, person, category, frequency, startDate }]
-  hmCatFilter: null,  // null = auto top-8; Set of catIds when user has customised
   pinUnlocked: false, // session only — not persisted
 };
 
@@ -1624,7 +1555,7 @@ function changePinFromSettings() {
 function render() {
   document.querySelectorAll('#nav button, #bottom-nav button').forEach(b => b.classList.toggle('active', b.dataset.tab === S.activeTab));
   $('mo-label').textContent = moLabel(S.currentMonth);
-  document.querySelector('.month-nav').style.visibility = S.activeTab === 'history' ? 'hidden' : 'visible';
+  document.querySelector('.month-nav').style.visibility = 'visible';
   renderIdentityBadge();
   const main = $('main');
   // Overview needs overflow:hidden so the carousel fills the viewport without any page scroll.
@@ -1633,7 +1564,6 @@ function render() {
   if (S.activeTab === 'overview') main.innerHTML = renderOverview();
   else if (S.activeTab === 'transactions') main.innerHTML = renderTxns();
   else if (S.activeTab === 'split') main.innerHTML = renderSplit();
-  else if (S.activeTab === 'history') main.innerHTML = renderHistory();
   // Donut ring fills its container via CSS (width:100%;height:100%), no JS sizing needed
   // Activate any Lucide icons in the rendered content
 
@@ -2517,377 +2447,6 @@ function renderSplit() {
   return `${hero}${catSection}${settledSection}`;
 }
 
-// ── History ────────────────────────────────────────────────
-function renderHistory() {
-  const allMonths = [...new Set(S.transactions.map(t => t.date.slice(0,7)))]
-    .filter(Boolean).sort().reverse();
-
-  if (!allMonths.length) {
-    return `<div class="card"><div class="empty-state"><div class="empty-icon">📅</div><p>No transaction history yet</p><p style="margin-top:5px">Upload CSVs in the Transactions tab to get started!</p></div></div>`;
-  }
-
-  // Per-month stats
-  const monthStats = allMonths.map(mo => {
-    const txns = S.transactions.filter(t => t.date.startsWith(mo) && isVisible(t));
-    const exp = txns.filter(t => t.amount > 0 && !getCat(t.category).ignored && !t.excluded);
-    const total = exp.reduce((s,t) => s+t.amount, 0);
-    const p1solo = exp.filter(t => t.person==='p1' && !t.shared).reduce((s,t) => s+t.amount, 0);
-    const p2solo = exp.filter(t => t.person==='p2' && !t.shared).reduce((s,t) => s+t.amount, 0);
-    const sharedExp = exp.filter(t => t.shared);
-    const shared = sharedExp.reduce((s,t) => s+t.amount, 0);
-    // per-person share of shared, respecting catSplits
-    const sharedByCat = {};
-    for (const t of sharedExp) sharedByCat[t.category] = (sharedByCat[t.category]||0) + t.amount;
-    let p1sharedAmt = 0, p2sharedAmt = 0;
-    for (const [cid, amt] of Object.entries(sharedByCat)) { const {p1Share, p2Share} = getCatSplitAmts(cid, amt); p1sharedAmt += p1Share; p2sharedAmt += p2Share; }
-    const p1total = p1solo + p1sharedAmt;
-    const p2total = p2solo + p2sharedAmt;
-    const p1inc = txns.filter(t => t.amount < 0 && !getCat(t.category).ignored && !t.excluded && t.person==='p1').reduce((s,t) => s+Math.abs(t.amount), 0);
-    const p2inc = txns.filter(t => t.amount < 0 && !getCat(t.category).ignored && !t.excluded && t.person==='p2').reduce((s,t) => s+Math.abs(t.amount), 0);
-    const income = p1inc + p2inc;
-    const net = income - total;
-    return { mo, total, p1: p1solo, p2: p2solo, p1total, p2total, p1sharedAmt, p2sharedAmt, p1inc, p2inc, shared, income, net, count: exp.length };
-  });
-
-  const inclStats = monthStats.filter(m => !S.excludedFromAvg.includes(m.mo));
-  const hv = S.historyView;
-  const hvAmt    = m => hv==='p1' ? m.p1total      : hv==='p2' ? m.p2total      : m.total;
-  const hvInc    = m => hv==='p1' ? m.p1inc        : hv==='p2' ? m.p2inc        : m.income;
-  const hvShared = m => hv==='p1' ? m.p1sharedAmt  : hv==='p2' ? m.p2sharedAmt : m.shared;
-  const hvNet    = m => hvInc(m) - hvAmt(m);
-  // per-transaction view amount (for heatmap)
-  const hvTxnAmt = t => {
-    if (!t.shared) return (hv==='combined' || t.person===hv) ? t.amount : 0;
-    const {p1Share, p2Share} = getCatSplitAmts(t.category, t.amount);
-    return hv==='p1' ? p1Share : hv==='p2' ? p2Share : t.amount;
-  };
-  const avgTotal = inclStats.length ? inclStats.reduce((s,m) => s+hvAmt(m), 0) / inclStats.length : 0;
-  const maxTotal = Math.max(...monthStats.map(s => hvAmt(s)), 1); // all months for bar scale
-  const totalAllTime = inclStats.reduce((s,m) => s+hvAmt(m), 0);
-  const biggestMo = [...inclStats].sort((a,b) => hvAmt(b)-hvAmt(a))[0];
-  const bestSavingsMo = inclStats.filter(m => hvInc(m) > 0).sort((a,b) => hvNet(b)-hvNet(a))[0];
-
-  // ── View toggle ───────────────────────────────────────────
-  const toggleHtml = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
-    <div class="section-title" style="margin:0">History</div>
-    <div class="hv-toggle">
-      <button class="hv-btn${hv==='combined'?' hv-active':''}" onclick="S.historyView='combined';render()">Combined</button>
-      <button class="hv-btn${hv==='p1'?' hv-active hv-p1':''}" onclick="S.historyView='p1';render()">${esc(S.settings.person1)}</button>
-      <button class="hv-btn${hv==='p2'?' hv-active hv-p2':''}" onclick="S.historyView='p2';render()">${esc(S.settings.person2)}</button>
-    </div>
-  </div>`;
-
-  // ── Hero cards ────────────────────────────────────────────
-  const heroHtml = `<div class="hist-hero">
-    <div class="hist-hero-card hh-spent">
-      <div class="hist-hero-lbl">All-time Spending</div>
-      <div class="hist-hero-val">${fc0(totalAllTime)}</div>
-      <div class="hist-hero-sub">${inclStats.length} month${inclStats.length!==1?'s':''} included${S.excludedFromAvg.length?` · ${S.excludedFromAvg.length} excl.`:''}</div>
-    </div>
-    <div class="hist-hero-card hh-avg">
-      <div class="hist-hero-lbl">Avg / Month</div>
-      <div class="hist-hero-val">${fc0(avgTotal)}</div>
-      <div class="hist-hero-sub">across all months</div>
-    </div>
-    <div class="hist-hero-card hh-best">
-      <div class="hist-hero-lbl">Biggest Month</div>
-      <div class="hist-hero-val">${biggestMo ? fc0(hvAmt(biggestMo)) : '—'}</div>
-      <div class="hist-hero-sub">${biggestMo ? moLabel(biggestMo.mo) : 'no months included'}</div>
-    </div>
-    ${bestSavingsMo
-      ? `<div class="hist-hero-card hh-income">
-          <div class="hist-hero-lbl">Best Savings</div>
-          <div class="hist-hero-val" style="color:var(--green)">${fc0(hvNet(bestSavingsMo))}</div>
-          <div class="hist-hero-sub">${moLabel(bestSavingsMo.mo)}</div>
-        </div>`
-      : `<div class="hist-hero-card hh-income">
-          <div class="hist-hero-lbl">Total Income</div>
-          <div class="hist-hero-val" style="color:var(--green)">${fc0(inclStats.reduce((s,m)=>s+hvInc(m),0))}</div>
-          <div class="hist-hero-sub">across all months</div>
-        </div>`}
-  </div>`;
-
-  // ── Bar chart ─────────────────────────────────────────────
-  const chartMonths = [...monthStats].reverse(); // oldest → newest, ALL months shown (excluded = gray)
-  const barColor = hv==='p1' ? ['#93c5fd','var(--p1)'] : hv==='p2' ? ['#fda4af','var(--p2)'] : ['#c4b5fd','#8b5cf6'];
-  const barMaxH = 160, labelAreaH = 34; // px: bar scale height, label area below bars
-  const avgLineH = Math.round(avgTotal / maxTotal * barMaxH);
-  // Y-axis grid lines at 25%, 50%, 75% of maxTotal
-  const gridHtml = [0.25, 0.5, 0.75].map(pct => {
-    const gH = Math.round(pct * barMaxH) + labelAreaH;
-    const gVal = maxTotal * pct;
-    const gLbl = gVal >= 1000 ? (gVal/1000).toFixed(1).replace(/\.0$/,'')+'k' : Math.round(gVal);
-    return `<div style="position:absolute;left:0;right:0;bottom:${gH}px;pointer-events:none;z-index:0;display:flex;align-items:center">
-      <span style="width:30px;text-align:right;font-size:.58rem;color:#b0b7c3;flex-shrink:0;padding-right:4px">${gLbl}</span>
-      <div style="flex:1;height:1px;background:#eff0f1"></div>
-    </div>`;
-  }).join('');
-  const bars = chartMonths.map((s, i) => {
-    const amt = hvAmt(s);
-    const inc = hvInc(s);
-    const isExcl = S.excludedFromAvg.includes(s.mo);
-    const barH = Math.max(Math.round(amt / maxTotal * barMaxH), amt > 0 ? 4 : 0);
-    const incH  = inc > 0 && !isExcl ? Math.round(inc / maxTotal * barMaxH) : null;
-    const [y, m] = s.mo.split('-');
-    const shortLbl = new Date(+y, +m-1, 1).toLocaleDateString('en-US', {month:'short'});
-    const isCur = s.mo === S.currentMonth;
-    // For trend tip, only compare against included months
-    const prevIncl = chartMonths.slice(0, i).reverse().find(p => !S.excludedFromAvg.includes(p.mo));
-    let trendTip = '';
-    if (!isExcl && prevIncl && hvAmt(prevIncl) > 0) {
-      const pct = (amt - hvAmt(prevIncl)) / hvAmt(prevIncl) * 100;
-      trendTip = pct > 3 ? ` · ↑${Math.round(pct)}% vs prev` : pct < -3 ? ` · ↓${Math.round(Math.abs(pct))}% vs prev` : '';
-    }
-    const gradient = isExcl ? 'linear-gradient(180deg,#d1d5db,#9ca3af)' : `linear-gradient(180deg,${barColor[0]},${barColor[1]})`;
-    const barOpacity = isExcl ? 0.5 : (isCur ? 1 : 0.6);
-    const lblColor = isExcl ? 'var(--text-3)' : (isCur ? 'var(--primary)' : 'var(--text-2)');
-    return `<div class="hist-bar-col" onclick="toggleAvgExclude('${s.mo}')" title="${moLabel(s.mo)}: ${fc(amt)}${isExcl?' · excluded from avg':''}${trendTip}${inc > 0 ? ' · Income: '+fc(inc) : ''}" style="cursor:pointer">
-      <div class="hist-bar-outer">
-        ${incH !== null ? `<div class="hist-inc-dot" style="bottom:${incH}px"></div>` : ''}
-        <div class="hist-bar-inner${isCur?' hb-cur':''}" style="height:${barH}px;background:${gradient};opacity:${barOpacity}"></div>
-        ${amt > 0 ? `<div style="position:absolute;bottom:${barH+3}px;left:50%;transform:translateX(-50%);font-size:.58rem;font-weight:700;color:${lblColor};white-space:nowrap;pointer-events:none">${fc0(amt)}</div>` : ''}
-      </div>
-      <div class="hist-bar-lbl" style="${isExcl?'color:var(--text-3);opacity:.6':''}"> ${shortLbl}<br><span style="font-size:.6rem;opacity:.65">'${y.slice(2)}</span></div>
-    </div>`;
-  }).join('');
-
-  const chartHtml = `<div class="card" style="margin-bottom:20px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-      <div class="section-title" style="margin:0">Monthly Spending</div>
-      <div style="display:flex;gap:16px;font-size:.75rem;color:var(--text-2);align-items:center">
-        <span style="display:flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:3px;background:linear-gradient(180deg,${barColor[0]},${barColor[1]});display:inline-block"></span>Spending</span>
-        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:var(--green);border:2px solid white;box-shadow:0 0 0 1px rgba(5,150,105,.4);display:inline-block"></span>Income</span>
-        <span style="display:flex;align-items:center;gap:5px"><span style="width:14px;height:0;border-top:2px dashed #c4cadb;display:inline-block"></span>Avg ${fc0(avgTotal)}</span>
-        <span style="display:flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:3px;background:linear-gradient(180deg,#d1d5db,#9ca3af);display:inline-block;opacity:.5"></span>Excluded</span>
-      </div>
-    </div>
-    <div class="hist-chart-scroll">
-      <div class="hist-chart" style="position:relative">
-        ${gridHtml}
-        <div style="position:absolute;left:0;right:0;bottom:${avgLineH + labelAreaH}px;pointer-events:none;z-index:1;display:flex;align-items:center">
-          <span style="width:30px;text-align:right;font-size:.58rem;font-weight:700;color:#8892a4;flex-shrink:0;padding-right:4px">avg</span>
-          <div style="flex:1;border-top:2px dashed #c4cadb"></div>
-        </div>
-        ${bars}
-      </div>
-    </div>
-    <div style="margin-top:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
-      <div style="font-size:.71rem;color:var(--text-3)">Click bar to include/exclude · gray = excluded · hover for details</div>
-      <div style="display:flex;gap:6px">
-        <button onclick="includeAllMonths()" style="padding:3px 10px;font-size:.72rem;font-weight:600;border:1px solid var(--border);background:white;border-radius:6px;cursor:pointer;color:var(--green)" title="Include all months in averages">All in</button>
-        <button onclick="excludeAllMonths()" style="padding:3px 10px;font-size:.72rem;font-weight:600;border:1px solid var(--border);background:white;border-radius:6px;cursor:pointer;color:var(--text-3)" title="Exclude all months from averages">All out</button>
-      </div>
-    </div>
-  </div>`;
-
-  // ── Category heatmap ──────────────────────────────────────
-  const recentMonths = allMonths.filter(m => !S.excludedFromAvg.includes(m)).slice(0, 6).reverse();
-  const hmTxns = S.transactions.filter(t => t.amount>0 && isVisible(t));
-  const allCatIds = [...new Set(hmTxns.map(t => t.category))];
-  const catTotals = {};
-  for (const cid of allCatIds) {
-    catTotals[cid] = hmTxns.filter(t => t.category===cid).reduce((s,t) => s+hvTxnAmt(t), 0);
-  }
-  const sortedCatIds = [...allCatIds].filter(cid => catTotals[cid] > 0).sort((a,b) => catTotals[b]-catTotals[a]);
-  // All categories (for pills) — includes ignored (Insurance etc) and new ones with no data yet
-  const allPillCats = getCats();
-  // If user hasn't customised, default to top 8 by spend
-  if (!S.hmCatFilter) S.hmCatFilter = new Set(sortedCatIds.slice(0, 8));
-  const topCats = allPillCats.map(c => c.id).filter(cid => S.hmCatFilter.has(cid));
-  const catMax = {};
-  for (const cid of topCats) {
-    catMax[cid] = Math.max(...recentMonths.map(mo =>
-      hmTxns.filter(t=>t.date.startsWith(mo)&&t.category===cid).reduce((s,t)=>s+hvTxnAmt(t),0)
-    ), 1);
-  }
-  const hmHdrs = recentMonths.map(mo => {
-    const [y, m] = mo.split('-');
-    const isCur = mo === S.currentMonth;
-    return `<th style="${isCur?'color:var(--primary)':''}">${new Date(+y,+m-1,1).toLocaleDateString('en-US',{month:'short'})} <span style="font-weight:400;opacity:.55">'${new Date(+y,+m-1,1).toLocaleDateString('en-US',{year:'2-digit'})}</span></th>`;
-  }).join('');
-  const hmRows = topCats.map(cid => {
-    const cat = getCat(cid);
-    const monthAmts = recentMonths.map(mo =>
-      hmTxns.filter(t=>t.date.startsWith(mo)&&t.category===cid).reduce((s,t)=>s+hvTxnAmt(t),0)
-    );
-    const avg = monthAmts.reduce((s,a)=>s+a,0) / monthAmts.length;
-    const lastAmt = monthAmts[monthAmts.length - 1];
-    const trendIcon = avg > 0
-      ? (lastAmt > avg * 1.08 ? ` <span style="color:var(--red);font-size:.7rem">↑</span>`
-       : lastAmt < avg * 0.92 ? ` <span style="color:var(--green);font-size:.7rem">↓</span>` : '') : '';
-    const rowTotal = monthAmts.reduce((s,a)=>s+a,0);
-    const cells = monthAmts.map((amt, i) => {
-      if (!amt) return `<td><span style="display:block;text-align:right;padding:5px 9px;color:var(--text-3);font-size:.8rem">—</span></td>`;
-      const intensity = Math.round(amt / catMax[cid] * 80) + 20;
-      const isCur = recentMonths[i] === S.currentMonth;
-      const hexAlpha = Math.round(intensity * 2.55).toString(16).padStart(2,'0');
-      const textColor = intensity > 55 ? 'white' : cat.color;
-      const outline = isCur ? `outline:2px solid ${cat.color};outline-offset:-2px;` : '';
-      return `<td><div class="hm-cell" style="background:${cat.color}${hexAlpha};color:${textColor};${outline}" title="${moLabel(recentMonths[i])}: ${fc(amt)}">${fc(amt)}</div></td>`;
-    }).join('');
-    return `<tr>
-      <td style="white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:5px;font-size:.87rem;font-weight:600">${cat.emoji} ${cat.label}${trendIcon}</span></td>
-      ${cells}
-    </tr>`;
-  }).join('');
-  const hmColTotals = recentMonths.map(mo => hmTxns.filter(t=>t.date.startsWith(mo)&&topCats.includes(t.category)).reduce((s,t)=>s+hvTxnAmt(t),0));
-  const hmTotalRow = `<tr style="border-top:2px solid var(--border);background:#f9fafb">
-    <td style="font-size:.75rem;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em">Total</td>
-    ${hmColTotals.map(a=>`<td style="text-align:right;font-weight:700;font-size:.82rem;padding:5px 9px">${fc(a)}</td>`).join('')}
-  </tr>`;
-  const catPills = allPillCats.map(cat => {
-    const on = S.hmCatFilter.has(cat.id);
-    return `<button onclick="toggleHmCat('${cat.id}')" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:2px solid ${cat.color};background:${on?cat.color:'transparent'};color:${on?'#fff':cat.color};font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s">${cat.emoji} ${cat.label}</button>`;
-  }).join('');
-  const hmHtml = `<div class="card" style="margin-bottom:20px;overflow-x:auto">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;gap:8px">
-      <div class="section-title" style="margin-bottom:0">Category Heatmap${recentMonths.length < allMonths.length ? ` <span class="text-muted" style="font-weight:400;font-size:.78rem">last ${recentMonths.length} months</span>` : ''}</div>
-    </div>
-    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">${catPills}</div>
-    ${topCats.length ? `<table class="hm-tbl">
-      <thead><tr><th>Category</th>${hmHdrs}</tr></thead>
-      <tbody>${hmRows}${hmTotalRow}</tbody>
-    </table>` : `<p class="text-muted" style="text-align:center;padding:20px">Select at least one category above</p>`}
-  </div>`;
-
-  // ── Detail table ──────────────────────────────────────────
-  const detailRows = monthStats.map((s, i) => {
-    const amt = hvAmt(s); const inc = hvInc(s); const net = inc - amt;
-    const prev = monthStats[i + 1];
-    let chipHtml = '';
-    if (prev && hvAmt(prev) > 0) {
-      const pct = (amt - hvAmt(prev)) / hvAmt(prev) * 100;
-      if (pct > 3)       chipHtml = `<span class="chip-up">↑ ${Math.round(pct)}%</span>`;
-      else if (pct < -3) chipHtml = `<span class="chip-down">↓ ${Math.round(Math.abs(pct))}%</span>`;
-      else               chipHtml = `<span class="chip-flat">→ flat</span>`;
-    }
-    const vsAvg = amt - avgTotal;
-    const vsAvgHtml = `<span style="font-size:.78rem;font-weight:600;color:${vsAvg>0?'var(--red)':'var(--green)'}">${vsAvg>0?'+':''}${fc(Math.abs(vsAvg))}</span>`;
-    const isCur = s.mo === S.currentMonth;
-    const isExcl = S.excludedFromAvg.includes(s.mo);
-    const td = (content, extra='') => `<td style="text-align:right;${extra}" onclick="S.currentMonth='${s.mo}';S.activeTab='overview';render()">${content}</td>`;
-    return `<tr style="cursor:pointer;${isCur?'background:#faf5ff':''}${isExcl?'opacity:.5':''}">
-      <td style="white-space:nowrap;font-weight:${isCur?'700':'500'}" onclick="S.currentMonth='${s.mo}';S.activeTab='overview';render()">
-        ${moLabel(s.mo)}${isCur?' <span style="font-size:.7rem;background:var(--primary-light);color:var(--primary);padding:1px 6px;border-radius:10px;font-weight:600">current</span>':''}
-        ${isExcl?' <span style="font-size:.7rem;background:#fee2e2;color:#dc2626;padding:1px 6px;border-radius:10px;font-weight:600">excl.</span>':''}
-      </td>
-      ${td(fc(amt), 'font-weight:800;font-size:.95rem')}
-      <td style="text-align:center" onclick="S.currentMonth='${s.mo}';S.activeTab='overview';render()">${chipHtml}</td>
-      ${td(isExcl?'—':vsAvgHtml+' <span style="font-size:.72rem;color:var(--text-3)">vs avg</span>')}
-      ${td(fc(s.p1total), `color:var(--p1);font-size:.85rem;font-weight:${hv==='p1'?'700':'400'}`)}
-      ${td(fc(s.p2total), `color:var(--p2);font-size:.85rem;font-weight:${hv==='p2'?'700':'400'}`)}
-      ${td(fc(hvShared(s)), 'color:var(--green);font-size:.85rem')}
-      ${td(inc>0?(net>=0?'+':'')+fc(Math.abs(net)):'—', `font-weight:600;font-size:.85rem;color:${inc>0?(net>=0?'var(--green)':'var(--red)'):'var(--text-3)'}`)}
-      ${td(s.count, 'color:var(--text-3);font-size:.82rem')}
-      <td style="text-align:right"><button class="btn-sm" onclick="event.stopPropagation();toggleAvgExclude('${s.mo}')" title="${isExcl?'Include in averages':'Exclude from averages'}">${isExcl?'+ incl':'⊘ excl'}</button></td>
-    </tr>`;
-  }).join('');
-  const avgRow = `<tr style="background:#f9fafb;border-top:2px solid var(--border)">
-    <td style="font-size:.75rem;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em">Avg / month${S.excludedFromAvg.length?` <span style="font-weight:400;font-size:.7rem">(${inclStats.length} mo)</span>`:''}</td>
-    <td style="text-align:right;font-weight:800;font-size:.95rem;color:var(--text-2)">${fc(avgTotal)}</td>
-    <td></td><td></td>
-    <td style="text-align:right;color:var(--p1);font-size:.85rem;font-weight:${hv==='p1'?'700':'400'}">${inclStats.length?fc(inclStats.reduce((s,m)=>s+m.p1total,0)/inclStats.length):'—'}</td>
-    <td style="text-align:right;color:var(--p2);font-size:.85rem;font-weight:${hv==='p2'?'700':'400'}">${inclStats.length?fc(inclStats.reduce((s,m)=>s+m.p2total,0)/inclStats.length):'—'}</td>
-    <td style="text-align:right;color:var(--text-3);font-size:.85rem">${inclStats.length?fc(inclStats.reduce((s,m)=>s+hvShared(m),0)/inclStats.length):'—'}</td>
-    <td></td>
-    <td style="text-align:right;color:var(--text-3);font-size:.82rem">${inclStats.length?Math.round(inclStats.reduce((s,m)=>s+m.count,0)/inclStats.length):'—'}</td>
-    <td></td>
-  </tr>`;
-  const detailHtml = `<div class="table-wrap" style="overflow-x:auto">
-    <table>
-      <thead><tr>
-        <th>Month</th>
-        <th style="text-align:right">${hv==='p1'?esc(S.settings.person1):hv==='p2'?esc(S.settings.person2):'Total'}</th>
-        <th style="text-align:center">vs Prior</th>
-        <th style="text-align:right">vs Avg</th>
-        <th style="text-align:right;color:var(--p1);font-weight:${hv==='p1'?'700':'600'}">${esc(S.settings.person1)}</th>
-        <th style="text-align:right;color:var(--p2);font-weight:${hv==='p2'?'700':'600'}">${esc(S.settings.person2)}</th>
-        <th style="text-align:right">${hv==='combined'?'Shared':'My Share'}</th>
-        <th style="text-align:right">Net Saved</th>
-        <th style="text-align:right">Txns</th>
-        <th></th>
-      </tr></thead>
-      <tbody>${detailRows}${avgRow}</tbody>
-    </table>
-  </div>`;
-
-  // ── Mobile: simplified history view ─────────────────────
-  if (isMobile()) {
-    // Mobile heatmap: vertical category list with current month + trend
-    const hmMobileRows = topCats.map(cid => {
-      const cat = getCat(cid);
-      const monthAmts = recentMonths.map(mo =>
-        hmTxns.filter(t=>t.date.startsWith(mo)&&t.category===cid).reduce((s,t)=>s+hvTxnAmt(t),0)
-      );
-      const avg = monthAmts.reduce((s,a)=>s+a,0) / Math.max(monthAmts.length,1);
-      const lastAmt = monthAmts[monthAmts.length - 1] || 0;
-      let trend = '';
-      if (avg > 0) {
-        if (lastAmt > avg * 1.08) trend = `<span class="hm-mobile-trend" style="color:var(--red)">↑</span>`;
-        else if (lastAmt < avg * 0.92) trend = `<span class="hm-mobile-trend" style="color:var(--green)">↓</span>`;
-        else trend = `<span class="hm-mobile-trend" style="color:var(--text-3)">→</span>`;
-      }
-      return `<div class="hm-mobile-row">
-        <div class="hm-mobile-cat">${cat.emoji} ${esc(cat.label)}</div>
-        <div class="hm-mobile-vals">
-          <div class="hm-mobile-amt">${fc0(lastAmt)}</div>
-          ${trend}
-        </div>
-      </div>`;
-    }).join('');
-
-    const hmMobileHtml = topCats.length ? `
-      <div class="ios-section-header">Category Breakdown${recentMonths.length?` · ${moLabel(recentMonths[recentMonths.length-1])}`:''}
-      </div>
-      <div class="hm-mobile-list">${hmMobileRows}</div>` : '';
-
-    // Mobile month cards with expandable details
-    const monthCards = monthStats.map((s, i) => {
-      const amt = hvAmt(s); const inc = hvInc(s); const net = inc - amt;
-      const isCur = s.mo === S.currentMonth;
-      const isExcl = S.excludedFromAvg.includes(s.mo);
-      const prev = monthStats[i + 1];
-      let chipHtml = '';
-      if (prev && hvAmt(prev) > 0) {
-        const pct = (amt - hvAmt(prev)) / hvAmt(prev) * 100;
-        if (pct > 3)       chipHtml = `<span class="chip-up">↑ ${Math.round(pct)}%</span>`;
-        else if (pct < -3) chipHtml = `<span class="chip-down">↓ ${Math.round(Math.abs(pct))}%</span>`;
-        else               chipHtml = `<span class="chip-flat">→ flat</span>`;
-      }
-      return `<div class="month-card${isExcl?' excluded':''}" onclick="this.querySelector('.month-card-detail').style.display=this.querySelector('.month-card-detail').style.display==='none'?'block':'none'">
-        <div class="month-card-top">
-          <div class="month-card-title">${moLabel(s.mo)}${isCur?'<span class="cur-badge">current</span>':''}</div>
-          <div class="month-card-amt" style="${isExcl?'opacity:.5':''}">${fc0(amt)}</div>
-        </div>
-        <div class="month-card-row2">
-          ${chipHtml}
-          <span>${s.count} txn${s.count!==1?'s':''}</span>
-          ${inc>0?`<span>· Net: <span style="color:${net>=0?'var(--green)':'var(--red)'};font-weight:600">${net>=0?'+':'−'}${fc0(Math.abs(net))}</span></span>`:''}
-        </div>
-        <div class="month-card-detail" style="display:none">
-          <div class="month-card-detail-row"><span style="color:var(--p1)">${esc(S.settings.person1)}</span><span style="font-weight:700;color:var(--p1)">${fc0(s.p1total)}</span></div>
-          <div class="month-card-detail-row"><span style="color:var(--p2)">${esc(S.settings.person2)}</span><span style="font-weight:700;color:var(--p2)">${fc0(s.p2total)}</span></div>
-          <div class="month-card-detail-row"><span style="color:var(--green)">Shared</span><span style="font-weight:700;color:var(--green)">${fc0(hvShared(s))}</span></div>
-          ${inc>0?`<div class="month-card-detail-row"><span>Income</span><span style="font-weight:700;color:var(--green)">+${fc0(inc)}</span></div>`:''}
-          <div style="display:flex;gap:6px;margin-top:8px">
-            <button class="btn-sm" onclick="event.stopPropagation();S.currentMonth='${s.mo}';S.activeTab='overview';render()">View month</button>
-            <button class="btn-sm" onclick="event.stopPropagation();toggleAvgExclude('${s.mo}')">${isExcl?'+ Include':'⊘ Exclude'}</button>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-
-    const monthCardHtml = `
-      <div class="ios-section-header">Monthly Detail <span style="font-weight:400;color:var(--text-3)">· tap to expand</span></div>
-      <div class="month-card-list">${monthCards}</div>`;
-
-    return `${toggleHtml}${heroHtml}${chartHtml}${hmMobileHtml}${monthCardHtml}`;
-  }
-
-  // ── Desktop: full table layout ─────────────────────────
-  return `${toggleHtml}${heroHtml}${chartHtml}${hmHtml}${detailHtml}`;
-}
-
 // ── Gambling Tracker ────────────────────────────────────────
 const GAMBLING_PLATFORMS = [
   { id:'fanduel',     label:'FanDuel',    kw:['fanduel'] },
@@ -3161,7 +2720,6 @@ function setOwner(id,val) {
   learnRule(t.description,t.shared,t.category,t.person);
   schedSave(); render();
 }
-function toggleHmCat(cid) { if (!S.hmCatFilter) return; if (S.hmCatFilter.has(cid)) S.hmCatFilter.delete(cid); else S.hmCatFilter.add(cid); render(); }
 function toggleShared(id) { const t=S.transactions.find(t=>t.id===id); if(t){t.shared=!t.shared; schedSave(); render();} }
 function delTxn(id) { S.transactions=S.transactions.filter(t=>t.id!==id); schedSave(); render(); toast('Deleted'); }
 function toggleExclude(id) { const t=S.transactions.find(t=>t.id===id); if(t){t.excluded=!t.excluded; schedSave(); render(); toast(t.excluded?'Excluded from summaries':'Included in summaries'); } }
@@ -4314,7 +3872,7 @@ function init() {
   });
 
   // ── Swipe between tabs on mobile ─────────────────────────
-  const TABS = ['overview','transactions','split','history'];
+  const TABS = ['overview','transactions','split'];
   let _swipeX = 0, _swipeY = 0, _swipeInCarousel = false;
   const mainEl = $('main');
   mainEl.addEventListener('touchstart', e => {
