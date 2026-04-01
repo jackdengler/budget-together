@@ -1632,18 +1632,7 @@ function render() {
   else if (S.activeTab === 'transactions') main.innerHTML = renderTxns();
   else if (S.activeTab === 'split') main.innerHTML = renderSplit();
   else if (S.activeTab === 'history') main.innerHTML = renderHistory();
-  // Size donut card to be square, capped at 220px ring
-  requestAnimationFrame(function(){
-    var dc=document.getElementById('donut-card');
-    if(!dc)return;
-    var h=Math.min(dc.offsetHeight-48, 220);
-    var inner=document.getElementById('donut-inner');
-    if(inner&&inner.firstElementChild&&h>80){
-      inner.firstElementChild.style.width=h+'px';
-      inner.firstElementChild.style.height=h+'px';
-      dc.style.width=(h+48)+'px';
-    }
-  });
+  // Donut ring fills its container via CSS (width:100%;height:100%), no JS sizing needed
   // Activate any Lucide icons in the rendered content
 
 }
@@ -1821,10 +1810,10 @@ function renderOverview() {
     const barW = (amt/mx*100).toFixed(1);
     const p1a = p1ByCat[cid]||0, p2a = p2ByCat[cid]||0, ptot = p1a+p2a;
     const p1pct = ptot>0 ? (p1a/ptot*100).toFixed(0) : 50;
-    return `<div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--bg);">
+    return `<div class="cat-row-new" style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--bg);">
       <div style="width:32px;height:32px;border-radius:8px;background:${c.color}10;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="bi ${c.icon}" style="font-size:14px;color:${c.color};"></i></div>
       <div style="width:80px;font-size:12px;font-weight:700;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.label}</div>
-      <div style="flex:1;height:10px;background:rgba(0,0,0,0.04);border-radius:5px;overflow:hidden;display:flex;"><div style="width:${barW*p1pct/100}%;background:var(--p1);"></div><div style="width:${barW*(100-p1pct)/100}%;background:var(--p2);"></div></div>
+      <div style="flex:1;height:14px;background:rgba(0,0,0,0.04);border-radius:7px;overflow:hidden;display:flex;"><div style="width:${barW*p1pct/100}%;background:var(--p1);"></div><div style="width:${barW*(100-p1pct)/100}%;background:var(--p2);"></div></div>
       <div style="font-size:15px;font-weight:900;">${fc0(displayAmt)}</div>
       <div style="font-size:10px;font-weight:700;color:var(--text-3);">${pct}%</div>
       <i class="bi bi-chevron-right" style="font-size:10px;color:#ddd;"></i>
@@ -2196,13 +2185,15 @@ ${rangeToggle}
 ${viewToggle}
 ${recSectionHtml}
 <div class="rcs-row">${rc1}${rc2}${rc3}</div>
-<div style="display:flex;gap:16px;align-items:stretch;" id="cat-section-row">
-  <div class="card" style="flex:1;min-width:0;margin-bottom:0;">
-    <div class="section-title">Spending by Category</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px;" id="cat-section-row">
+  <div class="card" style="margin-bottom:0;padding:12px;aspect-ratio:1;overflow:auto;">
+    <div class="section-title" style="margin-bottom:12px;">Spending by Category</div>
     ${catBars}
     <div style="text-align:center;margin-top:10px;font-size:11px;font-weight:700;color:var(--primary);cursor:pointer;" onclick="document.querySelectorAll('.cat-hidden').forEach(e=>e.style.display='flex');this.style.display='none';">Show all categories →</div>
   </div>
-  ${catDonut ? `<div class="card" id="donut-card" style="display:flex;align-items:center;justify-content:center;padding:24px;margin-bottom:0;flex-shrink:0;"><div style="position:relative;" id="donut-inner">${catDonut}</div></div>` : ''}
+  ${catDonut ? `<div class="card" id="donut-card" style="margin-bottom:0;padding:12px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;"><div style="position:relative;width:85%;aspect-ratio:1;" id="donut-inner">${catDonut.replace(/width:140px;height:140px/,'width:100%;height:100%')}</div></div>` : ''}
+  <div class="card" style="margin-bottom:0;padding:12px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">
+  </div>
 </div>
 <div class="card" style="margin-top:14px"><div class="section-title">Top Merchants</div>${topMerchants.length?`<div class="merchant-grid">${merchantRows}</div>`:'<p class="text-muted" style="text-align:center;padding:18px">No transactions this month</p>'}</div>`;
 }
