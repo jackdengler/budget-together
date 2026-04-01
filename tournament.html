@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Card Design Tournament</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --page-bg: #F0EDE6;
+    --surface: #F8F2EA;
+    --surface-border: #e8ddd0;
+    --text: #3A3020;
+    --text-3: #9A8A78;
+    --text-sub: #7A6A58;
+    --green: #3A6A3A;
+    --red: #A84A2A;
+    --yellow: #A08040;
+    --purple: #685880;
+    --accent: #D4663A;
+    --p2: #9A3A6A;
+    --ring-track: #e8ddd0;
+    --radius: 16px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--page-bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: var(--text-3);
+    font-weight: 600;
+    margin-bottom: 30px;
+  }
+  .scoreboard {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 30px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-3);
+  }
+  .scoreboard span { letter-spacing: -0.02em; }
+  .scoreboard .num { font-size: 18px; color: var(--text); font-weight: 900; }
+  .arena {
+    display: flex;
+    gap: 40px;
+    align-items: stretch;
+    margin-bottom: 30px;
+    width: 100%;
+    max-width: 1100px;
+  }
+  .contender {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  .contender-label {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+  .contender-label.champ { color: var(--accent); }
+  .vs {
+    display: flex;
+    align-items: center;
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--text-3);
+    letter-spacing: 2px;
+  }
+  .card-wrap {
+    width: 100%;
+    cursor: pointer;
+    border-radius: var(--radius);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .card-wrap:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+  }
+  .card-wrap:active { transform: scale(0.98); }
+
+  /* Individual card styles (variants will override) */
+  .rcs-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 2px solid var(--surface-border);
+    transition: transform 0.2s;
+  }
+  .rcs-title { font-size: 20px; font-weight: 900; letter-spacing: -0.3px; }
+  .rcs-body { display: flex; align-items: center; justify-content: center; }
+  .rcs-col { flex: 1; min-width: 0; }
+  .rcs-col-right { text-align: right; }
+  .rcs-label { font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
+  .rcs-number { font-weight: 900; letter-spacing: -1.5px; line-height: 1.15; }
+  .rcs-breakdown { display: flex; flex-direction: column; }
+  .rcs-ring-wrap { position: relative; flex-shrink: 0; }
+  .rcs-ring-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .rcs-ring-inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .rcs-ring-dollar { font-weight: 900; letter-spacing: -0.5px; }
+  .rcs-ring-pct { font-weight: 800; }
+  .bk-row { display: flex; justify-content: space-between; }
+
+  .winner-flash {
+    animation: flashWin 0.5s ease-out;
+  }
+  @keyframes flashWin {
+    0% { box-shadow: 0 0 0 0 rgba(212,102,58,0.5); }
+    50% { box-shadow: 0 0 0 12px rgba(212,102,58,0.2); }
+    100% { box-shadow: 0 0 0 0 rgba(212,102,58,0); }
+  }
+  .history {
+    width: 100%;
+    max-width: 600px;
+    margin-top: 20px;
+  }
+  .history h3 {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 12px;
+  }
+  .history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 13px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--surface-border);
+  }
+  .history-item .winner-name { color: var(--accent); font-weight: 800; }
+  .history-item .loser-name { color: var(--text-3); }
+  .btn-reset {
+    margin-top: 20px;
+    padding: 10px 28px;
+    background: var(--surface);
+    border: 2px solid var(--surface-border);
+    border-radius: 30px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-3);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-reset:hover { background: var(--text); color: #fff; border-color: var(--text); }
+</style>
+</head>
+<body>
+
+<h1>Card Design Tournament</h1>
+<p class="subtitle">Click the card you prefer — winner stays, challenger rotates in</p>
+
+<div class="scoreboard" id="scoreboard"></div>
+
+<div class="arena" id="arena"></div>
+
+<div class="history" id="history"></div>
+<button class="btn-reset" onclick="resetTournament()">Reset Tournament</button>
+
+<script>
+// ── Design variants ───────────────────────────────────────
+// Each variant defines the CSS overrides for the card
+const VARIANTS = [
+  {
+    name: "Current (Scaled Up)",
+    styles: { cardPad:'28px 32px', titleSize:'20px', titleMb:'18px', bodyGap:'24px',
+              labelSize:'11px', numberSize:'32px', ringSize:'150px', ringDollar:'24px',
+              ringPct:'24px', bkSize:'13px', bkGap:'2px', bkMt:'8px', strokeWidth:8 }
+  },
+  {
+    name: "Compact Classic",
+    styles: { cardPad:'24px', titleSize:'17px', titleMb:'16px', bodyGap:'20px',
+              labelSize:'9px', numberSize:'26px', ringSize:'120px', ringDollar:'19px',
+              ringPct:'20px', bkSize:'10px', bkGap:'0', bkMt:'6px', strokeWidth:8 }
+  },
+  {
+    name: "Ultra Bold",
+    styles: { cardPad:'32px 36px', titleSize:'22px', titleMb:'20px', bodyGap:'28px',
+              labelSize:'12px', numberSize:'38px', ringSize:'170px', ringDollar:'28px',
+              ringPct:'28px', bkSize:'14px', bkGap:'3px', bkMt:'10px', strokeWidth:10 }
+  },
+  {
+    name: "Tight & Dense",
+    styles: { cardPad:'20px 24px', titleSize:'16px', titleMb:'12px', bodyGap:'16px',
+              labelSize:'10px', numberSize:'28px', ringSize:'110px', ringDollar:'18px',
+              ringPct:'18px', bkSize:'11px', bkGap:'1px', bkMt:'6px', strokeWidth:7 }
+  },
+  {
+    name: "Generous Spacing",
+    styles: { cardPad:'36px 40px', titleSize:'21px', titleMb:'22px', bodyGap:'32px',
+              labelSize:'11px', numberSize:'34px', ringSize:'160px', ringDollar:'26px',
+              ringPct:'26px', bkSize:'13px', bkGap:'3px', bkMt:'10px', strokeWidth:9 }
+  },
+  {
+    name: "Ring Hero",
+    styles: { cardPad:'28px 24px', titleSize:'19px', titleMb:'16px', bodyGap:'20px',
+              labelSize:'10px', numberSize:'28px', ringSize:'180px', ringDollar:'30px',
+              ringPct:'28px', bkSize:'12px', bkGap:'2px', bkMt:'8px', strokeWidth:11 }
+  },
+  {
+    name: "Numbers First",
+    styles: { cardPad:'28px 32px', titleSize:'18px', titleMb:'14px', bodyGap:'22px',
+              labelSize:'12px', numberSize:'40px', ringSize:'130px', ringDollar:'20px',
+              ringPct:'20px', bkSize:'14px', bkGap:'3px', bkMt:'10px', strokeWidth:8 }
+  },
+  {
+    name: "Balanced Medium",
+    styles: { cardPad:'26px 30px', titleSize:'19px', titleMb:'16px', bodyGap:'22px',
+              labelSize:'10px', numberSize:'30px', ringSize:'140px', ringDollar:'22px',
+              ringPct:'22px', bkSize:'12px', bkGap:'2px', bkMt:'8px', strokeWidth:8 }
+  }
+];
+
+// Sample data
+const DATA = { name:'Jordan', color:'var(--p2)', inc:3847, spend:2519, ret:166, fam:500, fixed:5035, variable:1578 };
+
+let champion = 0; // index into VARIANTS
+let challengers = []; // remaining indices
+let wins = {}; // variant name -> win count
+let matchHistory = [];
+
+function fc0(n) { return '$' + Math.round(n).toLocaleString(); }
+
+function buildCard(variant, data) {
+  const s = variant.styles;
+  const saved = data.inc - data.spend;
+  const normalInc = data.inc - data.ret - data.fam;
+  const sRate = normalInc > 0 ? Math.round(saved / normalInc * 100) : 0;
+  const isLoss = saved < 0;
+  const ringColor = isLoss ? 'var(--red)' : 'var(--green)';
+  const ringColorHex = isLoss ? '#A84A2A' : '#3A6A3A';
+  const circ = 2 * Math.PI * 42;
+  const fillPct = isLoss ? 100 : Math.max(0, Math.min(sRate, 100));
+  const dashOffset = circ - (fillPct / 100) * circ;
+  const savedStr = isLoss ? `−${fc0(Math.abs(saved))}` : fc0(saved);
+
+  return `
+    <div class="rcs-card" style="padding:${s.cardPad}">
+      <div class="rcs-title" style="font-size:${s.titleSize};margin-bottom:${s.titleMb};color:${data.color}">${data.name}</div>
+      <div class="rcs-body" style="gap:${s.bodyGap}">
+        <div class="rcs-col rcs-col-right">
+          <div class="rcs-label" style="font-size:${s.labelSize};color:var(--green)">INCOME</div>
+          <div class="rcs-number" style="font-size:${s.numberSize};color:var(--green)">${fc0(data.inc)}</div>
+          <div class="rcs-breakdown" style="margin-top:${s.bkMt};gap:${s.bkGap}">
+            <div class="bk-row" style="font-size:${s.bkSize}"><span style="color:var(--text-3)">Regular</span><span style="font-weight:700;color:var(--text-sub)">${fc0(normalInc)}</span></div>
+            <div class="bk-row" style="font-size:${s.bkSize}"><span style="color:var(--text-3)">Retirement</span><span style="font-weight:700;color:var(--yellow)">${fc0(data.ret)}</span></div>
+            <div class="bk-row" style="font-size:${s.bkSize}"><span style="color:var(--text-3)">Family</span><span style="font-weight:700;color:var(--purple)">${fc0(data.fam)}</span></div>
+          </div>
+        </div>
+        <div class="rcs-ring-wrap" style="width:${s.ringSize};height:${s.ringSize}">
+          <svg viewBox="0 0 100 100" class="rcs-ring-svg">
+            <circle cx="50" cy="50" r="42" fill="none" stroke="var(--ring-track)" stroke-width="${s.strokeWidth}"/>
+            <circle cx="50" cy="50" r="42" fill="none" stroke="${ringColorHex}" stroke-width="${s.strokeWidth}"
+              stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${dashOffset}"/>
+          </svg>
+          <div class="rcs-ring-inner">
+            <div class="rcs-ring-dollar" style="font-size:${s.ringDollar};color:${ringColor}">${savedStr}</div>
+            <div class="rcs-ring-pct" style="font-size:${s.ringPct};color:${ringColor};margin-top:5px">${sRate}%</div>
+          </div>
+        </div>
+        <div class="rcs-col">
+          <div class="rcs-label" style="font-size:${s.labelSize};color:var(--red)">SPENDING</div>
+          <div class="rcs-number" style="font-size:${s.numberSize};color:var(--red)">${fc0(data.spend)}</div>
+          <div class="rcs-breakdown" style="margin-top:${s.bkMt};gap:${s.bkGap}">
+            <div class="bk-row" style="font-size:${s.bkSize}"><span style="color:var(--text-3)">Fixed</span><span style="font-weight:700;color:var(--text-sub)">${fc0(data.fixed)}</span></div>
+            <div class="bk-row" style="font-size:${s.bkSize}"><span style="color:var(--text-3)">Variable</span><span style="font-weight:700;color:var(--text-sub)">${fc0(data.variable)}</span></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function initTournament() {
+  wins = {};
+  VARIANTS.forEach(v => wins[v.name] = 0);
+  matchHistory = [];
+  champion = 0;
+  challengers = shuffle(VARIANTS.map((_,i) => i).filter(i => i !== champion));
+  render();
+}
+
+function pickWinner(side) {
+  const champIdx = champion;
+  const challIdx = challengers[0];
+  const winnerIdx = side === 'left' ? champIdx : challIdx;
+  const loserIdx = side === 'left' ? challIdx : champIdx;
+
+  wins[VARIANTS[winnerIdx].name]++;
+  matchHistory.unshift({ winner: VARIANTS[winnerIdx].name, loser: VARIANTS[loserIdx].name });
+
+  champion = winnerIdx;
+  challengers.shift();
+
+  if (challengers.length === 0) {
+    // All challengers exhausted — reshuffle (excluding champ)
+    challengers = shuffle(VARIANTS.map((_,i) => i).filter(i => i !== champion));
+  }
+
+  render();
+}
+
+function render() {
+  const champVar = VARIANTS[champion];
+  const challVar = VARIANTS[challengers[0]];
+
+  document.getElementById('arena').innerHTML = `
+    <div class="contender">
+      <div class="contender-label champ">Champion</div>
+      <div class="card-wrap" onclick="pickWinner('left')" title="Pick ${champVar.name}">
+        ${buildCard(champVar, DATA)}
+      </div>
+      <div style="font-size:14px;font-weight:800;color:var(--text)">${champVar.name}</div>
+    </div>
+    <div class="vs">VS</div>
+    <div class="contender">
+      <div class="contender-label">Challenger</div>
+      <div class="card-wrap" onclick="pickWinner('right')" title="Pick ${challVar.name}">
+        ${buildCard(challVar, DATA)}
+      </div>
+      <div style="font-size:14px;font-weight:800;color:var(--text)">${challVar.name}</div>
+    </div>`;
+
+  // Scoreboard
+  const sorted = Object.entries(wins).sort((a,b) => b[1] - a[1]);
+  document.getElementById('scoreboard').innerHTML = sorted
+    .filter(([,w]) => w > 0)
+    .map(([name,w]) => `<span>${name}: <span class="num">${w}</span></span>`)
+    .join('') || '<span>No matches yet</span>';
+
+  // History
+  const histEl = document.getElementById('history');
+  if (matchHistory.length) {
+    histEl.innerHTML = `<h3>Match History</h3>` +
+      matchHistory.slice(0, 10).map(m =>
+        `<div class="history-item"><span class="winner-name">${m.winner}</span> beat <span class="loser-name">${m.loser}</span></div>`
+      ).join('');
+  } else {
+    histEl.innerHTML = '';
+  }
+}
+
+function resetTournament() { initTournament(); }
+
+initTournament();
+</script>
+</body>
+</html>
