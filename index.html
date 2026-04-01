@@ -1803,14 +1803,27 @@ function renderOverview() {
     if (t.person==='p2'||t.shared) p2ByCat[t.category] = (p2ByCat[t.category]||0) + t.amount;
   }
   const catTotal = catArr.reduce((s,[,v])=>s+v, 0);
-  const catBars = catArr.map(([cid,amt]) => {
-    const c = getCat(cid);
+  // Limit to 6 visible rows; combine remainder into "All Other"
+  const MAX_CAT_ROWS = 6;
+  const visibleCats = catArr.slice(0, MAX_CAT_ROWS);
+  const overflowCats = catArr.slice(MAX_CAT_ROWS);
+  const overflowAmt = overflowCats.reduce((s,[,v])=>s+v, 0);
+  const overflowP1 = overflowCats.reduce((s,[cid])=>s+(p1ByCat[cid]||0), 0);
+  const overflowP2 = overflowCats.reduce((s,[cid])=>s+(p2ByCat[cid]||0), 0);
+  // Build display array: visible cats + optional "All Other" row
+  const displayCats = [...visibleCats];
+  if (overflowAmt > 0) displayCats.push(['_other_combined', overflowAmt]);
+  function catRowHtml([cid,amt]) {
+    const isOther = cid === '_other_combined';
+    const c = isOther ? {icon:'bi-three-dots',color:'#94a3b8',label:'All Other'} : getCat(cid);
     const displayAmt = scaleNum(amt);
     const pct = catTotal > 0 ? Math.round(amt/catTotal*100) : 0;
     const barW = (amt/mx*100).toFixed(1);
-    const p1a = p1ByCat[cid]||0, p2a = p2ByCat[cid]||0, ptot = p1a+p2a;
+    const p1a = isOther ? overflowP1 : (p1ByCat[cid]||0);
+    const p2a = isOther ? overflowP2 : (p2ByCat[cid]||0);
+    const ptot = p1a+p2a;
     const p1pct = ptot>0 ? (p1a/ptot*100).toFixed(0) : 50;
-    return `<div class="cat-row-new" style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--bg);">
+    return `<div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--bg);">
       <div style="width:32px;height:32px;border-radius:8px;background:${c.color}10;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="bi ${c.icon}" style="font-size:14px;color:${c.color};"></i></div>
       <div style="width:80px;font-size:12px;font-weight:700;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.label}</div>
       <div style="flex:1;height:14px;background:rgba(0,0,0,0.04);border-radius:7px;overflow:hidden;display:flex;"><div style="width:${barW*p1pct/100}%;background:var(--p1);"></div><div style="width:${barW*(100-p1pct)/100}%;background:var(--p2);"></div></div>
@@ -1818,25 +1831,27 @@ function renderOverview() {
       <div style="font-size:10px;font-weight:700;color:var(--text-3);">${pct}%</div>
       <i class="bi bi-chevron-right" style="font-size:10px;color:#ddd;"></i>
     </div>`;
-  }).join('') || `<p class="text-muted" style="text-align:center;padding:18px">${noExpMsg}</p>`;
-  // Category donut SVG
+  }
+  const catBars = displayCats.map(catRowHtml).join('') || `<p class="text-muted" style="text-align:center;padding:18px">${noExpMsg}</p>`;
+  // Category donut SVG — uses same displayCats (including "All Other")
   const donutCirc = 2 * Math.PI * 42;
   let donutOff = 0;
-  const donutArcs = catArr.map(([cid,amt]) => {
-    const c = getCat(cid);
+  const donutArcs = displayCats.map(([cid,amt]) => {
+    const isOther = cid === '_other_combined';
+    const c = isOther ? {color:'#94a3b8'} : getCat(cid);
     const pct = catTotal > 0 ? amt/catTotal : 0;
     const len = pct * donutCirc;
     const o = donutOff;
     donutOff += len + 4;
     return `<circle cx="50" cy="50" r="42" fill="none" stroke="${c.color}" stroke-width="10" stroke-dasharray="${len} ${donutCirc-len}" stroke-dashoffset="${-o}" stroke-linecap="round"/>`;
   }).join('');
-  const catDonut = catArr.length ? `<div style="position:relative;width:140px;height:140px;flex-shrink:0;">
+  const catDonut = displayCats.length ? `<div style="position:relative;width:140px;height:140px;flex-shrink:0;">
     <svg viewBox="0 0 100 100" style="transform:rotate(-90deg);width:100%;height:100%;">
       <circle cx="50" cy="50" r="42" fill="none" stroke="var(--bg)" stroke-width="10"/>
       ${donutArcs}
     </svg>
     <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-      <div style="font-size:20px;font-weight:900;">${fc0(scaleNum(catTotal))}</div>
+      <div style="font-size:28px;font-weight:900;">${fc0(scaleNum(catTotal))}</div>
       <div style="font-size:7px;font-weight:700;color:var(--text-3);letter-spacing:1px;">TOTAL</div>
     </div>
   </div>` : '';
