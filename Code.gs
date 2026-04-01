@@ -88,6 +88,15 @@ function loadAll() {
           let [, mo, d, y] = m;
           if (y.length === 2) y = '20' + y;
           dateStr = y + '-' + mo.padStart(2, '0') + '-' + d.padStart(2, '0');
+        } else {
+          // Handle long date strings like "Mon Dec 15 2025 03:00:00 GMT-0500..."
+          const parsed = new Date(dateStr);
+          if (!isNaN(parsed.getTime())) {
+            const py = parsed.getFullYear();
+            const pm = String(parsed.getMonth() + 1).padStart(2, '0');
+            const pd = String(parsed.getDate()).padStart(2, '0');
+            dateStr = py + '-' + pm + '-' + pd;
+          }
         }
       }
       transactions.push({
