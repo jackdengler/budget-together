@@ -906,22 +906,13 @@ const BASE_CATS = [
   {id:'cash',      label:'Cash Withdrawal', icon:'landmark',   color:'#b45309', hidden:true},
 ];
 const PRESET_COLORS = ['#10b981','#f43f5e','#3b82f6','#8b5cf6','#f59e0b','#ef4444','#06b6d4','#84cc16','#6366f1','#ec4899','#14b8a6','#f97316'];
-// Icon helper — renders Lucide icon as inline SVG string
+// Icon helper — renders Lucide icon via data-lucide attribute (createIcons() activates after render)
 function catIcon(cat, size) {
   size = size || 16;
   const name = cat.icon || 'circle';
-  // lucide.icons is a map of icon-name → [tag, attrs, children]
-  if (typeof lucide !== 'undefined' && lucide.icons && lucide.icons[name]) {
-    const [tag, attrs, children] = lucide.icons[name];
-    const svgAttrs = `width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${cat.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`;
-    const inner = children.map(([t, a]) => `<${t} ${Object.entries(a).map(([k,v])=>`${k}="${v}"`).join(' ')}/>`).join('');
-    return `<svg ${svgAttrs}>${inner}</svg>`;
-  }
-  // Fallback: colored dot
-  return `<span style="display:inline-block;width:${size}px;height:${size}px;border-radius:50%;background:${cat.color};flex-shrink:0;"></span>`;
+  return `<i data-lucide="${name}" style="width:${size}px;height:${size}px;color:${cat.color};flex-shrink:0;display:inline-block;"></i>`;
 }
 // Backward compat: anywhere that used c.emoji now gets the icon
-Object.defineProperty(Object.prototype, '_iconFallback', {value: function() { return ''; }, configurable: true});
 BASE_CATS.forEach(c => { if (!c.emoji) Object.defineProperty(c, 'emoji', { get() { return catIcon(this, 16); }, configurable: true }); });
 // Fixed vs Variable expense categorization
 const FIXED_CATS = new Set(['housing','utilities','subs','insurance']);
