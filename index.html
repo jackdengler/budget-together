@@ -1417,16 +1417,26 @@ function _initLongPress() {
 }
 
 let _buildInfoTimer = null;
+let _buildInfoShowing = false;
+const _buildInfoOrig = '💕 Budget Together';
 function showBuildInfo(el) {
-  const orig = el.textContent;
+  if (_buildInfoShowing) {
+    clearTimeout(_buildInfoTimer);
+    el.textContent = _buildInfoOrig;
+    el.style.fontSize = '';
+    _buildInfoShowing = false;
+    return;
+  }
   const deployed = BUILD_TIMESTAMP.startsWith('__') ? 'dev build' : BUILD_TIMESTAMP;
   el.textContent = '🚀 ' + deployed;
   el.style.fontSize = '.72rem';
+  _buildInfoShowing = true;
   clearTimeout(_buildInfoTimer);
   _buildInfoTimer = setTimeout(() => {
-    el.textContent = orig;
+    el.textContent = _buildInfoOrig;
     el.style.fontSize = '';
-  }, 2500);
+    _buildInfoShowing = false;
+  }, 5000);
 }
 
 function showPinModal() {
