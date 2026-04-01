@@ -1815,7 +1815,7 @@ function renderOverview() {
   if (overflowAmt > 0) displayCats.push(['_other_combined', overflowAmt]);
   function catRowHtml([cid,amt]) {
     const isOther = cid === '_other_combined';
-    const c = isOther ? {icon:'bi-three-dots',color:'#94a3b8',label:'All Other'} : getCat(cid);
+    const c = isOther ? {icon:'bi-three-dots',color:'#94a3b8',label:overflowCats.length+' Other'} : getCat(cid);
     const displayAmt = scaleNum(amt);
     const pct = catTotal > 0 ? Math.round(amt/catTotal*100) : 0;
     const barW = (amt/mx*100).toFixed(1);
@@ -2209,7 +2209,8 @@ ${recSectionHtml}
     <div class="section-title" style="margin-bottom:4px;flex-shrink:0;">Spending by Category</div>
     <div style="flex:1;display:flex;flex-direction:column;justify-content:space-evenly;">
       ${catBars}
-      ${overflowCats.length ? `<div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-3);">+${overflowCats.length} more categories</div>` : ''}
+
+
     </div>
   </div>
   <div class="card" style="margin-bottom:0;padding:12px;aspect-ratio:1;"></div>
