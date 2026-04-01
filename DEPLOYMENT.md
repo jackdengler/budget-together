@@ -19,7 +19,7 @@ https://script.google.com/macros/s/AKfycbz00_wJSijk4uL7KHMHpIi3u4OlWxmJmouGlHX2X
 
 The web app settings (in `appsscript.json`):
 - **Execute as:** `USER_ACCESSING` — each user runs the app as themselves
-- **Access:** `DOMAIN` — available to users in the same Google Workspace domain
+- **Access:** `ANYONE_ANONYMOUS` — available to anyone, no sign-in required
 
 Access is further restricted in `Code.gs` via an `ALLOWED_EMAILS` list — only specific Google accounts can use the app.
 
