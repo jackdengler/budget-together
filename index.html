@@ -1632,6 +1632,18 @@ function render() {
   else if (S.activeTab === 'transactions') main.innerHTML = renderTxns();
   else if (S.activeTab === 'split') main.innerHTML = renderSplit();
   else if (S.activeTab === 'history') main.innerHTML = renderHistory();
+  // Size donut card to be square based on its stretched height
+  requestAnimationFrame(function(){
+    var dc=document.getElementById('donut-card');
+    if(!dc)return;
+    var h=dc.offsetHeight-48;
+    var inner=document.getElementById('donut-inner');
+    if(inner&&inner.firstElementChild&&h>100){
+      inner.firstElementChild.style.width=h+'px';
+      inner.firstElementChild.style.height=h+'px';
+      dc.style.width=(h+48)+'px';
+    }
+  });
   // Activate any Lucide icons in the rendered content
 
 }
@@ -2190,21 +2202,8 @@ ${recSectionHtml}
     ${catBars}
     <div style="text-align:center;margin-top:10px;font-size:11px;font-weight:700;color:var(--primary);cursor:pointer;" onclick="document.querySelectorAll('.cat-hidden').forEach(e=>e.style.display='flex');this.style.display='none';">Show all categories →</div>
   </div>
-  ${catDonut ? `<div class="card" id="donut-card" style="display:flex;align-items:center;justify-content:center;padding:24px;margin-bottom:0;flex-shrink:0;"><div style="position:relative;" id="donut-inner">${catDonut.replace(/width:140px;height:140px/,'width:140px;height:140px')}</div></div>` : ''}
+  ${catDonut ? `<div class="card" id="donut-card" style="display:flex;align-items:center;justify-content:center;padding:24px;margin-bottom:0;flex-shrink:0;"><div style="position:relative;" id="donut-inner">${catDonut}</div></div>` : ''}
 </div>
-<script>
-requestAnimationFrame(function(){
-  var dc=document.getElementById('donut-card');
-  if(!dc)return;
-  var h=dc.offsetHeight-48;
-  var inner=document.getElementById('donut-inner');
-  if(inner&&h>100){
-    inner.firstElementChild.style.width=h+'px';
-    inner.firstElementChild.style.height=h+'px';
-    dc.style.width=(h+48)+'px';
-  }
-});
-</script>
 <div class="card" style="margin-top:14px"><div class="section-title">Top Merchants</div>${topMerchants.length?`<div class="merchant-grid">${merchantRows}</div>`:'<p class="text-muted" style="text-align:center;padding:18px">No transactions this month</p>'}</div>`;
 }
 
