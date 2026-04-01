@@ -25,24 +25,25 @@
   <style>
     :root {
       --z: 1;
-      --bg: #000000;
-      --card: #1C1C1E;
-      --card-raised: #2C2C2E;
-      --text: #FFFFFF;
-      --text2: rgba(235,235,245,.6);
-      --text3: rgba(235,235,245,.3);
-      --green: #30D158;
-      --green-dim: rgba(48,209,88,.5);
-      --red: #FF453A;
-      --red-dim: rgba(255,69,58,.5);
-      --orange: #FF9F0A;
-      --blue: #0A84FF;
+      --bg: #000;
+      --surface: #161618;
+      --elevated: #1E1E20;
+      --border: rgba(255,255,255,.06);
+      --text: #F5F5F7;
+      --text2: rgba(245,245,247,.55);
+      --text3: rgba(245,245,247,.28);
+      --accent-green: #32D74B;
+      --accent-green-soft: rgba(50,215,75,.12);
+      --accent-red: #FF453A;
+      --accent-red-soft: rgba(255,69,58,.12);
+      --accent-orange: #FFD60A;
+      --accent-blue: #0A84FF;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Rounded", "Helvetica Neue", sans-serif;
       background: var(--bg);
       color: var(--text);
       height: 100vh;
@@ -63,57 +64,56 @@
       align-items: center;
       justify-content: center;
       height: 100vh;
-      gap: calc(16px * var(--z));
+      gap: calc(14px * var(--z));
       color: var(--text3);
-      font-size: calc(14px * var(--z));
+      font-size: calc(13px * var(--z));
       font-weight: 500;
-      letter-spacing: calc(0.2px * var(--z));
+      letter-spacing: calc(0.5px * var(--z));
+      text-transform: uppercase;
     }
     .ld-ring {
-      width: calc(40px * var(--z));
-      height: calc(40px * var(--z));
-      border: calc(3px * var(--z)) solid rgba(255,255,255,.08);
-      border-top-color: var(--blue);
+      width: calc(28px * var(--z));
+      height: calc(28px * var(--z));
+      border: calc(2.5px * var(--z)) solid var(--border);
+      border-top-color: var(--text2);
       border-radius: 50%;
-      animation: spin .8s cubic-bezier(.45,.05,.55,.95) infinite;
+      animation: spin .9s cubic-bezier(.45,.05,.55,.95) infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── App shell ── */
+    /* ── App ── */
     #app { display: none; flex-direction: column; height: 100%; }
     #app.show { display: flex; flex: 1; }
 
     /* ── Month bar ── */
-    .month-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: calc(10px * var(--z)) calc(20px * var(--z)) calc(6px * var(--z));
-      padding-top: calc((8px + env(safe-area-inset-top)) * var(--z));
-      flex-shrink: 0;
-    }
-    .month-label {
-      font-size: calc(22px * var(--z));
-      font-weight: 700;
-      letter-spacing: calc(-0.4px * var(--z));
-    }
-    .month-arrows { display: flex; gap: calc(6px * var(--z)); }
-    .mo-btn {
-      width: calc(34px * var(--z));
-      height: calc(34px * var(--z));
-      border-radius: 50%;
-      border: calc(1px * var(--z)) solid rgba(255,255,255,.08);
-      background: transparent;
-      color: var(--text2);
-      font-size: calc(16px * var(--z));
+    .mo-bar {
       display: flex;
       align-items: center;
       justify-content: center;
+      gap: calc(20px * var(--z));
+      padding: calc(14px * var(--z)) calc(20px * var(--z)) calc(10px * var(--z));
+      padding-top: calc((12px + env(safe-area-inset-top)) * var(--z));
+      flex-shrink: 0;
+    }
+    .mo-bar button {
+      background: none;
+      border: none;
+      color: var(--text3);
+      font-size: calc(22px * var(--z));
+      padding: calc(4px * var(--z)) calc(10px * var(--z));
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
-      transition: all .15s;
+      transition: color .15s;
     }
-    .mo-btn:active { background: var(--card); transform: scale(.92); }
+    .mo-bar button:active { color: var(--text); }
+    .mo-label {
+      font-size: calc(17px * var(--z));
+      font-weight: 600;
+      letter-spacing: calc(-0.2px * var(--z));
+      color: var(--text);
+      min-width: calc(160px * var(--z));
+      text-align: center;
+    }
 
     /* ── Carousel ── */
     .carousel {
@@ -122,8 +122,8 @@
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
-      padding: calc(4px * var(--z)) calc(16px * var(--z)) 0;
-      gap: calc(12px * var(--z));
+      padding: 0 calc(14px * var(--z));
+      gap: calc(10px * var(--z));
       flex: 1;
       align-items: stretch;
     }
@@ -131,145 +131,149 @@
 
     /* ── Card ── */
     .card {
-      flex: 0 0 calc(100% - calc(32px * var(--z)));
+      flex: 0 0 calc(100% - calc(28px * var(--z)));
       scroll-snap-align: center;
-      background: var(--card);
-      border-radius: calc(22px * var(--z));
-      padding: calc(16px * var(--z));
+      background: var(--surface);
+      border: calc(1px * var(--z)) solid var(--border);
+      border-radius: calc(24px * var(--z));
+      padding: calc(18px * var(--z)) calc(16px * var(--z)) calc(14px * var(--z));
       display: flex;
       flex-direction: column;
-      position: relative;
-      overflow: hidden;
+      animation: fadeIn .35s ease both;
     }
-    /* Subtle top-edge highlight like a real iOS card */
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: calc(20px * var(--z)); right: calc(20px * var(--z));
-      height: calc(1px * var(--z));
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent);
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(.97); }
+      to { opacity: 1; transform: scale(1); }
     }
-    .card-head {
-      margin-bottom: calc(10px * var(--z));
-      flex-shrink: 0;
-    }
-    .card-name {
-      font-size: calc(13px * var(--z));
+    .card-who {
+      font-size: calc(12px * var(--z));
       font-weight: 600;
       color: var(--text3);
-      letter-spacing: calc(1.2px * var(--z));
+      letter-spacing: calc(1.5px * var(--z));
       text-transform: uppercase;
+      text-align: center;
+      margin-bottom: calc(14px * var(--z));
+      flex-shrink: 0;
     }
 
-    /* ── 2x2 Grid ── */
-    .grid {
+    /* ── Layout: top hero row + bottom detail row ── */
+    .hero-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      grid-template-rows: 1fr 1fr;
+      gap: calc(8px * var(--z));
+      flex: 1;
+      margin-bottom: calc(8px * var(--z));
+    }
+    .detail-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: calc(8px * var(--z));
       flex: 1;
     }
 
-    /* ── Tile base ── */
+    /* ── Tile ── */
     .tile {
-      border-radius: calc(16px * var(--z));
-      background: var(--card-raised);
-      padding: calc(14px * var(--z));
+      border-radius: calc(18px * var(--z));
+      background: var(--elevated);
+      padding: calc(16px * var(--z)) calc(14px * var(--z));
       display: flex;
       flex-direction: column;
       position: relative;
       overflow: hidden;
     }
-    .tile-label {
-      font-size: calc(10.5px * var(--z));
+    .tile-lbl {
+      font-size: calc(10px * var(--z));
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: calc(0.8px * var(--z));
-      color: var(--text3);
-      margin-bottom: calc(4px * var(--z));
+      letter-spacing: calc(1px * var(--z));
+      margin-bottom: calc(6px * var(--z));
     }
-    .tile-big {
-      font-size: calc(26px * var(--z));
+    .tile-val {
+      font-size: calc(28px * var(--z));
       font-weight: 800;
-      letter-spacing: calc(-0.8px * var(--z));
-      line-height: 1.1;
+      letter-spacing: calc(-1px * var(--z));
+      line-height: 1;
       font-variant-numeric: tabular-nums;
     }
-    .tile-sub {
+    .tile-detail {
       margin-top: auto;
-      padding-top: calc(6px * var(--z));
+      padding-top: calc(8px * var(--z));
     }
-    .tile-row {
+    .row {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
-      font-size: calc(11.5px * var(--z));
-      color: var(--text2);
-      padding: calc(1.5px * var(--z)) 0;
+      font-size: calc(11px * var(--z));
+      padding: calc(3px * var(--z)) 0;
     }
-    .tile-row span:last-child {
-      font-weight: 600;
-      font-variant-numeric: tabular-nums;
-    }
-    /* Thin separator between breakdown rows */
-    .tile-sep {
+    .row-label { color: var(--text3); font-weight: 500; }
+    .row-val { color: var(--text2); font-weight: 600; font-variant-numeric: tabular-nums; }
+    .divider {
       height: calc(1px * var(--z));
-      background: rgba(255,255,255,.04);
-      margin: calc(3px * var(--z)) 0;
+      background: var(--border);
+      margin: calc(2px * var(--z)) 0;
     }
 
     /* ── P/L tile ── */
     .tile-pl {
       justify-content: center;
-      align-items: flex-start;
     }
-    .tile-pl .tile-big { font-size: calc(32px * var(--z)); }
-    .tile-pl.surplus {
-      background: linear-gradient(145deg, rgba(48,209,88,.18) 0%, rgba(48,209,88,.04) 100%);
+    .tile-pl .tile-val { font-size: calc(34px * var(--z)); }
+    .tile-pl.up {
+      background: linear-gradient(160deg, rgba(50,215,75,.14), rgba(50,215,75,.03));
+      border: calc(1px * var(--z)) solid rgba(50,215,75,.1);
     }
-    .tile-pl.surplus .tile-label { color: var(--green-dim); }
-    .tile-pl.deficit {
-      background: linear-gradient(145deg, rgba(255,69,58,.18) 0%, rgba(255,69,58,.04) 100%);
+    .tile-pl.up .tile-lbl { color: var(--accent-green); }
+    .tile-pl.up .tile-val { color: var(--accent-green); }
+    .tile-pl.down {
+      background: linear-gradient(160deg, rgba(255,69,58,.14), rgba(255,69,58,.03));
+      border: calc(1px * var(--z)) solid rgba(255,69,58,.1);
     }
-    .tile-pl.deficit .tile-label { color: var(--red-dim); }
+    .tile-pl.down .tile-lbl { color: var(--accent-red); }
+    .tile-pl.down .tile-val { color: var(--accent-red); }
 
     /* ── Ring tile ── */
     .tile-ring {
+      background: transparent;
+      border: none;
       align-items: center;
       justify-content: center;
-      padding: calc(8px * var(--z));
-      background: transparent;
+      padding: calc(6px * var(--z));
     }
-    .ring-outer { position: relative; width: 85%; max-width: calc(150px * var(--z)); }
-    .ring-outer svg { width: 100%; display: block; filter: drop-shadow(0 0 calc(6px * var(--z)) var(--ring-glow)); }
-    .ring-center {
+    .ring-box { position: relative; width: 88%; max-width: calc(160px * var(--z)); }
+    .ring-box svg {
+      width: 100%;
+      display: block;
+      filter: drop-shadow(0 0 calc(8px * var(--z)) var(--ring-glow));
+    }
+    .ring-mid {
       position: absolute;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       text-align: center;
     }
-    .ring-pct {
-      font-size: calc(26px * var(--z));
+    .ring-num {
+      font-size: calc(28px * var(--z));
       font-weight: 800;
-      letter-spacing: calc(-0.8px * var(--z));
+      letter-spacing: calc(-1px * var(--z));
       line-height: 1;
     }
-    .ring-word {
-      font-size: calc(8.5px * var(--z));
-      font-weight: 600;
+    .ring-sub {
+      font-size: calc(8px * var(--z));
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: calc(1px * var(--z));
+      letter-spacing: calc(1.2px * var(--z));
       color: var(--text3);
-      margin-top: calc(1px * var(--z));
+      margin-top: calc(2px * var(--z));
     }
 
     /* ── Income tile ── */
-    .tile-inc .tile-big { color: var(--green); }
-    .tile-inc .tile-label { color: var(--green-dim); }
+    .tile-inc .tile-lbl { color: rgba(50,215,75,.55); }
+    .tile-inc .tile-val { color: var(--accent-green); }
 
-    /* ── Spending tile ── */
-    .tile-spend .tile-big { color: var(--red); }
-    .tile-spend .tile-label { color: var(--red-dim); }
+    /* ── Spend tile ── */
+    .tile-exp .tile-lbl { color: rgba(255,69,58,.55); }
+    .tile-exp .tile-val { color: var(--accent-red); }
 
     /* ── Dots ── */
     .dots {
@@ -277,29 +281,21 @@
       justify-content: center;
       align-items: center;
       gap: calc(6px * var(--z));
-      padding: calc(10px * var(--z)) 0 calc(12px * var(--z));
-      padding-bottom: calc((12px + env(safe-area-inset-bottom)) * var(--z));
+      padding: calc(10px * var(--z)) 0;
+      padding-bottom: calc((10px + env(safe-area-inset-bottom)) * var(--z));
       flex-shrink: 0;
     }
-    .dot {
-      width: calc(6px * var(--z));
-      height: calc(6px * var(--z));
+    .dt {
+      height: calc(5px * var(--z));
       border-radius: calc(3px * var(--z));
-      background: rgba(255,255,255,.15);
+      background: rgba(255,255,255,.12);
       transition: all .3s cubic-bezier(.4,0,.2,1);
+      width: calc(5px * var(--z));
     }
-    .dot.on {
-      background: #FFF;
-      width: calc(22px * var(--z));
-      border-radius: calc(3px * var(--z));
+    .dt.on {
+      background: var(--text);
+      width: calc(24px * var(--z));
     }
-
-    /* ── Fade-in animation ── */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(calc(8px * var(--z))); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .card { animation: fadeUp .4s ease-out both; }
   </style>
 </head>
 <body>
@@ -358,46 +354,30 @@ function ringSvg(pct, color){
 }
 
 function card(label, d){
-  var rc = d.rate<10 ? '#FF453A' : d.rate<20 ? '#FF9F0A' : '#30D158';
-  var glow = d.rate<10 ? 'rgba(255,69,58,.25)' : d.rate<20 ? 'rgba(255,159,10,.2)' : 'rgba(48,209,88,.25)';
-  var plClass = d.deficit ? 'deficit' : 'surplus';
-  var plColor = d.deficit ? 'var(--red)' : 'var(--green)';
+  var rc = d.rate<10 ? '#FF453A' : d.rate<20 ? '#FF9F0A' : '#32D74B';
+  var glow = d.rate<10 ? 'rgba(255,69,58,.3)' : d.rate<20 ? 'rgba(255,159,10,.25)' : 'rgba(50,215,75,.3)';
+  var plDir = d.deficit ? 'down' : 'up';
+  var plColor = d.deficit ? 'var(--accent-red)' : 'var(--accent-green)';
   var plSign = d.deficit ? '-' : '+';
 
   var incRows = '';
-  if (d.ret>0) incRows += '<div class="tile-row"><span>Retirement</span><span>'+fc(d.ret)+'</span></div><div class="tile-sep"></div>';
-  if (d.fam>0) incRows += '<div class="tile-row"><span>Family</span><span>'+fc(d.fam)+'</span></div><div class="tile-sep"></div>';
-  incRows += '<div class="tile-row"><span>Take-home</span><span>'+fc(d.nrm)+'</span></div>';
+  if (d.ret>0) incRows += '<div class="row"><span class="row-label">Retirement</span><span class="row-val">'+fc(d.ret)+'</span></div><div class="divider"></div>';
+  if (d.fam>0) incRows += '<div class="row"><span class="row-label">Family</span><span class="row-val">'+fc(d.fam)+'</span></div><div class="divider"></div>';
+  incRows += '<div class="row"><span class="row-label">Take-home</span><span class="row-val">'+fc(d.nrm)+'</span></div>';
 
   return '<div class="card">'
-    +'<div class="card-head"><span class="card-name">'+label+'</span></div>'
-    +'<div class="grid">'
-    // P/L
-    +'<div class="tile tile-pl '+plClass+'">'
-    +'<div class="tile-label">'+(d.deficit?'Deficit':'Saved')+'</div>'
-    +'<div class="tile-big" style="color:'+plColor+'">'+plSign+fc(Math.abs(d.pl))+'</div>'
+    +'<div class="card-who">'+label+'</div>'
+    // Top: P/L + Ring
+    +'<div class="hero-row">'
+    +'<div class="tile tile-pl '+plDir+'"><div class="tile-lbl">'+(d.deficit?'Deficit':'Saved')+'</div><div class="tile-val">'+plSign+fc(Math.abs(d.pl))+'</div></div>'
+    +'<div class="tile tile-ring" style="--ring-glow:'+glow+'"><div class="ring-box">'+ringSvg(d.rate, rc)+'<div class="ring-mid"><div class="ring-num" style="color:'+rc+'">'+d.rate+'%</div><div class="ring-sub">Savings</div></div></div></div>'
     +'</div>'
-    // Ring
-    +'<div class="tile tile-ring" style="--ring-glow:'+glow+'">'
-    +'<div class="ring-outer">'+ringSvg(d.rate, rc)
-    +'<div class="ring-center"><div class="ring-pct" style="color:'+rc+'">'+d.rate+'%</div><div class="ring-word">Savings</div></div>'
-    +'</div></div>'
-    // Income
-    +'<div class="tile tile-inc">'
-    +'<div class="tile-label">Income</div>'
-    +'<div class="tile-big">'+fc(d.inc)+'</div>'
-    +'<div class="tile-sub">'+incRows+'</div>'
+    // Bottom: Income + Spending
+    +'<div class="detail-row">'
+    +'<div class="tile tile-inc"><div class="tile-lbl">Income</div><div class="tile-val">'+fc(d.inc)+'</div><div class="tile-detail">'+incRows+'</div></div>'
+    +'<div class="tile tile-exp"><div class="tile-lbl">Spending</div><div class="tile-val">'+fc(d.spend)+'</div><div class="tile-detail"><div class="row"><span class="row-label">Fixed</span><span class="row-val">'+fc(d.fixed)+'</span></div><div class="divider"></div><div class="row"><span class="row-label">Variable</span><span class="row-val">'+fc(d.variable)+'</span></div></div></div>'
     +'</div>'
-    // Spending
-    +'<div class="tile tile-spend">'
-    +'<div class="tile-label">Spending</div>'
-    +'<div class="tile-big">'+fc(d.spend)+'</div>'
-    +'<div class="tile-sub">'
-    +'<div class="tile-row"><span>Fixed</span><span>'+fc(d.fixed)+'</span></div>'
-    +'<div class="tile-sep"></div>'
-    +'<div class="tile-row"><span>Variable</span><span>'+fc(d.variable)+'</span></div>'
-    +'</div></div>'
-    +'</div></div>';
+    +'</div>';
 }
 
 function moLabel(ym){
@@ -416,17 +396,16 @@ function render(){
 
   var set = card(n1,p1) + card(n2,p2) + card('Combined',all);
   var z = getComputedStyle(document.documentElement).getPropertyValue('--z').trim() || '1';
-  var gap = 12 * parseFloat(z);
+  var gap = 10 * parseFloat(z);
 
   document.getElementById('app').innerHTML =
-    '<div class="month-bar">'
-    +'<span class="month-label">'+moLabel(currentMonth)+'</span>'
-    +'<div class="month-arrows">'
-    +'<button class="mo-btn" onclick="moShift(-1)">&#8249;</button>'
-    +'<button class="mo-btn" onclick="moShift(1)">&#8250;</button>'
-    +'</div></div>'
+    '<div class="mo-bar">'
+    +'<button onclick="moShift(-1)">&#8249;</button>'
+    +'<span class="mo-label">'+moLabel(currentMonth)+'</span>'
+    +'<button onclick="moShift(1)">&#8250;</button>'
+    +'</div>'
     +'<div class="carousel" id="car">'+set+set+set+'</div>'
-    +'<div class="dots"><div class="dot on"></div><div class="dot"></div><div class="dot"></div></div>';
+    +'<div class="dots"><div class="dt on"></div><div class="dt"></div><div class="dt"></div></div>';
 
   var car = document.getElementById('car');
   if (car && car.children.length > 0){
@@ -435,8 +414,8 @@ function render(){
     var timer;
     car.onscroll = function(){
       var idx = Math.round(car.scrollLeft / w) % 3;
-      var dots = document.querySelectorAll('.dot');
-      for(var i=0;i<dots.length;i++) dots[i].className = i===idx ? 'dot on' : 'dot';
+      var dots = document.querySelectorAll('.dt');
+      for(var i=0;i<dots.length;i++) dots[i].className = i===idx ? 'dt on' : 'dt';
       clearTimeout(timer);
       timer = setTimeout(function(){
         var ci = Math.round(car.scrollLeft / w);
