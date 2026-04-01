@@ -81,13 +81,22 @@
       text-decoration: none;
       cursor: pointer;
     }
-    .loading-msg {
-      color: #8E8E93;
-      font-size: 15px;
+    /* Fullscreen iframe for standalone PWA mode */
+    #app-frame {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: none;
     }
   </style>
 </head>
 <body>
+  <!-- Fullscreen iframe — used in standalone mode to avoid cross-origin navigation breaking PWA -->
+  <iframe id="app-frame" src="" allow="fullscreen" sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-top-navigation-by-user-activation"></iframe>
+
   <div class="container" id="install-view" style="display:none;">
     <img src="icon.png" alt="Budget Together">
     <h1>Budget Together</h1>
@@ -99,19 +108,17 @@
     </div>
     <a class="open-btn" href="https://script.google.com/macros/s/AKfycbz00_wJSijk4uL7KHMHpIi3u4OlWxmJmouGlHX2X106jwh_yDZFTVC9NyW9tFq0N1KpEg/exec">Open App Now</a>
   </div>
-  <div class="container" id="loading-view" style="display:none;">
-    <img src="icon.png" alt="Budget Together">
-    <p class="loading-msg">Loading Budget Together&hellip;</p>
-  </div>
   <script>
     var APP_URL = 'https://script.google.com/macros/s/AKfycbz00_wJSijk4uL7KHMHpIi3u4OlWxmJmouGlHX2X106jwh_yDZFTVC9NyW9tFq0N1KpEg/exec';
     // Detect if launched from home screen (standalone mode)
     var isStandalone = window.navigator.standalone === true
       || window.matchMedia('(display-mode: standalone)').matches;
     if (isStandalone) {
-      // Launched from home screen — redirect to the app
-      document.getElementById('loading-view').style.display = '';
-      window.location.replace(APP_URL);
+      // Launched from home screen — load app in iframe to stay on same origin
+      // and avoid iOS breaking out of standalone mode on cross-origin navigation
+      var frame = document.getElementById('app-frame');
+      frame.src = APP_URL;
+      frame.style.display = 'block';
     } else {
       // Opened in Safari — show "Add to Home Screen" instructions
       document.getElementById('install-view').style.display = '';
