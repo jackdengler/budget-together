@@ -13,8 +13,6 @@
         if (vp) vp.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover';
         try { parent.document.querySelector('.apps-script-banner')?.remove(); } catch(e){}
       }
-      // GAS iframe uses ~980px virtual viewport on mobile.
-      // Detect and set a CSS variable so all sizes scale correctly.
       var z = 1;
       if (navigator.maxTouchPoints > 0 && window.screen.width > 0) {
         var _sw = window.screen.width;
@@ -25,33 +23,255 @@
     })();
   </script>
   <style>
-    :root{--bg:#F2F2F7;--card:#FFF;--text:#000;--text2:#6C6C70;--text3:#8E8E93;--green:#34C759;--yellow:#FF9500;--red:#FF3B30;--blue:#007AFF;--z:1}
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;overscroll-behavior:none;-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased;user-select:none;-webkit-user-select:none;display:flex;flex-direction:column;font-size:calc(17px * var(--z))}
-    #status{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:calc(12px * var(--z));font-size:calc(16px * var(--z));color:var(--text3);padding:2rem}
-    .spinner{width:calc(36px * var(--z));height:calc(36px * var(--z));border:calc(3px * var(--z)) solid rgba(0,0,0,.1);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    #app{display:none;flex-direction:column;height:100%}
-    #app.show{display:flex;flex:1}
-    .month-header{text-align:center;padding:calc(10px * var(--z)) 0 calc(8px * var(--z));padding-top:calc((10px + env(safe-area-inset-top)) * var(--z));font-size:calc(22px * var(--z));font-weight:700;letter-spacing:-.02em;flex-shrink:0}
-    .month-nav{display:inline-flex;align-items:center;gap:calc(16px * var(--z))}
-    .month-nav button{background:none;border:none;font-size:calc(28px * var(--z));color:var(--blue);padding:calc(8px * var(--z)) calc(12px * var(--z));cursor:pointer;-webkit-tap-highlight-color:transparent;font-weight:300}
-    .month-nav button:active{opacity:.5}
-    .carousel{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 4%;gap:calc(10px * var(--z));flex:1;align-items:stretch}
-    .carousel::-webkit-scrollbar{display:none}
-    .card{flex:0 0 92%;scroll-snap-align:center;background:var(--card);border-radius:calc(18px * var(--z));box-shadow:0 calc(2px * var(--z)) calc(8px * var(--z)) rgba(0,0,0,.08);padding:calc(14px * var(--z)) calc(16px * var(--z));display:flex;flex-direction:column}
-    .card-label{font-size:calc(15px * var(--z));font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:calc(10px * var(--z));text-align:center;flex-shrink:0}
-    .grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:calc(10px * var(--z));flex:1}
-    .quadrant{display:flex;flex-direction:column;justify-content:center;padding:calc(14px * var(--z));border-radius:calc(14px * var(--z));background:rgba(120,120,128,.06);overflow:hidden}
-    .q-label{font-size:calc(13px * var(--z));font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text3);margin-bottom:calc(4px * var(--z))}
-    .q-big{font-size:calc(28px * var(--z));font-weight:800;line-height:1.15}
-    .q-sub{font-size:calc(13px * var(--z));color:var(--text2);margin-top:calc(8px * var(--z));line-height:1.6}
-    .q-row{display:flex;justify-content:space-between}
-    .ring-wrap{display:flex;align-items:center;justify-content:center;height:100%}
-    .ring-wrap svg{width:100%;max-width:calc(150px * var(--z))}
-    .dots{display:flex;justify-content:center;gap:calc(8px * var(--z));padding:calc(10px * var(--z)) 0 calc(16px * var(--z));flex-shrink:0}
-    .dot{width:calc(8px * var(--z));height:calc(8px * var(--z));border-radius:50%;background:var(--text3);opacity:.25;transition:opacity .2s}
-    .dot.on{opacity:1}
+    :root {
+      --z: 1;
+      --bg: #000000;
+      --card: #1C1C1E;
+      --card-raised: #2C2C2E;
+      --text: #FFFFFF;
+      --text2: rgba(235,235,245,.6);
+      --text3: rgba(235,235,245,.3);
+      --green: #30D158;
+      --red: #FF453A;
+      --orange: #FF9F0A;
+      --blue: #0A84FF;
+      --teal: #64D2FF;
+      --separator: rgba(84,84,88,.36);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+      overscroll-behavior: none;
+      -webkit-text-size-adjust: 100%;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+      -webkit-user-select: none;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Loading ── */
+    #status {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      gap: calc(16px * var(--z));
+      color: var(--text2);
+      font-size: calc(15px * var(--z));
+      font-weight: 500;
+    }
+    .spinner {
+      width: calc(32px * var(--z));
+      height: calc(32px * var(--z));
+      border: calc(2.5px * var(--z)) solid rgba(255,255,255,.1);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── App shell ── */
+    #app { display: none; flex-direction: column; height: 100%; }
+    #app.show { display: flex; flex: 1; }
+
+    /* ── Month nav ── */
+    .month-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: calc(12px * var(--z)) calc(20px * var(--z)) calc(8px * var(--z));
+      padding-top: calc((12px + env(safe-area-inset-top)) * var(--z));
+      flex-shrink: 0;
+    }
+    .month-label {
+      font-size: calc(20px * var(--z));
+      font-weight: 700;
+      letter-spacing: calc(-0.4px * var(--z));
+    }
+    .month-arrows {
+      display: flex;
+      gap: calc(2px * var(--z));
+    }
+    .mo-btn {
+      width: calc(36px * var(--z));
+      height: calc(36px * var(--z));
+      border-radius: 50%;
+      border: none;
+      background: var(--card);
+      color: var(--text);
+      font-size: calc(18px * var(--z));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .15s;
+    }
+    .mo-btn:active { background: var(--card-raised); }
+
+    /* ── Carousel ── */
+    .carousel {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding: 0 calc(16px * var(--z));
+      gap: calc(12px * var(--z));
+      flex: 1;
+      align-items: stretch;
+    }
+    .carousel::-webkit-scrollbar { display: none; }
+
+    /* ── Card ── */
+    .card {
+      flex: 0 0 calc(100% - calc(32px * var(--z)));
+      scroll-snap-align: center;
+      background: var(--card);
+      border-radius: calc(20px * var(--z));
+      padding: calc(18px * var(--z));
+      display: flex;
+      flex-direction: column;
+    }
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: calc(14px * var(--z));
+      flex-shrink: 0;
+    }
+    .card-name {
+      font-size: calc(17px * var(--z));
+      font-weight: 600;
+      color: var(--text2);
+      letter-spacing: calc(0.4px * var(--z));
+      text-transform: uppercase;
+    }
+
+    /* ── 2x2 Grid ── */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: calc(10px * var(--z));
+      flex: 1;
+    }
+
+    /* ── Quadrant (tile) ── */
+    .tile {
+      border-radius: calc(16px * var(--z));
+      background: var(--card-raised);
+      padding: calc(14px * var(--z));
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+    .tile-label {
+      font-size: calc(11px * var(--z));
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: calc(0.6px * var(--z));
+      color: var(--text3);
+      margin-bottom: calc(6px * var(--z));
+    }
+    .tile-big {
+      font-size: calc(26px * var(--z));
+      font-weight: 800;
+      letter-spacing: calc(-0.5px * var(--z));
+      line-height: 1.1;
+    }
+    .tile-sub {
+      margin-top: auto;
+      padding-top: calc(8px * var(--z));
+    }
+    .tile-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: calc(12px * var(--z));
+      color: var(--text2);
+      padding: calc(2px * var(--z)) 0;
+    }
+    .tile-row span:last-child {
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Saved/Deficit tile — gradient accent ── */
+    .tile-pl { justify-content: center; }
+    .tile-pl .tile-big { font-size: calc(30px * var(--z)); }
+    .tile-pl.surplus { background: linear-gradient(135deg, rgba(48,209,88,.15) 0%, rgba(48,209,88,.05) 100%); }
+    .tile-pl.deficit { background: linear-gradient(135deg, rgba(255,69,58,.15) 0%, rgba(255,69,58,.05) 100%); }
+
+    /* ── Ring tile ── */
+    .tile-ring {
+      align-items: center;
+      justify-content: center;
+      padding: calc(10px * var(--z));
+    }
+    .ring-container { position: relative; width: 100%; max-width: calc(140px * var(--z)); }
+    .ring-container svg { width: 100%; display: block; }
+    .ring-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    .ring-pct {
+      font-size: calc(24px * var(--z));
+      font-weight: 800;
+      letter-spacing: calc(-0.5px * var(--z));
+      line-height: 1;
+    }
+    .ring-word {
+      font-size: calc(9px * var(--z));
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: calc(0.8px * var(--z));
+      color: var(--text3);
+      margin-top: calc(2px * var(--z));
+    }
+
+    /* ── Income tile ── */
+    .tile-inc .tile-big { color: var(--green); }
+    .tile-inc .tile-label { color: rgba(48,209,88,.6); }
+
+    /* ── Spending tile ── */
+    .tile-spend .tile-big { color: var(--red); }
+    .tile-spend .tile-label { color: rgba(255,69,58,.6); }
+
+    /* ── Dots ── */
+    .dots {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: calc(8px * var(--z));
+      padding: calc(12px * var(--z)) 0 calc(14px * var(--z));
+      padding-bottom: calc((14px + env(safe-area-inset-bottom)) * var(--z));
+      flex-shrink: 0;
+    }
+    .dot {
+      width: calc(7px * var(--z));
+      height: calc(7px * var(--z));
+      border-radius: 50%;
+      background: rgba(255,255,255,.2);
+      transition: all .25s ease;
+    }
+    .dot.on {
+      background: #FFF;
+      width: calc(20px * var(--z));
+      border-radius: calc(4px * var(--z));
+    }
   </style>
 </head>
 <body>
@@ -60,14 +280,12 @@
 <div id="app"></div>
 
 <script>
-/* ── globals ── */
 var D, currentMonth = new Date().toISOString().slice(0,7);
 
-/* ── helpers ── */
 var FIXED = {housing:1, utilities:1, subs:1, insurance:1};
 var RET_RE = /\b(401k?|roth|retirement|pension|sep[\s-]?ira|hsa contrib)\b/i;
 
-function fc(n){ return '$' + Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0}); }
+function fc(n){ return '$'+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0}); }
 
 function incType(id, desc){
   if ((D.incomeData||{})[id]) return D.incomeData[id];
@@ -77,74 +295,81 @@ function incType(id, desc){
 }
 
 function isIgnored(cat){
-  var cats = [].concat(
-    [{id:'insurance',ignored:true},{id:'transfer',ignored:true}],
-    D.customCategories||[]
-  );
-  var found = cats.find(function(c){return c.id===cat;});
-  return found ? !!found.ignored : false;
+  var list = [].concat([{id:'insurance',ignored:true},{id:'transfer',ignored:true}], D.customCategories||[]);
+  var f = list.find(function(c){return c.id===cat;});
+  return f ? !!f.ignored : false;
 }
 
 function compute(who){
   var txns = (D.transactions||[]).filter(function(t){ return t.date && t.date.slice(0,7)===currentMonth; });
   if (who !== 'all') txns = txns.filter(function(t){ return t.person===who; });
-
   var spend=0, fixed=0, inc=0, ret=0, fam=0, nrm=0;
   for (var i=0; i<txns.length; i++){
     var t = txns[i];
     if (t.excluded) continue;
-    if (t.amount > 0 && !isIgnored(t.category)){
-      spend += t.amount;
-      if (FIXED[t.category]) fixed += t.amount;
-    }
+    if (t.amount > 0 && !isIgnored(t.category)){ spend += t.amount; if (FIXED[t.category]) fixed += t.amount; }
     if (t.amount < 0 && t.category === 'income'){
-      var a = Math.abs(t.amount);
-      inc += a;
+      var a = Math.abs(t.amount); inc += a;
       var tp = incType(t.id, t.description);
-      if (tp==='retirement') ret += a;
-      else if (tp==='family') fam += a;
-      else nrm += a;
+      if (tp==='retirement') ret += a; else if (tp==='family') fam += a; else nrm += a;
     }
   }
-  var pl = inc - spend;
-  var takeHome = inc - ret - fam;
+  var pl = inc - spend, takeHome = inc - ret - fam;
   var rate = takeHome > 0 ? Math.round(pl / takeHome * 100) : 0;
   return {inc:inc, nrm:nrm, ret:ret, fam:fam, spend:spend, fixed:fixed, variable:spend-fixed, pl:pl, rate:rate, deficit:pl<0};
 }
 
-/* ── ring svg ── */
-function ring(pct, color){
+function ringSvg(pct, color){
   var r=42, c=2*Math.PI*r, fill=Math.max(0,Math.min(Math.abs(pct),100)), off=c-(fill/100)*c;
   return '<svg viewBox="0 0 100 100">'
-    +'<circle cx="50" cy="50" r="'+r+'" fill="none" stroke="rgba(120,120,128,.12)" stroke-width="9"/>'
-    +'<circle cx="50" cy="50" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+c+'" stroke-dashoffset="'+off+'" transform="rotate(-90 50 50)"/>'
-    +'<text x="50" y="46" text-anchor="middle" font-size="16" font-weight="800" fill="'+color+'">'+pct+'%</text>'
-    +'<text x="50" y="60" text-anchor="middle" font-size="7" font-weight="600" fill="#8E8E93">savings</text>'
+    +'<circle cx="50" cy="50" r="'+r+'" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="8"/>'
+    +'<circle cx="50" cy="50" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="8" stroke-linecap="round"'
+    +' stroke-dasharray="'+c+'" stroke-dashoffset="'+off+'" transform="rotate(-90 50 50)"'
+    +' style="transition:stroke-dashoffset .8s cubic-bezier(.4,0,.2,1)"/>'
     +'</svg>';
 }
 
-/* ── card html ── */
 function card(label, d){
-  var plC = d.deficit ? 'var(--red)' : 'var(--green)';
-  var plS = d.deficit ? '-' : '+';
-  var rc = d.rate<10 ? '#FF3B30' : d.rate<20 ? '#FF9500' : '#34C759';
+  var rc = d.rate<10 ? '#FF453A' : d.rate<20 ? '#FF9F0A' : '#30D158';
+  var plClass = d.deficit ? 'deficit' : 'surplus';
+  var plColor = d.deficit ? 'var(--red)' : 'var(--green)';
+  var plSign = d.deficit ? '-' : '+';
 
-  var incLines = '';
-  if (d.ret>0) incLines += '<div class="q-row"><span>Retirement</span><span>'+fc(d.ret)+'</span></div>';
-  if (d.fam>0) incLines += '<div class="q-row"><span>Family</span><span>'+fc(d.fam)+'</span></div>';
-  incLines += '<div class="q-row"><span>Normal</span><span>'+fc(d.nrm)+'</span></div>';
+  var incRows = '';
+  if (d.ret>0) incRows += '<div class="tile-row"><span>Retirement</span><span>'+fc(d.ret)+'</span></div>';
+  if (d.fam>0) incRows += '<div class="tile-row"><span>Family</span><span>'+fc(d.fam)+'</span></div>';
+  incRows += '<div class="tile-row"><span>Take-home</span><span>'+fc(d.nrm)+'</span></div>';
 
   return '<div class="card">'
-    +'<div class="card-label">'+label+'</div>'
+    +'<div class="card-head"><span class="card-name">'+label+'</span></div>'
     +'<div class="grid">'
-    +'<div class="quadrant"><div class="q-label">'+(d.deficit?'Deficit':'Saved')+'</div><div class="q-big" style="color:'+plC+'">'+plS+fc(Math.abs(d.pl))+'</div></div>'
-    +'<div class="quadrant"><div class="ring-wrap">'+ring(d.rate,rc)+'</div></div>'
-    +'<div class="quadrant"><div class="q-label">Income</div><div class="q-big" style="color:var(--green)">'+fc(d.inc)+'</div><div class="q-sub">'+incLines+'</div></div>'
-    +'<div class="quadrant"><div class="q-label">Spending</div><div class="q-big" style="color:var(--red)">'+fc(d.spend)+'</div><div class="q-sub"><div class="q-row"><span>Fixed</span><span>'+fc(d.fixed)+'</span></div><div class="q-row"><span>Variable</span><span>'+fc(d.variable)+'</span></div></div></div>'
+    // P/L
+    +'<div class="tile tile-pl '+plClass+'">'
+    +'<div class="tile-label">'+(d.deficit?'Deficit':'Saved')+'</div>'
+    +'<div class="tile-big" style="color:'+plColor+'">'+plSign+fc(Math.abs(d.pl))+'</div>'
+    +'</div>'
+    // Ring
+    +'<div class="tile tile-ring">'
+    +'<div class="ring-container">'+ringSvg(d.rate, rc)
+    +'<div class="ring-center"><div class="ring-pct" style="color:'+rc+'">'+d.rate+'%</div><div class="ring-word">Savings</div></div>'
+    +'</div></div>'
+    // Income
+    +'<div class="tile tile-inc">'
+    +'<div class="tile-label">Income</div>'
+    +'<div class="tile-big">'+fc(d.inc)+'</div>'
+    +'<div class="tile-sub">'+incRows+'</div>'
+    +'</div>'
+    // Spending
+    +'<div class="tile tile-spend">'
+    +'<div class="tile-label">Spending</div>'
+    +'<div class="tile-big">'+fc(d.spend)+'</div>'
+    +'<div class="tile-sub">'
+    +'<div class="tile-row"><span>Fixed</span><span>'+fc(d.fixed)+'</span></div>'
+    +'<div class="tile-row"><span>Variable</span><span>'+fc(d.variable)+'</span></div>'
+    +'</div></div>'
     +'</div></div>';
 }
 
-/* ── month ── */
 function moLabel(ym){
   var p=ym.split('-'); return new Date(+p[0],+p[1]-1,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
 }
@@ -154,35 +379,34 @@ function moShift(delta){
   render();
 }
 
-/* ── render ── */
 function render(){
   var p1 = compute('p1'), p2 = compute('p2'), all = compute('all');
   var n1 = (D.settings||{}).person1||'Person 1';
   var n2 = (D.settings||{}).person2||'Person 2';
 
   var set = card(n1,p1) + card(n2,p2) + card('Combined',all);
-  var html = '<div class="month-header"><div class="month-nav">'
-    +'<button onclick="moShift(-1)">&lsaquo;</button>'
-    +'<span>'+moLabel(currentMonth)+'</span>'
-    +'<button onclick="moShift(1)">&rsaquo;</button>'
+  var z = getComputedStyle(document.documentElement).getPropertyValue('--z').trim() || '1';
+  var gap = 12 * parseFloat(z);
+
+  document.getElementById('app').innerHTML =
+    '<div class="month-bar">'
+    +'<span class="month-label">'+moLabel(currentMonth)+'</span>'
+    +'<div class="month-arrows">'
+    +'<button class="mo-btn" onclick="moShift(-1)">&lsaquo;</button>'
+    +'<button class="mo-btn" onclick="moShift(1)">&rsaquo;</button>'
     +'</div></div>'
     +'<div class="carousel" id="car">'+set+set+set+'</div>'
     +'<div class="dots"><div class="dot on"></div><div class="dot"></div><div class="dot"></div></div>';
 
-  document.getElementById('app').innerHTML = html;
-
-  // scroll to middle set
   var car = document.getElementById('car');
   if (car && car.children.length > 0){
-    var w = car.children[0].offsetWidth + 12;
+    var w = car.children[0].offsetWidth + gap;
     car.scrollLeft = w * 3;
     var timer;
     car.onscroll = function(){
-      // update dots
       var idx = Math.round(car.scrollLeft / w) % 3;
       var dots = document.querySelectorAll('.dot');
       for(var i=0;i<dots.length;i++) dots[i].className = i===idx ? 'dot on' : 'dot';
-      // infinite reposition
       clearTimeout(timer);
       timer = setTimeout(function(){
         var ci = Math.round(car.scrollLeft / w);
@@ -193,7 +417,6 @@ function render(){
   }
 }
 
-/* ── boot ── */
 google.script.run
   .withSuccessHandler(function(data){
     D = data;
@@ -204,7 +427,7 @@ google.script.run
     }
   })
   .withFailureHandler(function(e){
-    document.getElementById('status').innerHTML = '<div style="color:red">Load failed: '+(e.message||e)+'</div>';
+    document.getElementById('status').innerHTML = '<div style="color:#FF453A">Load failed: '+(e.message||e)+'</div>';
   })
   .loadAll();
 </script>
