@@ -1804,7 +1804,7 @@ function renderOverview() {
   }
   const catTotal = catArr.reduce((s,[,v])=>s+v, 0);
   // Limit to 6 visible rows; combine remainder into "All Other"
-  const MAX_CAT_ROWS = 6;
+  const MAX_CAT_ROWS = 8;
   const visibleCats = catArr.slice(0, MAX_CAT_ROWS);
   const overflowCats = catArr.slice(MAX_CAT_ROWS);
   const overflowAmt = overflowCats.reduce((s,[,v])=>s+v, 0);
@@ -1846,14 +1846,14 @@ function renderOverview() {
     const label = isOther ? 'All Other' : c.label || cid;
     const dispAmt = fc0(scaleNum(amt));
     const dispPct = catTotal > 0 ? Math.round(amt/catTotal*100) : 0;
-    return `<circle cx="50" cy="50" r="42" fill="none" stroke="${c.color}" stroke-width="14" stroke-dasharray="${len} ${donutCirc-len}" stroke-dashoffset="${-o}" stroke-linecap="round" style="cursor:pointer;transition:opacity 0.15s"><title>${label}: ${dispAmt} (${dispPct}%)</title></circle>`;
+    return `<circle cx="50" cy="50" r="42" fill="none" stroke="${c.color}" stroke-width="14" stroke-dasharray="${len} ${donutCirc-len}" stroke-dashoffset="${-o}" stroke-linecap="round" style="cursor:pointer;transition:opacity 0.15s" onmouseover="var ct=document.getElementById('donut-center');if(ct){ct.children[0].textContent='${dispAmt}';ct.children[1].textContent='${esc(label)}';ct.children[1].style.color='${c.color}';}" onmouseout="var ct=document.getElementById('donut-center');if(ct){ct.children[0].textContent='${fc0(scaleNum(catTotal))}';ct.children[1].textContent='TOTAL';ct.children[1].style.color='var(--text-3)';}"/>`;
   }).join('');
   const catDonut = displayCats.length ? `<div style="position:relative;width:140px;height:140px;flex-shrink:0;">
     <svg viewBox="0 0 100 100" style="transform:rotate(-90deg);width:100%;height:100%;">
       <circle cx="50" cy="50" r="42" fill="none" stroke="var(--bg)" stroke-width="14"/>
       ${donutArcs}
     </svg>
-    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+    <div id="donut-center" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
       <div style="font-size:38px;font-weight:900;letter-spacing:-2px;">${fc0(scaleNum(catTotal))}</div>
       <div style="font-size:9px;font-weight:800;color:var(--text-3);letter-spacing:1.5px;">TOTAL</div>
     </div>
