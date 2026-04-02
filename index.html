@@ -3173,10 +3173,33 @@ function stubAmt(s) {
 }
 // First positive dollar amount on a line = "this period" column
 function firstAmt(line) {
+  // Standard decimal: $1,234.56 or 1,234.56
   const stdM = line.match(/\$?\s*-?([\d,]+\.\d{2})/);
   if (stdM) { const v = parseFloat(stdM[1].replace(/,/g,'')); if (v > 0) return v; }
+  // ADP spaced: 3 127 37
   const adpM = line.match(/\b(\d{1,6}(?:\s\d{3})*\s\d{2})\b/);
   if (adpM) { const v = stubAmt(adpM[1]); if (v && v > 0) return v; }
+  // ADP compact: digits before * (pre-tax marker separates this-period from YTD)
+  const starM = line.match(/-?(\d{2,7})\*/);
+  if (starM) { const v = stubAmt(starM[1]); if (v && v > 0) return v; }
+  // ADP compact: $DIGITS (no decimal/spaces) — try progressively shorter until < $50k
+  const dolM = line.match(/\$(\d{3,})/);
+  if (dolM) { const d = dolM[1]; for (let n = Math.min(7,d.length); n >= 3; n--) { const v = stubAmt(d.slice(0,n)); if (v && v > 0 && v < 50000) return v; } }
+  // ADP compact: -DIGITS at end of line (single amount, no YTD concat)
+  const eolM = line.match(/-(\d{3,7})\s*$/);
+  if (eolM) { const v = stubAmt(eolM[1]); if (v && v > 0) return v; }
+  return null;
+}
+// For ADP compact lines with concatenated this-period+YTD digits (no separator),
+// try progressively shorter digit slices until amount is under the given cap.
+function compactAmt(line, cap) {
+  const m = line.match(/[-](\d{3,})/) || line.match(/[A-Za-z](\d{3,})/);
+  if (!m) return null;
+  const d = m[1];
+  for (let n = Math.min(7, d.length); n >= 3; n--) {
+    const v = stubAmt(d.slice(0, n));
+    if (v && v > 0 && v <= cap) return v;
+  }
   return null;
 }
 function parsePaystubText(text) {
@@ -3225,13 +3248,14 @@ function parsePaystubText(text) {
       continue;
     }
     const amt = firstAmt(line);
-    if (!amt) continue;
-    if      (/\bnet\s+pay\b/i.test(line) && !/check/i.test(line)) { result.netPay=amt; addEntry({label:'Net Pay (take-home)',amount:amt,category:'income',type:'income',checked:true}); }
-    else if (/\bgross\s+pay\b/i.test(line))                        { result.grossPay=amt; }
-    else if (/\broth\b/i.test(line))                               { addEntry({label:'Roth 401k Contribution',amount:amt,category:'income',type:'income',checked:true}); }
-    else if (/\b401[kK]\b/i.test(line) && !/match/i.test(line) && !/roth/i.test(line)) { addEntry({label:'401k Contribution',amount:amt,category:'income',type:'income',checked:true}); }
-    else if (/er\s*401[kK]\s*match/i.test(line))                   { addEntry({label:'Employer 401k Match',amount:amt,category:'income',type:'income',checked:false}); }
-    else if (/erhsa|er\s+hsa/i.test(line))                         { addEntry({label:'Employer HSA Contribution',amount:amt,category:'income',type:'income',checked:false}); }
+    // Labels with compactAmt fallback for concatenated ADP digits (no * or $ separator)
+    if (/\bnet\s+pay\b/i.test(line) && !/check/i.test(line))      { const v = amt || compactAmt(line, 50000); if (v) { result.netPay=v; addEntry({label:'Net Pay (take-home)',amount:v,category:'income',type:'income',checked:true}); } }
+    else if (/\bgross\s+pay\b/i.test(line))                        { const v = amt || compactAmt(line, 50000); if (v) result.grossPay=v; }
+    else if (/\broth\b/i.test(line))                               { const v = amt || compactAmt(line, 3000); if (v) addEntry({label:'Roth 401k Contribution',amount:v,category:'income',type:'income',checked:true}); }
+    else if (/\b401[kK]\b/i.test(line) && !/match/i.test(line) && !/roth/i.test(line)) { const v = amt || compactAmt(line, 3000); if (v) addEntry({label:'401k Contribution',amount:v,category:'income',type:'income',checked:true}); }
+    else if (/er\s*401[kK]\s*match/i.test(line))                   { const v = amt || compactAmt(line, 1500); if (v) addEntry({label:'Employer 401k Match',amount:v,category:'income',type:'income',checked:false}); }
+    else if (/erhsa|er\s+hsa/i.test(line))                         { const v = amt || compactAmt(line, 500); if (v) addEntry({label:'Employer HSA Contribution',amount:v,category:'income',type:'income',checked:false}); }
+    else if (!amt) { continue; }
     else if (/\bmedical\b/i.test(line) && !/medicare/i.test(line)) { addEntry({label:'Medical Insurance',amount:amt,category:'insurance',type:'expense',checked:true}); }
     else if (/\bdental\b/i.test(line))                             { addEntry({label:'Dental Insurance',amount:amt,category:'insurance',type:'expense',checked:true}); }
     else if (/\bvision\b/i.test(line))                             { addEntry({label:'Vision Insurance',amount:amt,category:'insurance',type:'expense',checked:true}); }
@@ -3244,38 +3268,47 @@ function parsePaystubText(text) {
   const _adpAmt = '\\$?\\s*-?\\s*(\\d{1,6}(?:\\s\\d{3})*\\s\\d{2})\\b';
   const _stdAmt = '\\$?\\s*-?\\s*([\\d,]+\\.\\d{2})';
   const _anyAmt = `(?:${_stdAmt}|${_adpAmt})`;
-  const _fbAmt = (text, labelRe) => {
+  const _fbAmt = (text, labelRe, cap) => {
     const m = text.match(labelRe);
     if (!m) return null;
     const rest = text.slice(m.index + m[0].length);
+    // Standard decimal or ADP spaced
     const sm = rest.match(new RegExp('^\\s*' + _anyAmt));
-    if (!sm) return null;
-    if (sm[1]) return parseFloat(sm[1].replace(/,/g,'')) || null;
-    if (sm[2]) return stubAmt(sm[2]) || null;
+    if (sm) {
+      if (sm[1]) return parseFloat(sm[1].replace(/,/g,'')) || null;
+      if (sm[2]) return stubAmt(sm[2]) || null;
+    }
+    // ADP compact fallback: digits before * or progressive slice with cap
+    const starM = rest.match(/^\s*[-$]?\s*(\d{2,7})\*/);
+    if (starM) { const v = stubAmt(starM[1]); if (v && v > 0) return v; }
+    if (cap) {
+      const dm = rest.match(/^\s*[-$]?\s*(\d{3,})/);
+      if (dm) { const d = dm[1]; for (let n = Math.min(7,d.length); n >= 3; n--) { const v = stubAmt(d.slice(0,n)); if (v && v > 0 && v <= cap) return v; } }
+    }
     return null;
   };
-  const _fb = (label, labelRe, cat, type, checked) => {
+  const _fb = (label, labelRe, cat, type, checked, cap) => {
     if (seenLabels.has(label)) return;
-    const v = _fbAmt(flat, labelRe);
+    const v = _fbAmt(flat, labelRe, cap);
     if (v && v > 0) addEntry({label,amount:v,category:cat,type,checked});
   };
   if (!seenLabels.has('Net Pay (take-home)')) {
-    const v = _fbAmt(flat, /Net\s+Pay/i);
+    const v = _fbAmt(flat, /Net\s+Pay/i, 50000);
     if (v && v > 0) { result.netPay = v; addEntry({label:'Net Pay (take-home)',amount:v,category:'income',type:'income',checked:true}); }
   }
-  _fb('Roth 401k Contribution',     /\bRoth\b/i,                     'income','income',true);
-  _fb('HSA Contribution',           /\bHsa\b(?!\s*(?:Er|Employer))/i, 'income','income',true);
-  _fb('Employer 401k Match',        /Er\s*401[kK]\s*Match/i,         'income','income',false);
-  _fb('Employer HSA Contribution',  /(?:Erhsa|Er\s+Hsa)/i,           'income','income',false);
-  _fb('Dental Insurance',           /\bDental\b/i,                   'insurance','expense',true);
-  _fb('Medical Insurance',          /\bMedical\b(?!.*?medicare)/i,   'insurance','expense',true);
-  _fb('Vision Insurance',           /\bVision\b/i,                   'insurance','expense',true);
-  _fb('LTD Insurance',              /\bLTDImpInc\b/i,               'insurance','expense',true);
+  _fb('Roth 401k Contribution',     /\bRoth\b/i,                     'income','income',true, 3000);
+  _fb('HSA Contribution',           /\bHsa\b(?!\s*(?:Er|Employer))/i, 'income','income',true, 1000);
+  _fb('Employer 401k Match',        /Er\s*401[kK]\s*Match/i,         'income','income',false, 1500);
+  _fb('Employer HSA Contribution',  /(?:Erhsa|Er\s+Hsa)/i,           'income','income',false, 500);
+  _fb('Dental Insurance',           /\bDental\b/i,                   'insurance','expense',true, 200);
+  _fb('Medical Insurance',          /\bMedical\b(?!.*?medicare)/i,   'insurance','expense',true, 2000);
+  _fb('Vision Insurance',           /\bVision\b/i,                   'insurance','expense',true, 100);
+  _fb('LTD Insurance',              /\bLTDImpInc\b/i,               'insurance','expense',true, 200);
   // Gross pay from flat text
-  if (!result.grossPay) { const v = _fbAmt(flat, /Gross\s+Pay/i); if (v) result.grossPay = v; }
+  if (!result.grossPay) { const v = _fbAmt(flat, /Gross\s+Pay/i, 50000); if (v) result.grossPay = v; }
   // Net pay from deposit line (near masked account number) as last resort
   if (!result.netPay) {
-    const depM = flat.match(/\$\s*(\d[\d ]+\d{2})\s+x{4,}/i);
+    const depM = flat.match(/x{4,}\s*\$\s*(\d[\d ]+\d{2})/i) || flat.match(/\$\s*(\d[\d ]+\d{2})\s+x{4,}/i);
     if (depM) {
       const v = stubAmt(depM[1]);
       if (v && v > 0) { result.netPay = v; addEntry({label:'Net Pay (take-home)',amount:v,category:'income',type:'income',checked:true}); }
