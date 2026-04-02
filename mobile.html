@@ -56,7 +56,7 @@
 
     body {
       font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-      background: var(--bg);
+      background: var(--surface);
       color: var(--text);
       height: 100vh;
       overflow: hidden;
@@ -104,21 +104,23 @@
     #app { display: none; flex-direction: column; height: 100%; }
     #app.show { display: flex; flex: 1; }
 
-    /* Month bar */
+    /* Month bar — bottom darker band */
     .mo-bar {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: calc(20px * var(--z));
-      padding: calc(14px * var(--z)) calc(20px * var(--z)) calc(10px * var(--z));
-      padding-top: calc((12px + env(safe-area-inset-top)) * var(--z));
+      gap: calc(16px * var(--z));
+      padding: calc(10px * var(--z)) calc(16px * var(--z)) calc((10px + env(safe-area-inset-bottom)) * var(--z));
       flex-shrink: 0;
+      background: var(--surface-border);
+      order: 3;
     }
     .mo-bar button {
       background: none;
       border: none;
-      color: var(--text-3);
-      font-size: calc(22px * var(--z));
+      color: var(--text-sub);
+      font-size: calc(18px * var(--z));
+      font-weight: 300;
       padding: calc(4px * var(--z)) calc(10px * var(--z));
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
@@ -126,9 +128,10 @@
     }
     .mo-bar button:active { color: var(--text); }
     .mo-label {
-      font-size: calc(17px * var(--z));
+      font-size: calc(12px * var(--z));
       font-weight: 800;
-      letter-spacing: calc(-0.2px * var(--z));
+      letter-spacing: calc(2px * var(--z));
+      text-transform: uppercase;
       color: var(--text);
       min-width: calc(160px * var(--z));
       text-align: center;
@@ -141,8 +144,8 @@
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
-      padding: 0 calc(12px * var(--z));
-      gap: calc(10px * var(--z));
+      padding: calc((10px + env(safe-area-inset-top)) * var(--z)) 0 0;
+      gap: 0;
       flex: 1;
       align-items: stretch;
     }
@@ -150,7 +153,7 @@
 
     /* Card */
     .card {
-      flex: 0 0 calc(100% - calc(24px * var(--z)));
+      flex: 0 0 100%;
       scroll-snap-align: center;
       background: var(--surface);
       border: calc(2px * var(--z)) solid var(--surface-border);
@@ -221,8 +224,8 @@
     /* Ring */
     .rcs-ring-wrap {
       position: relative;
-      width: calc(120px * var(--z));
-      height: calc(120px * var(--z));
+      width: calc(140px * var(--z));
+      height: calc(140px * var(--z));
       flex-shrink: 0;
     }
     .rcs-ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
@@ -823,13 +826,13 @@ function render(){
     + merchantCard(moTxns);
 
   document.getElementById('app').innerHTML =
-    '<div class="mo-bar">'
+    '<div class="carousel" id="car">' + cards + '</div>'
+    + '<div class="dots" id="dots"></div>'
+    + '<div class="mo-bar">'
     + '<button onclick="moShift(-1)">\u2039</button>'
     + '<span class="mo-label">' + moLabel(currentMonth) + '</span>'
     + '<button onclick="moShift(1)">\u203A</button>'
-    + '</div>'
-    + '<div class="carousel" id="car">' + cards + '</div>'
-    + '<div class="dots" id="dots"></div>';
+    + '</div>';
 
   var car = document.getElementById('car');
   var numCards = 6;
