@@ -357,6 +357,40 @@
       flex-shrink: 0;
     }
 
+    /* History rows */
+    .hist-row {
+      display: flex;
+      align-items: center;
+      gap: calc(8px * var(--z));
+      padding: calc(4px * var(--z)) 0;
+      border-bottom: calc(1px * var(--z)) solid rgba(0,0,0,0.04);
+    }
+    .hist-desc {
+      flex: 1;
+      min-width: 0;
+      font-size: calc(12px * var(--z));
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .hist-date {
+      font-size: calc(9px * var(--z));
+      color: var(--text-3);
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .hist-amt {
+      font-size: calc(13px * var(--z));
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+
+    /* Aligned row heights */
+    .cat-row, .hist-row, .merch-row {
+      min-height: calc(36px * var(--z));
+    }
+
     /* Donut card */
     .donut-wrap {
       position: relative;
@@ -691,94 +725,45 @@ function categoryCard(txns) {
       + '</div>';
   }
 
-  if (!rows) rows = '<div style="text-align:center;color:var(--text-3);padding:' + 18*parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--z')||'1') + 'px;font-size:13px">No expenses this month</div>';
+  // Pad to 8 rows
+  var rowCount = visible.length;
+  for (var p=rowCount; p<8; p++){
+    rows += '<div class="cat-row" style="visibility:hidden"><div class="cat-icon"></div><div class="cat-name">&nbsp;</div><div class="cat-bar-wrap"></div><div class="cat-amt">&nbsp;</div><div class="cat-pct">&nbsp;</div></div>';
+  }
+
+  if (!catArr.length) rows = '<div style="text-align:center;color:var(--text-3);padding:' + 18*parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--z')||'1') + 'px;font-size:13px">No expenses this month</div>';
 
   return '<div class="card">'
-    + '<div class="section-title">Spending by Category</div>'
+    + '<div class="card-title" style="color:var(--primary)">Spending by Category</div>'
     + '<div class="card-scroll">' + rows + '</div>'
     + '</div>';
 }
 
-function donutCard(txns) {
+function historyCard(txns) {
   var exp = txns.filter(function(t){ return t.amount > 0 && !isIgnored(t.category) && !t.excluded; });
-  var byCat = {};
-  for (var i=0; i<exp.length; i++) {
-    byCat[exp[i].category] = (byCat[exp[i].category]||0) + exp[i].amount;
-  }
-  var catArr = Object.entries(byCat).filter(function(e){return e[1]>0;}).sort(function(a,b){return b[1]-a[1];});
-  var catTotal = catArr.reduce(function(s,e){return s+e[1];}, 0);
+  exp.sort(function(a,b){ return b.date > a.date ? 1 : (b.date < a.date ? -1 : b.amount - a.amount); });
+  var top8 = exp.slice(0, 8);
 
-  // vs average data
-  var allMonths = {};
-  var txAll = D.transactions||[];
-  for (var i=0; i<txAll.length; i++){
-    if (txAll[i].date) allMonths[txAll[i].date.slice(0,7)] = true;
-  }
-  var pastMonths = Object.keys(allMonths).filter(function(m){ return m !== currentMonth; });
-  var excluded = D.excludedFromAvg || [];
-  pastMonths = pastMonths.filter(function(m){ return excluded.indexOf(m) === -1; });
-  var avgByCat = {};
-  if (pastMonths.length) {
-    for (var mi=0; mi<pastMonths.length; mi++){
-      var mo = pastMonths[mi];
-      var moExp = txAll.filter(function(t){ return t.date && t.date.slice(0,7)===mo && t.amount>0 && !isIgnored(t.category) && !t.excluded; });
-      for (var j=0; j<moExp.length; j++){
-        avgByCat[moExp[j].category] = (avgByCat[moExp[j].category]||0) + moExp[j].amount;
-      }
+  var rows = '';
+  for (var i=0; i<8; i++){
+    if (i < top8.length) {
+      var t = top8[i];
+      var c = getCat(t.category);
+      var dateStr = new Date(t.date + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      rows += '<div class="hist-row">'
+        + '<div class="cat-icon" style="background:' + c.color + '10"><i class="bi ' + c.icon + '" style="color:' + c.color + '"></i></div>'
+        + '<div class="hist-desc">' + esc(t.description.length>22 ? t.description.slice(0,22)+'\u2026' : t.description) + '</div>'
+        + '<div class="hist-date">' + dateStr + '</div>'
+        + '<div class="hist-amt">' + fc0(t.amount) + '</div>'
+        + '</div>';
+    } else {
+      rows += '<div class="hist-row" style="visibility:hidden"><div class="cat-icon"></div><div class="hist-desc">&nbsp;</div><div class="hist-date">&nbsp;</div><div class="hist-amt">&nbsp;</div></div>';
     }
-    for (var k in avgByCat) avgByCat[k] /= pastMonths.length;
   }
-  for (var k in avgByCat) if (avgByCat[k] <= 0) delete avgByCat[k];
-
-  // Donut arcs
-  var donutCirc = 2 * Math.PI * 42;
-  var donutOff = 0;
-  var arcs = '';
-  var legend = '';
-  var displayCats = catArr.slice(0, 8);
-  for (var i=0; i<displayCats.length; i++){
-    var cid = displayCats[i][0], amt = displayCats[i][1];
-    var c = getCat(cid);
-    var pct = catTotal > 0 ? amt/catTotal : 0;
-    var len = pct * donutCirc;
-    arcs += '<circle cx="50" cy="50" r="42" fill="none" stroke="' + c.color + '" stroke-width="14" stroke-dasharray="' + len + ' ' + (donutCirc-len) + '" stroke-dashoffset="' + (-donutOff) + '" stroke-linecap="round"/>';
-    donutOff += len + 4;
-    legend += '<div style="display:flex;align-items:center;gap:' + 6*parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--z')||'1') + 'px;font-size:' + 11*parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--z')||'1') + 'px">'
-      + '<div style="width:8px;height:8px;border-radius:50%;background:' + c.color + ';flex-shrink:0"></div>'
-      + '<span style="color:var(--text-3);font-weight:600">' + c.label + '</span>'
-      + '<span style="font-weight:700;margin-left:auto">' + Math.round(pct*100) + '%</span>'
-      + '</div>';
-  }
-
-  // vs average bars
-  var vCats = Object.keys(Object.assign({}, byCat, avgByCat)).sort(function(a,b){return (byCat[b]||0)-(byCat[a]||0);});
-  var vMax = 1;
-  for (var i=0; i<vCats.length; i++) vMax = Math.max(vMax, byCat[vCats[i]]||0, avgByCat[vCats[i]]||0);
-  var vBars = '';
-  for (var i=0; i<vCats.length; i++){
-    var cid = vCats[i], c = getCat(cid);
-    var cur = byCat[cid]||0, avg = avgByCat[cid]||0;
-    var curH = Math.max(Math.round(cur/vMax*80), cur>0?2:0);
-    var avgH = Math.max(Math.round(avg/vMax*80), avg>0?2:0);
-    vBars += '<div class="vbar-group"><div class="vbar-pair"><div class="vbar-cur" style="height:' + curH + 'px;background:' + c.color + '"></div><div class="vbar-avg" style="height:' + avgH + 'px"></div></div><div class="vbar-lbl">' + (c.emoji||'') + '</div></div>';
-  }
-
-  var hasAvg = pastMonths.length > 0 && vCats.length > 0;
 
   return '<div class="card">'
-    + '<div class="section-title">Breakdown</div>'
-    + '<div class="card-scroll" style="display:flex;flex-direction:column;align-items:center;gap:' + 10*parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--z')||'1') + 'px">'
-    + (catTotal > 0 ? '<div class="donut-wrap">'
-      + '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="none" stroke="var(--bg)" stroke-width="14"/>' + arcs + '</svg>'
-      + '<div class="donut-center"><div class="donut-total">' + fc0(catTotal) + '</div><div class="donut-lbl">TOTAL</div></div>'
-      + '</div>'
-      + '<div style="width:100%;display:flex;flex-direction:column;gap:3px">' + legend + '</div>'
-      : '<div style="text-align:center;color:var(--text-3);padding:30px;font-size:13px">No data yet</div>')
-    + (hasAvg ? '<div style="width:100%;margin-top:auto;padding-top:8px;border-top:1px solid var(--surface-border)">'
-      + '<div style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;text-align:center">vs. Average</div>'
-      + '<div class="vbar-chart">' + vBars + '</div>'
-      + '</div>' : '')
-    + '</div>'
+    + '<div class="card-title" style="color:var(--primary)">Spending History</div>'
+    + '<div class="card-scroll">' + rows + '</div>'
     + '</div>';
 }
 
@@ -805,10 +790,16 @@ function merchantCard(txns) {
       + '</div>';
   }
 
-  if (!rows) rows = '<div style="text-align:center;color:var(--text-3);padding:18px;font-size:13px">No transactions yet</div>';
+  // Pad to 8 rows
+  var merchCount = top.length;
+  for (var p=merchCount; p<8; p++){
+    rows += '<div class="merch-row" style="visibility:hidden"><div class="merch-rank"></div><div class="merch-name">&nbsp;</div><div class="merch-meta">&nbsp;</div><div class="merch-amt">&nbsp;</div></div>';
+  }
+
+  if (!top.length) rows = '<div style="text-align:center;color:var(--text-3);padding:18px;font-size:13px">No transactions yet</div>';
 
   return '<div class="card">'
-    + '<div class="section-title">Top Merchants</div>'
+    + '<div class="card-title" style="color:var(--primary)">Top Merchants</div>'
     + '<div class="card-scroll">' + rows + '</div>'
     + '</div>';
 }
@@ -833,7 +824,7 @@ function render(){
     + ringCard(esc(n1), 'var(--p1)', d1)
     + ringCard(esc(n2), 'var(--p2)', d2)
     + categoryCard(moTxns)
-    + donutCard(moTxns)
+    + historyCard(moTxns)
     + merchantCard(moTxns);
 
   document.getElementById('app').innerHTML =
