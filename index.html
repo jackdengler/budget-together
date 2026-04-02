@@ -131,11 +131,12 @@
       --ios-fill: var(--hover-bg);
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:var(--font-stack);background:var(--bg);color:var(--text);min-height:100vh;font-size:16px;line-height:1.5;overscroll-behavior:none;-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased;letter-spacing:-0.01em}
+    html{height:100%;overflow:hidden}
+    body{font-family:var(--font-stack);background:var(--bg);color:var(--text);height:100%;font-size:16px;line-height:1.5;overscroll-behavior:none;-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased;letter-spacing:-0.01em;overflow:hidden}
     button,a,[role="button"]{touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;transition:transform 0.2s var(--ease-spring), opacity 0.15s, box-shadow 0.2s}
     button:active,[role="button"]:active{transform:scale(0.97);opacity:0.85}
     button:hover{opacity:0.9}
-    #app{display:flex;flex-direction:column;min-height:100vh}
+    #app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 
     /* Header — Almond Design System */
     header{background:#E8E4DA;border-bottom:1px solid #ddd8cc;padding:0 20px;padding-top:env(safe-area-inset-top);display:flex;align-items:center;gap:16px;height:calc(48px + env(safe-area-inset-top));position:sticky;top:0;z-index:100}
@@ -159,7 +160,7 @@
     .save-status.saving{color:var(--yellow)}
     .save-status.saved{color:var(--green)}
     .save-status.error{color:var(--red)}
-    main{flex:1;padding:20px 24px;max-width:100%;margin:0 auto;width:100%}
+    main{flex:1;padding:20px 24px;max-width:100%;margin:0 auto;width:100%;overflow-y:auto;-webkit-overflow-scrolling:touch}
 
     /* Loading overlay */
     #loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:500;gap:0}
