@@ -1644,7 +1644,7 @@ function renderSpendingHistory() {
     const isCurrent = d.mo === curMo;
     const [y, m] = d.mo.split('-');
     const label = new Date(+y, +m-1, 1).toLocaleDateString('en-US', {month:'short'}) + " '" + y.slice(2);
-    return `<div class="sh-row${isCurrent ? '' : ' sh-faded'}" style="cursor:pointer" onclick="S.currentMonth='${d.mo}';render()">
+    return `<div class="sh-row${isCurrent ? '' : ' sh-faded'}" style="cursor:pointer" onclick="S.currentMonth='${d.mo}';materializeRecurring();render()">
       <div class="sh-label">${label}</div>
       <div class="sh-track"><div class="sh-fill" style="width:${pct.toFixed(1)}%"><div class="sh-seg1" style="width:${p1pct.toFixed(1)}%"></div><div class="sh-gap"></div><div class="sh-seg2" style="flex:1"></div></div></div>
       <div class="sh-amounts">
@@ -2224,7 +2224,7 @@ ${recSectionHtml}
     </div>
   </div>
   <div class="card" style="margin-bottom:0;padding:20px;aspect-ratio:1;display:flex;flex-direction:column;">
-    <div style="font-size:14px;font-weight:800;letter-spacing:-0.02em;margin-bottom:16px;flex-shrink:0;">Spending History</div>
+    <div class="section-title" style="margin-bottom:4px;flex-shrink:0;">Spending History</div>
     <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
       ${renderSpendingHistory()}
     </div>
