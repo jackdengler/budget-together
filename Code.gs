@@ -233,3 +233,59 @@ function importDataJson(json) {
   saveAll(data);
   return { ok: true };
 }
+
+// ── GitHub Backup ─────────────────────────────────────────
+function setGitHubToken(token) {
+  PropertiesService.getScriptProperties().setProperty('GITHUB_TOKEN', token.trim());
+  return { ok: true };
+}
+
+function hasGitHubToken() {
+  return !!PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN');
+}
+
+function backupToGitHub() {
+  const props = PropertiesService.getScriptProperties();
+  const token = props.getProperty('GITHUB_TOKEN');
+  if (!token) throw new Error('No GitHub token configured. Set one in Settings first.');
+
+  const data = loadAll();
+  data._backupDate = new Date().toISOString();
+  const content = JSON.stringify(data, null, 2);
+  const encoded = Utilities.base64Encode(Utilities.newBlob(content).getBytes());
+
+  const repo = 'jackdengler/budget-together';
+  const path = 'backups/budget-backup.json';
+  const apiUrl = 'https://api.github.com/repos/' + repo + '/contents/' + path;
+
+  // Check if file exists to get its SHA (required for updates)
+  var sha = null;
+  try {
+    var existing = UrlFetchApp.fetch(apiUrl, {
+      method: 'get',
+      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' },
+      muteHttpExceptions: true
+    });
+    if (existing.getResponseCode() === 200) {
+      sha = JSON.parse(existing.getContentText()).sha;
+    }
+  } catch(e) { /* file doesn't exist yet, that's fine */ }
+
+  var body = {
+    message: 'backup: ' + new Date().toISOString().slice(0, 16).replace('T', ' '),
+    content: encoded
+  };
+  if (sha) body.sha = sha;
+
+  var resp = UrlFetchApp.fetch(apiUrl, {
+    method: 'put',
+    headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' },
+    contentType: 'application/json',
+    payload: JSON.stringify(body)
+  });
+
+  if (resp.getResponseCode() !== 200 && resp.getResponseCode() !== 201) {
+    throw new Error('GitHub API error: ' + resp.getContentText().slice(0, 200));
+  }
+  return { ok: true, date: data._backupDate };
+}

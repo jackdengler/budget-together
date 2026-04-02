@@ -2804,7 +2804,7 @@ function setOwner(id,val) {
   schedSave(); render();
 }
 function toggleShared(id) { const t=S.transactions.find(t=>t.id===id); if(t){t.shared=!t.shared; schedSave(); render();} }
-function delTxn(id) { S.transactions=S.transactions.filter(t=>t.id!==id); schedSave(); render(); toast('Deleted'); }
+function delTxn(id) { if(!confirm('Delete this transaction?')) return; S.transactions=S.transactions.filter(t=>t.id!==id); schedSave(); render(); toast('Deleted'); }
 function toggleExclude(id) { const t=S.transactions.find(t=>t.id===id); if(t){t.excluded=!t.excluded; schedSave(); render(); toast(t.excluded?'Excluded from summaries':'Included in summaries'); } }
 
 // ── Mobile transaction edit modal ──────────────────────────
@@ -2878,7 +2878,7 @@ function showTxnEditModal(id) {
       <button class="toggle${t.excluded?' on':''}" id="txe-excl" onclick="this.classList.toggle('on')"></button>
     </div>
     <button class="btn-pri" style="margin-top:12px" onclick="saveTxnEdit('${t.id}')">Save Changes</button>
-    <button style="width:100%;margin-top:8px;padding:11px;background:#fef2f2;color:#dc2626;border:none;border-radius:8px;font-size:.92rem;font-weight:600;cursor:pointer" onclick="if(confirm('Delete this transaction?')){delTxn('${t.id}');closeModal()}">Delete Transaction</button>
+    <button style="width:100%;margin-top:8px;padding:11px;background:#fef2f2;color:#dc2626;border:none;border-radius:8px;font-size:.92rem;font-weight:600;cursor:pointer" onclick="delTxn('${t.id}');closeModal()">Delete Transaction</button>
   </div>`);
 }
 
@@ -3725,6 +3725,14 @@ function showSettings() {
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button onclick="doExportJson()" style="font-size:.82rem;padding:6px 13px;border:1px solid var(--border);border-radius:8px;background:white;cursor:pointer">⬇️ Export JSON</button>
         <label style="font-size:.82rem;padding:6px 13px;border:1px solid var(--border);border-radius:8px;background:white;cursor:pointer;display:inline-block">⬆️ Import JSON<input type="file" accept=".json" onchange="doImportJson(event)" style="display:none"></label>
+        <button id="gh-backup-btn" onclick="doGitHubBackup()" style="font-size:.82rem;padding:6px 13px;border:1px solid var(--border);border-radius:8px;background:white;cursor:pointer">☁️ Backup to GitHub</button>
+      </div>
+      <div id="gh-token-row" style="margin-top:8px;display:none">
+        <div style="display:flex;gap:6px;align-items:center">
+          <input id="gh-token-input" type="password" placeholder="GitHub personal access token" style="flex:1;font-size:.8rem;padding:5px 8px;border:1px solid var(--border);border-radius:6px">
+          <button onclick="saveGhToken()" style="font-size:.8rem;padding:5px 10px;border:1px solid var(--primary);border-radius:6px;background:var(--primary);color:white;cursor:pointer">Save</button>
+        </div>
+        <p style="font-size:.72rem;color:var(--text-3);margin-top:4px">Needs repo "Contents" write permission. Token is stored server-side.</p>
       </div>
     </div>
     <div style="padding-top:14px;border-top:1px solid var(--border);margin-top:14px"><button onclick="clearData()" style="color:var(--red);background:none;border:1px solid var(--red);border-radius:8px;padding:7px 14px;cursor:pointer;font-size:.83rem">🗑️ Clear all data</button></div>
@@ -3769,6 +3777,33 @@ function doUnlinkSheet() {
     .unlinkSheet();
 }
 function clearData() { if(!confirm('Delete ALL transactions and budgets?')) return; S.transactions=[]; S.budgets={}; schedSave(); closeModal(); render(); toast('Cleared'); }
+
+// ── GitHub Backup ─────────────────────────────────────────
+function doGitHubBackup() {
+  const btn = document.getElementById('gh-backup-btn');
+  google.script.run
+    .withSuccessHandler(hasToken => {
+      if (!hasToken) {
+        document.getElementById('gh-token-row').style.display = 'block';
+        toast('Enter a GitHub token first');
+        return;
+      }
+      btn.disabled = true; btn.textContent = 'Backing up…';
+      google.script.run
+        .withSuccessHandler(r => { btn.disabled = false; btn.textContent = '☁️ Backup to GitHub'; toast('Backed up to GitHub!'); })
+        .withFailureHandler(e => { btn.disabled = false; btn.textContent = '☁️ Backup to GitHub'; toast('Backup failed: ' + (e.message || e)); })
+        .backupToGitHub();
+    })
+    .hasGitHubToken();
+}
+function saveGhToken() {
+  const val = document.getElementById('gh-token-input').value.trim();
+  if (!val) { toast('Enter a token'); return; }
+  google.script.run
+    .withSuccessHandler(() => { document.getElementById('gh-token-row').style.display = 'none'; toast('Token saved! Click Backup again.'); })
+    .withFailureHandler(e => toast('Error: ' + (e.message || e)))
+    .setGitHubToken(val);
+}
 
 // ── Export: download all data as a local JSON file ──────────
 function doExportJson() {
