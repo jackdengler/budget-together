@@ -7,14 +7,25 @@ const ALLOWED_EMAILS = [
 ];
 
 function doGet(e) {
-  const user = Session.getActiveUser().getEmail();
-  if (!ALLOWED_EMAILS.includes(user.toLowerCase())) {
-    return HtmlService.createHtmlOutput('<h2>Access denied</h2><p>This app is private.</p>');
+  try {
+    var user = '';
+    try {
+      var activeUser = Session.getActiveUser();
+      if (activeUser) user = activeUser.getEmail() || '';
+    } catch(authErr) {
+      user = '';
+    }
+    if (!ALLOWED_EMAILS.includes(user.toLowerCase())) {
+      return HtmlService.createHtmlOutput('<h2>Access denied</h2><p>This app is private. Please sign in with an authorized Google account.</p>');
+    }
+    var page = (e && e.parameter && e.parameter.v === 'mobile') ? 'mobile' :
+               (e && e.parameter && e.parameter.v === 'tournament') ? 'tournament' : 'index';
+    return HtmlService.createHtmlOutputFromFile(page)
+      .setTitle('Budget Together')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  } catch(err) {
+    return HtmlService.createHtmlOutput('<h2>Something went wrong</h2><p>' + err.message + '</p>');
   }
-  const page = (e && e.parameter && e.parameter.v === 'mobile') ? 'mobile' : 'index';
-  return HtmlService.createHtmlOutputFromFile(page)
-    .setTitle('Budget Together')
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
 // ── Spreadsheet setup ──────────────────────────────────────
