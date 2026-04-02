@@ -1964,10 +1964,23 @@ function renderOverview() {
     // ── Compute fixed vs variable spending ──
     const fixedTotal = scaleNum(exp.filter(t => isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0));
     const varTotal = scaleNum(exp.reduce((s,t)=>s+t.amount,0)) - fixedTotal;
-    const p1Fixed = scaleNum(exp.filter(t => (t.person==='p1'||t.shared) && isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0));
-    const p1Var = scaleNum(exp.filter(t => (t.person==='p1'||t.shared) && !isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0));
-    const p2Fixed = scaleNum(exp.filter(t => (t.person==='p2'||t.shared) && isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0));
-    const p2Var = scaleNum(exp.filter(t => (t.person==='p2'||t.shared) && !isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0));
+    // Per-person fixed/variable: solo + settled share of shared (so fixed+var = spend total)
+    const p1SoloFixed = exp.filter(t => t.person==='p1' && !t.shared && isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0);
+    const p1SoloVar = exp.filter(t => t.person==='p1' && !t.shared && !isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0);
+    const p2SoloFixed = exp.filter(t => t.person==='p2' && !t.shared && isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0);
+    const p2SoloVar = exp.filter(t => t.person==='p2' && !t.shared && !isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0);
+    let sharedFixedP1 = 0, sharedFixedP2 = 0, sharedVarP1 = 0, sharedVarP2 = 0;
+    const sharedFixedByCat = {}, sharedVarByCat = {};
+    for (const t of sharedTxns) {
+      if (isFixedCat(t.category)) sharedFixedByCat[t.category] = (sharedFixedByCat[t.category]||0) + t.amount;
+      else sharedVarByCat[t.category] = (sharedVarByCat[t.category]||0) + t.amount;
+    }
+    for (const [cid, amt] of Object.entries(sharedFixedByCat)) { const {p1Share, p2Share} = getCatSplitAmts(cid, amt); sharedFixedP1 += p1Share; sharedFixedP2 += p2Share; }
+    for (const [cid, amt] of Object.entries(sharedVarByCat)) { const {p1Share, p2Share} = getCatSplitAmts(cid, amt); sharedVarP1 += p1Share; sharedVarP2 += p2Share; }
+    const p1Fixed = scaleNum(p1SoloFixed + sharedFixedP1);
+    const p1Var = scaleNum(p1SoloVar + sharedVarP1);
+    const p2Fixed = scaleNum(p2SoloFixed + sharedFixedP2);
+    const p2Var = scaleNum(p2SoloVar + sharedVarP2);
 
     // ── 2x2 person card builder ──
     // Stocks-style currency: sign+$ as superscript, number weight 300 (zero) / 700 (non-zero)
@@ -2158,10 +2171,23 @@ ${dots}`;
   // Compute fixed vs variable for desktop
   const dFixedTotal = scaleNum(exp.filter(t => isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0));
   const dVarTotal = scaleNum(total) - dFixedTotal;
-  const dP1Fixed = scaleNum(exp.filter(t => (t.person==='p1'||t.shared) && isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0));
-  const dP1Var = scaleNum(exp.filter(t => (t.person==='p1'||t.shared) && !isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0));
-  const dP2Fixed = scaleNum(exp.filter(t => (t.person==='p2'||t.shared) && isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0));
-  const dP2Var = scaleNum(exp.filter(t => (t.person==='p2'||t.shared) && !isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0));
+  // Per-person fixed/variable: solo + settled share of shared (so fixed+var = spend total)
+  const dP1SoloFixed = exp.filter(t => t.person==='p1' && !t.shared && isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0);
+  const dP1SoloVar = exp.filter(t => t.person==='p1' && !t.shared && !isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0);
+  const dP2SoloFixed = exp.filter(t => t.person==='p2' && !t.shared && isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0);
+  const dP2SoloVar = exp.filter(t => t.person==='p2' && !t.shared && !isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0);
+  let dSharedFixedP1 = 0, dSharedFixedP2 = 0, dSharedVarP1 = 0, dSharedVarP2 = 0;
+  const dSharedFixedByCat = {}, dSharedVarByCat = {};
+  for (const t of sharedTxns) {
+    if (isFixedCat(t.category)) dSharedFixedByCat[t.category] = (dSharedFixedByCat[t.category]||0) + t.amount;
+    else dSharedVarByCat[t.category] = (dSharedVarByCat[t.category]||0) + t.amount;
+  }
+  for (const [cid, amt] of Object.entries(dSharedFixedByCat)) { const {p1Share, p2Share} = getCatSplitAmts(cid, amt); dSharedFixedP1 += p1Share; dSharedFixedP2 += p2Share; }
+  for (const [cid, amt] of Object.entries(dSharedVarByCat)) { const {p1Share, p2Share} = getCatSplitAmts(cid, amt); dSharedVarP1 += p1Share; dSharedVarP2 += p2Share; }
+  const dP1Fixed = scaleNum(dP1SoloFixed + dSharedFixedP1);
+  const dP1Var = scaleNum(dP1SoloVar + dSharedVarP1);
+  const dP2Fixed = scaleNum(dP2SoloFixed + dSharedFixedP2);
+  const dP2Var = scaleNum(dP2SoloVar + dSharedVarP2);
 
   // Ring Center Stage card builder
   function ringCard(title, titleColor, inc, spend, locked, ret, fam, fixed, variable) {
