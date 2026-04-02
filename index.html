@@ -3239,23 +3239,40 @@ function parsePaystubText(text) {
     else if (/\bhsa\b/i.test(line) && !/er\s*hsa|erhsa/i.test(line)) { addEntry({label:'HSA Contribution',amount:amt,category:'income',type:'income',checked:true}); }
   }
   // Flat-text fallbacks: pdf.js may split labels and amounts onto different lines,
-  // so search the concatenated flat text for key entries not found line-by-line
-  const _fb = (label, re, cat, type, checked) => {
-    if (seenLabels.has(label)) return;
-    const m = flat.match(re);
-    if (m) { const v = stubAmt(m[1]) || parseFloat((m[1]||'').replace(/[,$\s]/g,'')); if (v && v > 0) addEntry({label,amount:v,category:cat,type,checked}); }
+  // so search the concatenated flat text for key entries not found line-by-line.
+  // Use ADP-specific amount pattern to avoid grabbing this-period + YTD as one number.
+  const _adpAmt = '\\$?\\s*-?\\s*(\\d{1,6}(?:\\s\\d{3})*\\s\\d{2})\\b';
+  const _stdAmt = '\\$?\\s*-?\\s*([\\d,]+\\.\\d{2})';
+  const _anyAmt = `(?:${_stdAmt}|${_adpAmt})`;
+  const _fbAmt = (text, labelRe) => {
+    const m = text.match(labelRe);
+    if (!m) return null;
+    const rest = text.slice(m.index + m[0].length);
+    const sm = rest.match(new RegExp('^\\s*' + _anyAmt));
+    if (!sm) return null;
+    if (sm[1]) return parseFloat(sm[1].replace(/,/g,'')) || null;
+    if (sm[2]) return stubAmt(sm[2]) || null;
+    return null;
   };
-  _fb('Net Pay (take-home)',   /Net\s+Pay\s+\$?\s*(\d[\d ,]+\d{2})/i,       'income','income',true);
-  _fb('Roth 401k Contribution',/\bRoth\b[^A-Za-z]*?(\d[\d ,]+\d{2})/i,      'income','income',true);
-  _fb('HSA Contribution',      /\bHsa\b(?!.*?Er)[^A-Za-z]*?(\d[\d ,]+\d{2})/i,'income','income',true);
-  _fb('Employer 401k Match',   /Er\s*401[kK]\s*Match[^A-Za-z]*?(\d[\d ,]+\d{2})/i,'income','income',false);
-  _fb('Employer HSA Contribution',/(?:Erhsa|Er\s+Hsa)[^A-Za-z]*?(\d[\d ,]+\d{2})/i,'income','income',false);
-  _fb('Dental Insurance',      /\bDental\b[^A-Za-z]*?(\d[\d ,]+\d{2})/i,    'insurance','expense',true);
-  _fb('Medical Insurance',     /\bMedical\b(?!.*?medicare)[^A-Za-z]*?(\d[\d ,]+\d{2})/i,'insurance','expense',true);
-  _fb('Vision Insurance',      /\bVision\b[^A-Za-z]*?(\d[\d ,]+\d{2})/i,    'insurance','expense',true);
-  _fb('LTD Insurance',         /\bLTDImpInc\b[^A-Za-z]*?(\d[\d ,]+\d{2})/i, 'insurance','expense',true);
+  const _fb = (label, labelRe, cat, type, checked) => {
+    if (seenLabels.has(label)) return;
+    const v = _fbAmt(flat, labelRe);
+    if (v && v > 0) addEntry({label,amount:v,category:cat,type,checked});
+  };
+  if (!seenLabels.has('Net Pay (take-home)')) {
+    const v = _fbAmt(flat, /Net\s+Pay/i);
+    if (v && v > 0) { result.netPay = v; addEntry({label:'Net Pay (take-home)',amount:v,category:'income',type:'income',checked:true}); }
+  }
+  _fb('Roth 401k Contribution',     /\bRoth\b/i,                     'income','income',true);
+  _fb('HSA Contribution',           /\bHsa\b(?!\s*(?:Er|Employer))/i, 'income','income',true);
+  _fb('Employer 401k Match',        /Er\s*401[kK]\s*Match/i,         'income','income',false);
+  _fb('Employer HSA Contribution',  /(?:Erhsa|Er\s+Hsa)/i,           'income','income',false);
+  _fb('Dental Insurance',           /\bDental\b/i,                   'insurance','expense',true);
+  _fb('Medical Insurance',          /\bMedical\b(?!.*?medicare)/i,   'insurance','expense',true);
+  _fb('Vision Insurance',           /\bVision\b/i,                   'insurance','expense',true);
+  _fb('LTD Insurance',              /\bLTDImpInc\b/i,               'insurance','expense',true);
   // Gross pay from flat text
-  if (!result.grossPay) { const gm = flat.match(/Gross\s+Pay\s+\$?\s*(\d[\d ,]+\d{2})/i); if (gm) { const v = stubAmt(gm[1]); if (v) result.grossPay = v; } }
+  if (!result.grossPay) { const v = _fbAmt(flat, /Gross\s+Pay/i); if (v) result.grossPay = v; }
   // Net pay from deposit line (near masked account number) as last resort
   if (!result.netPay) {
     const depM = flat.match(/\$\s*(\d[\d ]+\d{2})\s+x{4,}/i);
