@@ -1165,7 +1165,7 @@ function learnRule(desc, shared, category, person) { const key = normalizeDesc(d
 
 // ── Income type helpers ──────────────────────────────────────────────────────
 // Keyword-based auto-detection (catches 401k/roth/HSA lines on first import).
-const RETIREMENT_KW = /\b(401k?|roth|retirement|pension|sep[\s-]?ira|hsa contrib)\b/i;
+const RETIREMENT_KW = /\b(401k?|roth|retirement|pension|sep[\s-]?ira|hsa\s+contrib\w*)\b/i;
 function detectIncomeType(desc) { return RETIREMENT_KW.test(desc) ? 'retirement' : 'normal'; }
 // Priority: explicit per-txn override → learned description rule → keyword detection.
 function getIncomeType(txnId, desc) {
