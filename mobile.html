@@ -742,6 +742,14 @@ function updateDots(active, total){
 google.script.run
   .withSuccessHandler(function(data){
     D = data;
+    // If current month has no transactions, jump to most recent month with data
+    var curMoTxns = (D.transactions||[]).filter(function(t){ return t.date && t.date.slice(0,7)===currentMonth; });
+    if (curMoTxns.length === 0 && (D.transactions||[]).length > 0) {
+      var allMo = {};
+      for (var i=0; i<D.transactions.length; i++) { if (D.transactions[i].date) allMo[D.transactions[i].date.slice(0,7)] = true; }
+      var sorted = Object.keys(allMo).sort();
+      if (sorted.length) currentMonth = sorted[sorted.length - 1];
+    }
     document.getElementById('status').style.display = 'none';
     document.getElementById('app').className = 'show';
     try { render(); } catch(e){
