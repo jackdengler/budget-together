@@ -419,6 +419,20 @@
     ::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.12);border-radius:3px}
     ::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,0.2)}
 
+    /* Spending history bars */
+    .sh-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:12px;transition:opacity 0.3s}
+    .sh-row:last-child{margin-bottom:0}
+    .sh-row.sh-faded{opacity:0.4}
+    .sh-label{font-size:11px;font-weight:700;color:var(--text);width:52px;text-align:right;flex-shrink:0;padding-top:5px;letter-spacing:-0.01em}
+    .sh-track{flex:1;height:26px;border-radius:13px;overflow:hidden;display:flex;background:rgba(0,0,0,0.04)}
+    .sh-fill{display:flex;height:100%;border-radius:13px;overflow:hidden;transition:width 0.4s var(--ease-out)}
+    .sh-seg1{background:var(--p1);height:100%}
+    .sh-seg2{background:var(--p2);height:100%}
+    .sh-gap{width:2.5px;background:white;height:100%;flex-shrink:0}
+    .sh-amounts{display:flex;flex-direction:column;align-items:flex-end;width:54px;flex-shrink:0}
+    .sh-total{font-size:11px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums;letter-spacing:-0.02em;line-height:1.3}
+    .sh-p1{font-size:9px;font-weight:600;color:var(--p1);font-variant-numeric:tabular-nums;line-height:1.3}
+    .sh-p2{font-size:9px;font-weight:600;color:var(--p2);font-variant-numeric:tabular-nums;line-height:1.3}
 
     /* Review badge */
     #review-badge{display:none;align-items:center;gap:6px;padding:4px 10px;border:none;background:var(--warning-light);border-radius:var(--radius-sm);cursor:pointer;font-size:11px;font-weight:800;color:#7A6030;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent;transition:all 0.2s;letter-spacing:0.02em}
@@ -1596,6 +1610,54 @@ function getOverviewMonths() {
   }
 }
 
+function renderSpendingHistory() {
+  // Collect all months with data, newest first
+  const allMonths = [...new Set(S.transactions.map(t => t.date && t.date.slice(0,7)).filter(Boolean))].sort().reverse().slice(0, 6);
+  if (!allMonths.length) return '<p style="text-align:center;color:var(--text-3);font-size:13px;padding:18px;">No spending history yet</p>';
+
+  // Per-month stats
+  const monthData = allMonths.map(mo => {
+    const txns = S.transactions.filter(t => t.date && t.date.startsWith(mo) && isVisible(t));
+    const exp = txns.filter(t => t.amount > 0 && !getCat(t.category).ignored && !t.excluded);
+    // Jack solo + Jack's share of shared
+    const p1solo = exp.filter(t => t.person==='p1' && !t.shared).reduce((s,t) => s+t.amount, 0);
+    const p2solo = exp.filter(t => t.person==='p2' && !t.shared).reduce((s,t) => s+t.amount, 0);
+    const sharedByCat = {};
+    for (const t of exp.filter(t => t.shared)) sharedByCat[t.category] = (sharedByCat[t.category]||0) + t.amount;
+    let p1shared = 0, p2shared = 0;
+    for (const [cid, amt] of Object.entries(sharedByCat)) {
+      const {p1Share, p2Share} = getCatSplitAmts(cid, amt);
+      p1shared += p1Share; p2shared += p2Share;
+    }
+    const p1total = p1solo + p1shared;
+    const p2total = p2solo + p2shared;
+    const total = p1total + p2total;
+    return { mo, total, p1total, p2total };
+  });
+
+  const maxTotal = Math.max(...monthData.map(d => d.total), 1);
+  const curMo = S.currentMonth;
+
+  const bars = monthData.map(d => {
+    const pct = d.total / maxTotal * 100;
+    const p1pct = d.total > 0 ? (d.p1total / d.total * 100) : 50;
+    const isCurrent = d.mo === curMo;
+    const [y, m] = d.mo.split('-');
+    const label = new Date(+y, +m-1, 1).toLocaleDateString('en-US', {month:'short'}) + " '" + y.slice(2);
+    return `<div class="sh-row${isCurrent ? '' : ' sh-faded'}" style="cursor:pointer" onclick="S.currentMonth='${d.mo}';render()">
+      <div class="sh-label">${label}</div>
+      <div class="sh-track"><div class="sh-fill" style="width:${pct.toFixed(1)}%"><div class="sh-seg1" style="width:${p1pct.toFixed(1)}%"></div><div class="sh-gap"></div><div class="sh-seg2" style="flex:1"></div></div></div>
+      <div class="sh-amounts">
+        <div class="sh-total">${fc0(d.total)}</div>
+        <div class="sh-p1">${fc0(d.p1total)}</div>
+        <div class="sh-p2">${fc0(d.p2total)}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  return bars;
+}
+
 function renderOverview() {
   const rangeMonths = getOverviewMonths();
   const isMulti     = rangeMonths.length > 1;
@@ -2013,7 +2075,15 @@ function renderOverview() {
       </div>
     </div></div>`;
 
-    const slideNames = ['Combined', esc(S.settings.person1||'Person 1'), esc(S.settings.person2||'Person 2'), 'Categories', 'Merchants'];
+    // ── Slide 6: Spending History ──
+    const slide6 = `<div class="ov-slide"><div class="ov-slide-inner" style="display:flex;flex-direction:column;border-top:3px solid var(--ios-accent)">
+      <div class="ov-slide-title">Spending History</div>
+      <div style="padding:12px 14px;flex:1;display:flex;flex-direction:column;justify-content:center;">
+        ${renderSpendingHistory()}
+      </div>
+    </div></div>`;
+
+    const slideNames = ['Combined', esc(S.settings.person1||'Person 1'), esc(S.settings.person2||'Person 2'), 'Categories', 'Merchants', 'History'];
     const dots = `<div class="ov-tabs" id="ov-dots">
       ${slideNames.map((n,i) => `<div class="ov-tab${i===0?' active':''}" data-idx="${i}">${n}</div>`).join('')}
     </div>`;
@@ -2030,8 +2100,8 @@ function renderOverview() {
         });
       });
       carousel.addEventListener('scroll', () => {
-        const idx = Math.round(carousel.scrollLeft / carousel.offsetWidth * (5/4.75));
-        const clampedIdx = Math.max(0, Math.min(4, idx));
+        const idx = Math.round(carousel.scrollLeft / carousel.offsetWidth * (6/5.75));
+        const clampedIdx = Math.max(0, Math.min(5, idx));
         dotsEl.querySelectorAll('.ov-tab').forEach((d, i) => {
           d.classList.toggle('active', i === clampedIdx);
           if (i === clampedIdx) d.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
@@ -2069,7 +2139,7 @@ ${rangeToggleMobile}
 ${viewToggleMobile}
 ${recSectionHtml}
 <div class="ov-carousel" id="ov-carousel">
-  ${slide1}${slide2}${slide3}${slide4}${slide5}
+  ${slide1}${slide2}${slide3}${slide4}${slide5}${slide6}
 </div>
 ${dots}`;
   }
@@ -2153,7 +2223,12 @@ ${recSectionHtml}
 
     </div>
   </div>
-  <div class="card" style="margin-bottom:0;padding:12px;aspect-ratio:1;"></div>
+  <div class="card" style="margin-bottom:0;padding:20px;aspect-ratio:1;display:flex;flex-direction:column;">
+    <div style="font-size:14px;font-weight:800;letter-spacing:-0.02em;margin-bottom:16px;flex-shrink:0;">Spending History</div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+      ${renderSpendingHistory()}
+    </div>
+  </div>
   <div class="card" style="margin-bottom:0;padding:4px 12px;aspect-ratio:1;display:flex;flex-direction:column;overflow:hidden;">
     <div style="font-size:22px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;text-align:center;margin-bottom:2px;color:var(--primary);">Top Merchants</div>
     <div style="flex:1;display:flex;flex-direction:column;justify-content:space-evenly;">
