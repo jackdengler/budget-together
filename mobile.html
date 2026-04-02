@@ -54,13 +54,22 @@
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html {
+      height: 100%;
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
+    }
     body {
       font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
       background: var(--surface);
       color: var(--text);
-      height: 100vh;
+      height: 100%;
       overflow: hidden;
       overscroll-behavior: none;
+      position: fixed;
+      width: 100%;
+      touch-action: pan-x;
       -webkit-text-size-adjust: 100%;
       -webkit-font-smoothing: antialiased;
       user-select: none;
