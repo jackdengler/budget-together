@@ -3151,6 +3151,8 @@ async function onPdfFile(ev, personHint) {
     }
     // Fall through to paystub parsing
     toast('Parsing paystub…');
+    // DEBUG: show extracted text
+    prompt('DEBUG: PDF text (copy this)', text);
     const parsed = parsePaystubText(text);
     if (personHint && !parsed.employeeName) parsed.person = personHint;
     if (!parsed.entries.length && !parsed.payDate) { toast('Could not recognize paystub format'); return; }
