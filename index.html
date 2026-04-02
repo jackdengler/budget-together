@@ -3003,7 +3003,7 @@ async function extractPdfText(file) {
       let line = row[0].str;
       for (let j = 1; j < row.length; j++) {
         const gap = row[j].x - (row[j-1].x + row[j-1].w);
-        line += (gap > 3 ? ' ' : '') + row[j].str;
+        line += (gap > 1 ? ' ' : '') + row[j].str;
       }
       return line;
     });
@@ -3151,8 +3151,6 @@ async function onPdfFile(ev, personHint) {
     }
     // Fall through to paystub parsing
     toast('Parsing paystub…');
-    // DEBUG: show extracted text
-    prompt('DEBUG: PDF text (copy this)', text);
     const parsed = parsePaystubText(text);
     if (personHint && !parsed.employeeName) parsed.person = personHint;
     if (!parsed.entries.length && !parsed.payDate) { toast('Could not recognize paystub format'); return; }
