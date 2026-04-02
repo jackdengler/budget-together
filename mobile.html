@@ -59,6 +59,8 @@
       overflow: hidden;
       position: fixed;
       width: 100%;
+      overscroll-behavior: none;
+      touch-action: none;
     }
     body {
       font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
@@ -69,7 +71,7 @@
       overscroll-behavior: none;
       position: fixed;
       width: 100%;
-      touch-action: pan-x;
+      touch-action: none;
       -webkit-text-size-adjust: 100%;
       -webkit-font-smoothing: antialiased;
       user-select: none;
@@ -145,6 +147,8 @@
       gap: 0;
       flex: 1;
       align-items: stretch;
+      touch-action: pan-x;
+      overscroll-behavior-x: contain;
     }
     .carousel::-webkit-scrollbar { display: none; }
 
@@ -253,53 +257,37 @@
       font-weight: 800;
     }
 
-    /* Category bars */
+    /* Category rows — name above bar */
     .cat-row {
-      display: flex;
-      align-items: center;
-      gap: calc(8px * var(--z));
       padding: calc(4px * var(--z)) 0;
-      border-bottom: calc(1px * var(--z)) solid var(--bg);
     }
-    .cat-icon {
-      width: calc(28px * var(--z));
-      height: calc(28px * var(--z));
-      border-radius: calc(7px * var(--z));
+    .cat-header {
       display: flex;
       align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
+      justify-content: space-between;
+      margin-bottom: calc(2px * var(--z));
     }
-    .cat-icon i { font-size: calc(12px * var(--z)); }
-    .cat-name {
-      width: calc(70px * var(--z));
-      font-size: calc(11px * var(--z));
-      font-weight: 700;
-      flex-shrink: 0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .cat-bar-wrap {
-      flex: 1;
-      height: calc(14px * var(--z));
-      background: rgba(0,0,0,0.03);
-      border-radius: calc(7px * var(--z));
-      overflow: hidden;
+    .cat-header-left {
       display: flex;
+      align-items: center;
+      gap: calc(5px * var(--z));
+    }
+    .cat-header-left i {
+      font-size: calc(14px * var(--z));
+    }
+    .cat-name {
+      font-size: calc(14px * var(--z));
+      font-weight: 700;
     }
     .cat-amt {
-      font-size: calc(13px * var(--z));
+      font-size: calc(14px * var(--z));
       font-weight: 900;
-      flex-shrink: 0;
     }
-    .cat-pct {
-      font-size: calc(9px * var(--z));
-      font-weight: 700;
-      color: var(--text-3);
-      flex-shrink: 0;
-      width: calc(28px * var(--z));
-      text-align: right;
+    .cat-bar-wrap {
+      height: calc(16px * var(--z));
+      border-radius: calc(8px * var(--z));
+      overflow: hidden;
+      display: flex;
     }
 
     /* Merchant rows */
@@ -466,6 +454,17 @@
 <div id="app"></div>
 
 <script>
+// Kill all vertical scrolling/bouncing at document level
+document.addEventListener('touchmove', function(e) {
+  // Only allow touches inside the carousel (for horizontal swiping)
+  var el = e.target;
+  while (el && el !== document.body) {
+    if (el.classList && el.classList.contains('carousel')) return;
+    el = el.parentNode;
+  }
+  e.preventDefault();
+}, {passive: false});
+
 var D, currentMonth = new Date().toISOString().slice(0,7), currentCard = 0;
 
 var FIXED = {housing:1, utilities:1, subs:1, insurance:1};
@@ -671,11 +670,9 @@ function categoryCard(txns) {
     var ptot = p1a+p2a;
     var p1pct = ptot>0 ? (p1a/ptot*100).toFixed(0) : 50;
     rows += '<div class="cat-row">'
-      + '<div class="cat-icon" style="background:' + c.color + '10"><i class="bi ' + c.icon + '" style="color:' + c.color + '"></i></div>'
-      + '<div class="cat-name">' + c.label + '</div>'
-      + '<div class="cat-bar-wrap"><div style="width:' + (barW*p1pct/100) + '%;background:var(--p1-bar)"></div><div style="width:' + (barW*(100-p1pct)/100) + '%;background:var(--p2-bar)"></div></div>'
-      + '<div class="cat-amt">' + fc0(amt) + '</div>'
-      + '<div class="cat-pct">' + pct + '%</div>'
+      + '<div class="cat-header"><div class="cat-header-left"><i class="bi ' + c.icon + '" style="color:' + c.color + '"></i><span class="cat-name">' + c.label + '</span></div>'
+      + '<span class="cat-amt">' + fc0(amt) + '</span></div>'
+      + '<div class="cat-bar-wrap"><div style="width:' + (p1pct) + '%;background:var(--p1-bar)"></div><div style="width:' + (100-p1pct) + '%;background:var(--p2-bar)"></div></div>'
       + '</div>';
   }
 
@@ -683,7 +680,7 @@ function categoryCard(txns) {
 
   return '<div class="card">'
     + '<div class="section-title">Spending by Category</div>'
-    + '<div class="card-scroll">' + rows + '</div>'
+    + '<div class="card-scroll" style="display:flex;flex-direction:column;justify-content:space-evenly">' + rows + '</div>'
     + '</div>';
 }
 
