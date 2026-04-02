@@ -1584,7 +1584,7 @@ function render() {
   const main = $('main');
   // Overview needs overflow:hidden so the carousel fills the viewport without any page scroll.
   // All other tabs need overflow-y:auto so their content is scrollable.
-  if (isMobile()) main.style.overflowY = S.activeTab === 'overview' ? 'hidden' : 'auto';
+  main.style.overflowY = S.activeTab === 'overview' ? 'hidden' : 'auto';
   if (S.activeTab === 'overview') main.innerHTML = renderOverview();
   else if (S.activeTab === 'transactions') main.innerHTML = renderTxns();
   else if (S.activeTab === 'split') main.innerHTML = renderSplit();
