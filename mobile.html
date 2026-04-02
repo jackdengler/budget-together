@@ -176,51 +176,53 @@
       margin-bottom: calc(8px * var(--z));
     }
 
-    /* Ring center stage layout */
-    .rcs-body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: calc(8px * var(--z));
-      flex: 1;
-    }
-    .rcs-col {
-      flex: 1;
-      min-width: 0;
-    }
-    .rcs-col-right { text-align: right; }
-    .rcs-label {
-      font-size: calc(10px * var(--z));
-      font-weight: 800;
-      letter-spacing: calc(2px * var(--z));
-      text-transform: uppercase;
-      margin-bottom: calc(2px * var(--z));
-    }
-    .rcs-number {
-      font-size: calc(24px * var(--z));
-      font-weight: 900;
-      letter-spacing: calc(-1px * var(--z));
-      line-height: 1.15;
-    }
-    .rcs-breakdown {
-      margin-top: calc(4px * var(--z));
+    /* Stacked ring card layout */
+    .rcs-section {
+      flex: 0.9;
       display: flex;
       flex-direction: column;
-      gap: calc(1px * var(--z));
+      justify-content: center;
+      align-items: center;
     }
-    .rcs-breakdown-row {
+    .rcs-section-ring {
+      flex: 1.2;
       display: flex;
-      justify-content: space-between;
-      font-size: calc(11px * var(--z));
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
-    .rcs-breakdown-row .lbl { color: var(--text-3); }
-    .rcs-breakdown-row .val { font-weight: 700; color: var(--text-sub); }
+    .rcs-number {
+      font-size: calc(42px * var(--z));
+      font-weight: 900;
+      letter-spacing: calc(-2px * var(--z));
+      line-height: 1;
+      margin: calc(3px * var(--z)) 0;
+    }
+    .rcs-pills {
+      display: flex;
+      gap: calc(4px * var(--z));
+      margin-top: calc(4px * var(--z));
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .rcs-pill {
+      font-size: calc(9px * var(--z));
+      font-weight: 800;
+      padding: calc(3px * var(--z)) calc(8px * var(--z));
+      border-radius: calc(10px * var(--z));
+    }
+    .rcs-divider {
+      height: calc(2px * var(--z));
+      margin: 0 calc(28px * var(--z));
+      align-self: stretch;
+      flex-shrink: 0;
+    }
 
     /* Ring */
     .rcs-ring-wrap {
       position: relative;
-      width: calc(100px * var(--z));
-      height: calc(100px * var(--z));
+      width: calc(120px * var(--z));
+      height: calc(120px * var(--z));
       flex-shrink: 0;
     }
     .rcs-ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
@@ -232,16 +234,23 @@
       align-items: center;
       justify-content: center;
     }
+    .rcs-ring-label {
+      font-size: calc(7px * var(--z));
+      font-weight: 800;
+      letter-spacing: calc(1.5px * var(--z));
+      text-transform: uppercase;
+      color: var(--text-sub);
+    }
     .rcs-ring-dollar {
-      font-size: calc(15px * var(--z));
+      font-size: calc(20px * var(--z));
       font-weight: 900;
-      letter-spacing: calc(-0.5px * var(--z));
+      letter-spacing: calc(-1px * var(--z));
       line-height: 1;
+      margin: calc(2px * var(--z)) 0;
     }
     .rcs-ring-pct {
       font-size: calc(11px * var(--z));
       font-weight: 800;
-      margin-top: calc(1px * var(--z));
     }
 
     /* Category bars */
@@ -581,37 +590,38 @@ function ringCard(title, titleColor, d) {
   var fillPct = isLoss ? 100 : Math.max(0, Math.min(sRate, 100));
   var dashOffset = circ - (fillPct / 100) * circ;
   var savedStr = isLoss ? ('\u2212' + fc(Math.abs(saved))) : fc(saved);
-  var pctStr = isLoss ? ('\u2212' + Math.abs(sRate) + '%') : (sRate + '%');
+  var pctStr = isLoss ? ('\u2212' + Math.abs(sRate) + '% rate') : (sRate + '% rate');
 
-  var incLines = '<div class="rcs-breakdown-row"><span class="lbl">Regular</span><span class="val">' + fc0(d.inc - (d.ret||0) - (d.fam||0)) + '</span></div>';
-  if ((d.ret||0) > 0) incLines += '<div class="rcs-breakdown-row"><span class="lbl">Retirement</span><span class="val" style="color:var(--yellow)">' + fc0(d.ret) + '</span></div>';
-  if ((d.fam||0) > 0) incLines += '<div class="rcs-breakdown-row"><span class="lbl">Family</span><span class="val" style="color:var(--purple)">' + fc0(d.fam) + '</span></div>';
+  var incPills = '<div class="rcs-pill" style="background:rgba(58,106,58,0.08);color:var(--green)">Reg ' + fc0(d.inc - (d.ret||0) - (d.fam||0)) + '</div>';
+  if ((d.ret||0) > 0) incPills += '<div class="rcs-pill" style="background:rgba(160,128,64,0.08);color:var(--yellow)">Ret ' + fc0(d.ret) + '</div>';
+  if ((d.fam||0) > 0) incPills += '<div class="rcs-pill" style="background:rgba(104,88,128,0.08);color:var(--purple)">Fam ' + fc0(d.fam) + '</div>';
 
   return '<div class="card">'
     + '<div class="card-title" style="color:' + titleColor + '">' + title + '</div>'
-    + '<div class="rcs-body">'
-    + '<div class="rcs-col rcs-col-right">'
-    + '<div class="rcs-label" style="color:var(--green)">INCOME</div>'
+    + '<div class="rcs-section">'
     + '<div class="rcs-number" style="color:var(--green)">' + fc0(d.inc) + '</div>'
-    + '<div class="rcs-breakdown">' + incLines + '</div>'
+    + '<div class="rcs-pills">' + incPills + '</div>'
     + '</div>'
+    + '<div class="rcs-divider" style="background:linear-gradient(90deg,transparent,var(--green),transparent)"></div>'
+    + '<div class="rcs-section-ring">'
     + '<div class="rcs-ring-wrap">'
     + '<svg viewBox="0 0 100 100">'
     + '<circle cx="50" cy="50" r="42" fill="none" stroke="var(--ring-track)" stroke-width="8"/>'
     + '<circle cx="50" cy="50" r="42" fill="none" stroke="' + ringColorRaw + '" stroke-width="8" stroke-linecap="round" stroke-dasharray="' + circ + '" stroke-dashoffset="' + dashOffset + '"/>'
     + '</svg>'
     + '<div class="rcs-ring-inner">'
+    + '<div class="rcs-ring-label">SAVED</div>'
     + '<div class="rcs-ring-dollar" style="color:' + ringColor + '">' + savedStr + '</div>'
     + '<div class="rcs-ring-pct" style="color:' + ringColor + '">' + pctStr + '</div>'
     + '</div>'
     + '</div>'
-    + '<div class="rcs-col">'
-    + '<div class="rcs-label" style="color:var(--red)">SPENDING</div>'
-    + '<div class="rcs-number" style="color:var(--red)">' + fc0(d.spend) + '</div>'
-    + '<div class="rcs-breakdown">'
-    + '<div class="rcs-breakdown-row"><span class="lbl">Fixed</span><span class="val">' + fc0(d.fixed) + '</span></div>'
-    + '<div class="rcs-breakdown-row"><span class="lbl">Variable</span><span class="val">' + fc0(d.variable) + '</span></div>'
     + '</div>'
+    + '<div class="rcs-divider" style="background:linear-gradient(90deg,transparent,var(--red),transparent)"></div>'
+    + '<div class="rcs-section">'
+    + '<div class="rcs-number" style="color:var(--red)">' + fc0(d.spend) + '</div>'
+    + '<div class="rcs-pills">'
+    + '<div class="rcs-pill" style="background:rgba(168,74,42,0.08);color:var(--red)">Fixed ' + fc0(d.fixed) + '</div>'
+    + '<div class="rcs-pill" style="background:rgba(168,74,42,0.06);color:var(--red)">Var ' + fc0(d.variable) + '</div>'
     + '</div>'
     + '</div>'
     + '</div>';
