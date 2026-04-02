@@ -1429,8 +1429,17 @@ function unlinkPerson(person) {
 const BUILD_TIMESTAMP = '__BUILD_TIMESTAMP__';
 
 // ── PIN / Private Mode ──────────────────────────────────────
-// Access: long-press the logo (hold ~600ms). Looks accidental to anyone watching.
-// Tap (short click): briefly show deploy timestamp.
+// Access: key sequence left-right-left-right-a-b-a-b (like a cheat code)
+const _secretSeq = ['ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','a','b','a','b'];
+let _secretBuf = [];
+document.addEventListener('keydown', e => {
+  _secretBuf.push(e.key);
+  if (_secretBuf.length > _secretSeq.length) _secretBuf.shift();
+  if (_secretBuf.length === _secretSeq.length && _secretBuf.every((k,i) => k === _secretSeq[i])) {
+    _secretBuf = [];
+    showPinModal();
+  }
+});
 let _lpTimer = null;
 let _lpFired = false;
 let _lpInited = false;
