@@ -3238,6 +3238,15 @@ function parsePaystubText(text) {
     else if (/ltdimp|long.?term\s+dis/i.test(line))               { addEntry({label:'LTD Insurance',amount:amt,category:'insurance',type:'expense',checked:true}); }
     else if (/\bhsa\b/i.test(line) && !/er\s*hsa|erhsa/i.test(line)) { addEntry({label:'HSA Contribution',amount:amt,category:'income',type:'income',checked:true}); }
   }
+  // Fallback: if Net Pay is $0 or missing (e.g. ADP "Wellness TXB" zeroes it out),
+  // use the direct-deposit amount that appears next to the masked account number
+  if (!result.netPay) {
+    const depM = flat.match(/\$\s*(\d[\d ]+\d{2})\s+x{4,}/i);
+    if (depM) {
+      const v = stubAmt(depM[1]);
+      if (v && v > 0) { result.netPay = v; addEntry({label:'Net Pay (take-home)',amount:v,category:'income',type:'income',checked:true}); }
+    }
+  }
   result.person = (() => {
     if (!result.employeeName) return 'p1';
     const name = result.employeeName.toLowerCase();
