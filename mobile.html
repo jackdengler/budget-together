@@ -523,7 +523,8 @@ function isFixedCat(cat){
 
 function getCatSplitAmts(catId, amt) {
   var splits = D.catSplits || {};
-  var ratio = splits[catId] != null ? splits[catId] : 0.5;
+  var ratio = splits[catId] != null ? parseFloat(splits[catId]) : 0.5;
+  if (isNaN(ratio)) ratio = 0.5;
   return {p1Share: amt * ratio, p2Share: amt * (1 - ratio)};
 }
 
