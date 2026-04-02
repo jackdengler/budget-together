@@ -3238,8 +3238,25 @@ function parsePaystubText(text) {
     else if (/ltdimp|long.?term\s+dis/i.test(line))               { addEntry({label:'LTD Insurance',amount:amt,category:'insurance',type:'expense',checked:true}); }
     else if (/\bhsa\b/i.test(line) && !/er\s*hsa|erhsa/i.test(line)) { addEntry({label:'HSA Contribution',amount:amt,category:'income',type:'income',checked:true}); }
   }
-  // Fallback: if Net Pay is $0 or missing (e.g. ADP "Wellness TXB" zeroes it out),
-  // use the direct-deposit amount that appears next to the masked account number
+  // Flat-text fallbacks: pdf.js may split labels and amounts onto different lines,
+  // so search the concatenated flat text for key entries not found line-by-line
+  const _fb = (label, re, cat, type, checked) => {
+    if (seenLabels.has(label)) return;
+    const m = flat.match(re);
+    if (m) { const v = stubAmt(m[1]) || parseFloat((m[1]||'').replace(/[,$\s]/g,'')); if (v && v > 0) addEntry({label,amount:v,category:cat,type,checked}); }
+  };
+  _fb('Net Pay (take-home)',   /Net\s+Pay\s+\$?\s*(\d[\d ,]+\d{2})/i,       'income','income',true);
+  _fb('Roth 401k Contribution',/\bRoth\b[^A-Za-z]*?(\d[\d ,]+\d{2})/i,      'income','income',true);
+  _fb('HSA Contribution',      /\bHsa\b(?!.*?Er)[^A-Za-z]*?(\d[\d ,]+\d{2})/i,'income','income',true);
+  _fb('Employer 401k Match',   /Er\s*401[kK]\s*Match[^A-Za-z]*?(\d[\d ,]+\d{2})/i,'income','income',false);
+  _fb('Employer HSA Contribution',/(?:Erhsa|Er\s+Hsa)[^A-Za-z]*?(\d[\d ,]+\d{2})/i,'income','income',false);
+  _fb('Dental Insurance',      /\bDental\b[^A-Za-z]*?(\d[\d ,]+\d{2})/i,    'insurance','expense',true);
+  _fb('Medical Insurance',     /\bMedical\b(?!.*?medicare)[^A-Za-z]*?(\d[\d ,]+\d{2})/i,'insurance','expense',true);
+  _fb('Vision Insurance',      /\bVision\b[^A-Za-z]*?(\d[\d ,]+\d{2})/i,    'insurance','expense',true);
+  _fb('LTD Insurance',         /\bLTDImpInc\b[^A-Za-z]*?(\d[\d ,]+\d{2})/i, 'insurance','expense',true);
+  // Gross pay from flat text
+  if (!result.grossPay) { const gm = flat.match(/Gross\s+Pay\s+\$?\s*(\d[\d ,]+\d{2})/i); if (gm) { const v = stubAmt(gm[1]); if (v) result.grossPay = v; } }
+  // Net pay from deposit line (near masked account number) as last resort
   if (!result.netPay) {
     const depM = flat.match(/\$\s*(\d[\d ]+\d{2})\s+x{4,}/i);
     if (depM) {
