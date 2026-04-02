@@ -511,8 +511,22 @@ function incType(id, desc){
 }
 
 var HIDDEN_CATS = {gambling:1, cash:1};
+var pinUnlocked = false;
+var arrowSeq = [];
+var arrowTimer = null;
+function checkArrowSeq(dir){
+  clearTimeout(arrowTimer);
+  arrowSeq.push(dir);
+  if (arrowSeq.length > 4) arrowSeq = arrowSeq.slice(-4);
+  arrowTimer = setTimeout(function(){ arrowSeq = []; }, 2000);
+  if (arrowSeq.length === 4 && arrowSeq[0]==='L' && arrowSeq[1]==='R' && arrowSeq[2]==='L' && arrowSeq[3]==='R') {
+    arrowSeq = [];
+    pinUnlocked = !pinUnlocked;
+    render();
+  }
+}
 function isIgnored(cat){
-  if (HIDDEN_CATS[cat]) return true;
+  if (!pinUnlocked && HIDDEN_CATS[cat]) return true;
   var list = [{id:'insurance',ignored:true},{id:'transfer',ignored:true}].concat(D.customCategories||[]);
   var f = list.find(function(c){return c.id===cat;});
   return f ? !!f.ignored : false;
@@ -825,7 +839,9 @@ function render(){
     '<div class="carousel" id="car">' + cards + '</div>'
     + '<div class="dots" id="dots"></div>'
     + '<div class="mo-bar">'
+    + '<button onclick="checkArrowSeq(\'L\');moShift(-1)">\u2039</button>'
     + '<span class="mo-label">' + moLabel(currentMonth) + '</span>'
+    + '<button onclick="checkArrowSeq(\'R\');moShift(1)">\u203A</button>'
     + '</div>';
 
   var car = document.getElementById('car');
