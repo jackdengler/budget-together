@@ -514,7 +514,9 @@ function incType(id, desc){
   return RET_RE.test(desc) ? 'retirement' : 'normal';
 }
 
+var HIDDEN_CATS = {gambling:1, cash:1};
 function isIgnored(cat){
+  if (HIDDEN_CATS[cat]) return true;
   var list = [{id:'insurance',ignored:true},{id:'transfer',ignored:true}].concat(D.customCategories||[]);
   var f = list.find(function(c){return c.id===cat;});
   return f ? !!f.ignored : false;
