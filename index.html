@@ -420,7 +420,7 @@
     ::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,0.2)}
 
     /* Spending history bars */
-    .sh-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:12px;transition:opacity 0.3s}
+    .sh-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:0;transition:opacity 0.3s}
     .sh-row:last-child{margin-bottom:0}
     .sh-row.sh-faded{opacity:0.4}
     .sh-label{font-size:11px;font-weight:700;color:var(--text);width:52px;text-align:right;flex-shrink:0;padding-top:5px;letter-spacing:-0.01em}
@@ -1612,7 +1612,7 @@ function getOverviewMonths() {
 
 function renderSpendingHistory() {
   // Collect all months with data, newest first
-  const allMonths = [...new Set(S.transactions.map(t => t.date && t.date.slice(0,7)).filter(Boolean))].sort().reverse().slice(0, 6);
+  const allMonths = [...new Set(S.transactions.map(t => t.date && t.date.slice(0,7)).filter(Boolean))].sort().reverse().slice(0, 8);
   if (!allMonths.length) return '<p style="text-align:center;color:var(--text-3);font-size:13px;padding:18px;">No spending history yet</p>';
 
   // Per-month stats
@@ -2216,21 +2216,19 @@ ${recSectionHtml}
 <div class="rcs-row">${rc1}${rc2}${rc3}</div>
 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px;" id="cat-section-row">
   <div class="card" style="margin-bottom:0;padding:12px;aspect-ratio:1;overflow:hidden;display:flex;flex-direction:column;">
-    <div class="section-title" style="margin-bottom:4px;flex-shrink:0;">Spending by Category</div>
+    <div class="rcs-title" style="color:var(--primary);margin-bottom:4px;font-size:18px;">Spending by Category</div>
     <div style="flex:1;display:flex;flex-direction:column;justify-content:space-evenly;">
       ${catBars}
-
-
     </div>
   </div>
-  <div class="card" style="margin-bottom:0;padding:20px;aspect-ratio:1;display:flex;flex-direction:column;">
-    <div class="section-title" style="margin-bottom:4px;flex-shrink:0;">Spending History</div>
-    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+  <div class="card" style="margin-bottom:0;padding:12px;aspect-ratio:1;display:flex;flex-direction:column;">
+    <div class="rcs-title" style="color:var(--primary);margin-bottom:4px;font-size:18px;">Spending History</div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:space-evenly;">
       ${renderSpendingHistory()}
     </div>
   </div>
-  <div class="card" style="margin-bottom:0;padding:4px 12px;aspect-ratio:1;display:flex;flex-direction:column;overflow:hidden;">
-    <div style="font-size:22px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;text-align:center;margin-bottom:2px;color:var(--primary);">Top Merchants</div>
+  <div class="card" style="margin-bottom:0;padding:12px;aspect-ratio:1;display:flex;flex-direction:column;overflow:hidden;">
+    <div class="rcs-title" style="color:var(--primary);margin-bottom:4px;font-size:18px;">Top Merchants</div>
     <div style="flex:1;display:flex;flex-direction:column;justify-content:space-evenly;">
       ${merchantCircleRows || '<p style="text-align:center;color:var(--text-3);font-size:13px;padding:18px;">No transactions yet</p>'}
     </div>

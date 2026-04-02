@@ -26,6 +26,10 @@ Do NOT wait for the user to ask — this should happen after every edit, every t
 - The user has a single deployed web app URL that should always reflect the latest code
 - Live deployment ID: `AKfycbz00_wJSijk4uL7KHMHpIi3u4OlWxmJmouGlHX2X106jwh_yDZFTVC9NyW9tFq0N1KpEg`
 
+## Web vs Mobile
+
+Always ask whether a UI change applies to **web** (`index.html`) or **mobile** (`mobile.html`) before starting work. Never assume one or the other.
+
 ## Manual Tasks
 
 When a task requires something that must be done manually (e.g., opening a website, changing a computer setting, configuring an account, enabling a toggle in an app, etc.), offer to do it on the user's Mac for them.
