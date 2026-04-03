@@ -2297,22 +2297,33 @@ function renderTxns() {
     .map(p => `🔒 ${esc(p==='p1'?S.settings.person1:S.settings.person2)}'s private transactions are hidden`);
   const privacyBanner = lockedBanner.length ? `<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:9px 16px;margin-bottom:12px;font-size:.82rem;color:#92400e">${lockedBanner.join(' &nbsp;·&nbsp; ')}</div>` : '';
   // ── Desktop: table rows ──────────────────────────────────
+  const pn1 = esc(S.settings.person1), pn2 = esc(S.settings.person2);
   const rows = txns.map(t => {
-    const ownerCls = t.shared ? 'b-shared' : (t.person==='p1' ? 'b-p1' : 'b-p2');
-    const ownerVal = t.shared ? 'shared' : t.person;
-    const isIncome = t.amount < 0 && t.category === 'income';
-    const itype = isIncome ? getIncomeType(t.id, t.description) : null;
-    const incPills = isIncome ? (() => {
-      const nAct = itype === 'normal', rAct = itype === 'retirement', fAct = itype === 'family';
-      const nSty = `padding:3px 9px;border-radius:20px;font-size:.72rem;font-weight:700;cursor:pointer;border:1px solid ${nAct?'#0369a1':'var(--border)'};background:${nAct?'#e0f2fe':'white'};color:${nAct?'#0369a1':'var(--text-3)'}`;
-      const rSty = `padding:3px 9px;border-radius:20px;font-size:.72rem;font-weight:700;cursor:pointer;border:1px solid ${rAct?'#D4663A':'var(--border)'};background:${rAct?'#ede9fe':'white'};color:${rAct?'#D4663A':'var(--text-3)'}`;
-      const fSty = `padding:3px 9px;border-radius:20px;font-size:.72rem;font-weight:700;cursor:pointer;border:1px solid ${fAct?'#7c3aed':'var(--border)'};background:${fAct?'#f5f3ff':'white'};color:${fAct?'#7c3aed':'var(--text-3)'}`;
-      return `<td style="white-space:nowrap"><button id="itn-${t.id}" style="${nSty}" onclick="setIncomeType('${t.id}','normal')">Normal</button> <button id="itr-${t.id}" style="${rSty}" onclick="setIncomeType('${t.id}','retirement')">Retirement</button> <button id="itf-${t.id}" style="${fSty}" onclick="setIncomeType('${t.id}','family')">Family</button></td>`;
-    })() : '<td></td>';
+    const payerCls = t.person==='p1' ? 'b-p1' : 'b-p2';
+    const whoPaysVal = t.shared ? 'shared' : t.person;
+    const whoPaysCls = t.shared ? 'b-shared' : payerCls;
+    // Post-split amounts
+    let p1Owes = 0, p2Owes = 0;
+    if (t.shared) {
+      const {p1Share, p2Share} = getCatSplitAmts(t.category, t.amount);
+      p1Owes = p1Share; p2Owes = p2Share;
+    } else {
+      if (t.person === 'p1') p1Owes = t.amount; else p2Owes = t.amount;
+    }
     const settledBadge = t.settled && t.settledDate
       ? `<td><span style="font-size:.7rem;font-weight:600;padding:2px 7px;border-radius:10px;background:#d1fae5;color:#065f46;white-space:nowrap" title="Settled on ${t.settledDate}">${fmtDate(t.settledDate)}</span></td>`
       : t.settled ? `<td><span style="font-size:.7rem;font-weight:600;padding:2px 7px;border-radius:10px;background:#d1fae5;color:#065f46">Settled</span></td>` : '<td></td>';
-    return `<tr class="${t.excluded?'excluded':''}"><td style="white-space:nowrap"><input type="date" value="${t.date}" style="font-size:.78rem;color:var(--text-3);border:1px solid transparent;border-radius:6px;padding:2px 4px;background:transparent;cursor:pointer;width:118px" onchange="setDate('${t.id}',this.value)" onfocus="this.style.borderColor='var(--border)'" onblur="this.style.borderColor='transparent'"></td><td title="${esc(t.description)}" style="max-width:220px">${esc(t.description.slice(0,44))}${t.description.length>44?'…':''}</td><td><select class="cat-sel" onchange="setCat('${t.id}',this.value)">${getCats().map(c=>`<option value="${c.id}"${c.id===t.category?' selected':''}>${c.emoji} ${c.label}</option>`).join('')}</select></td><td><select class="owner-sel ${ownerCls}" onchange="setOwner('${t.id}',this.value)"><option value="p1"${ownerVal==='p1'?' selected':''}>${esc(S.settings.person1)}</option><option value="p2"${ownerVal==='p2'?' selected':''}>${esc(S.settings.person2)}</option><option value="shared"${ownerVal==='shared'?' selected':''}>⇄ Shared</option></select></td><td style="text-align:right"><span class="${t.amount<0?'amt-inc':'amt-exp'}">${t.amount<0?'+':''}${fc(t.amount)}</span></td>${incPills}${settledBadge}<td style="white-space:nowrap"><button class="excl-btn${t.excluded?' on':''}" onclick="toggleExclude('${t.id}')" title="${t.excluded?'Include in summaries':'Exclude from summaries'}">⊘</button><button class="del-btn" onclick="delTxn('${t.id}')" title="Delete">🗑</button></td></tr>`;
+    return `<tr class="${t.excluded?'excluded':''}">
+      <td style="white-space:nowrap"><input type="date" value="${t.date}" style="font-size:.78rem;color:var(--text-3);border:1px solid transparent;border-radius:6px;padding:2px 4px;background:transparent;cursor:pointer;width:118px" onchange="setDate('${t.id}',this.value)" onfocus="this.style.borderColor='var(--border)'" onblur="this.style.borderColor='transparent'"></td>
+      <td title="${esc(t.description)}" style="max-width:220px">${esc(t.description.slice(0,44))}${t.description.length>44?'...':''}</td>
+      <td><select class="cat-sel" onchange="setCat('${t.id}',this.value)">${getCats().map(c=>`<option value="${c.id}"${c.id===t.category?' selected':''}>${c.emoji} ${c.label}</option>`).join('')}</select></td>
+      <td><select class="owner-sel ${payerCls}" onchange="setPayer('${t.id}',this.value)"><option value="p1"${t.person==='p1'?' selected':''}>${pn1}</option><option value="p2"${t.person==='p2'?' selected':''}>${pn2}</option></select></td>
+      <td><select class="owner-sel ${whoPaysCls}" onchange="setWhoPays('${t.id}',this.value)"><option value="p1"${whoPaysVal==='p1'?' selected':''}>${pn1}</option><option value="p2"${whoPaysVal==='p2'?' selected':''}>${pn2}</option><option value="shared"${whoPaysVal==='shared'?' selected':''}>Shared</option></select></td>
+      <td style="text-align:right"><span style="color:var(--p1);font-weight:600;font-size:.82rem">${p1Owes>0?fc(p1Owes):'-'}</span></td>
+      <td style="text-align:right"><span style="color:var(--p2);font-weight:600;font-size:.82rem">${p2Owes>0?fc(p2Owes):'-'}</span></td>
+      ${settledBadge}
+      <td style="white-space:nowrap"><button class="excl-btn${t.excluded?' on':''}" onclick="toggleExclude('${t.id}')" title="${t.excluded?'Include in summaries':'Exclude from summaries'}">⊘</button><button class="del-btn" onclick="delTxn('${t.id}')" title="Delete">🗑</button></td>
+    </tr>`;
   }).join('');
 
   // ── Mobile: card list ──────────────────────────────────
@@ -2337,22 +2348,30 @@ function renderTxns() {
       }
       const cards = dayTxns.map(t => {
         const cat = getCat(t.category);
-        const ownerColor = t.shared ? 'var(--green)' : (t.person==='p1' ? 'var(--p1)' : 'var(--p2)');
-        const ownerLabel = t.shared ? 'Shared' : (t.person==='p1' ? esc(S.settings.person1) : esc(S.settings.person2));
+        const payerLabel = t.person==='p1' ? esc(S.settings.person1) : esc(S.settings.person2);
+        const payerColor = t.person==='p1' ? 'var(--p1)' : 'var(--p2)';
+        const paysLabel = t.shared ? 'Shared' : payerLabel;
+        const paysColor = t.shared ? 'var(--green)' : payerColor;
         const isInc = t.amount < 0;
         const _ownerCls = t.shared ? 'txn-shared' : (t.person==='p1' ? 'txn-p1' : 'txn-p2');
         const _staggerIdx = _cardIdx++;
-        // Category-colored emoji background: subtle 10% tint of the category color
         const emojiBg = cat.color ? cat.color + '1a' : 'rgba(120,120,128,0.08)';
+        // Post-split amounts for mobile
+        let splitInfo = '';
+        if (t.shared && t.amount > 0) {
+          const {p1Share, p2Share} = getCatSplitAmts(t.category, t.amount);
+          splitInfo = `<span style="font-size:.7rem;color:var(--text-3)">· <span style="color:var(--p1)">${fc0(p1Share)}</span>/<span style="color:var(--p2)">${fc0(p2Share)}</span></span>`;
+        }
         return `<div class="txn-card ${_ownerCls}${t.excluded?' excluded':''}" style="--i:${_staggerIdx}" onclick="showTxnEditModal('${t.id}')">
           <div class="txn-card-emoji" style="background:${emojiBg}">${cat.emoji}</div>
           <div class="txn-card-body">
             <div class="txn-card-desc">${esc(t.description)}</div>
             <div class="txn-card-meta">
-              <span class="owner-dot" style="background:${ownerColor}"></span>
-              <span>${ownerLabel}</span>
-              ${t.shared?'<span>· ⇄</span>':''}
+              <span class="owner-dot" style="background:${payerColor}"></span>
+              <span style="color:${payerColor};font-weight:600">${payerLabel}</span>
+              ${t.shared?`<span>paid · <span style="color:${paysColor};font-weight:600">${paysLabel}</span></span>`:''}
               <span>· ${esc(cat.label)}</span>
+              ${splitInfo}
               ${t.settled?`<span style="color:#065f46;font-weight:600">· Settled${t.settledDate?' '+fmtDate(t.settledDate):''}</span>`:''}
             </div>
           </div>
@@ -2417,7 +2436,7 @@ ${privacyBanner}<div class="filters-bar">
   <span class="text-muted">${txns.length} transaction${txns.length!==1?'s':''}</span>
 </div>
 <div class="table-wrap">${txns.length?`
-  <table><thead><tr>${[['date','Date'],['description','Description'],['category','Category']].map(([c,l])=>`<th class="sortable${sCol===c?' sort-active':''}" onclick="setSortTxn('${c}')">${l}<i class="sort-arrow">${sCol===c?(sDir==='asc'?'▲':'▼'):'▼'}</i></th>`).join('')}<th>Who Pays</th><th class="sortable${sCol==='amount'?' sort-active':''}" style="text-align:right" onclick="setSortTxn('amount')">Amount<i class="sort-arrow">${sCol==='amount'?(sDir==='asc'?'▲':'▼'):'▼'}</i></th><th>Type</th><th>Settled</th><th></th></tr></thead>
+  <table><thead><tr>${[['date','Date'],['description','Description'],['category','Category']].map(([c,l])=>`<th class="sortable${sCol===c?' sort-active':''}" onclick="setSortTxn('${c}')">${l}<i class="sort-arrow">${sCol===c?(sDir==='asc'?'▲':'▼'):'▼'}</i></th>`).join('')}<th>Who Paid</th><th>Who Pays</th><th style="text-align:right;color:var(--p1)">${esc(S.settings.person1)}</th><th style="text-align:right;color:var(--p2)">${esc(S.settings.person2)}</th><th>Settled</th><th></th></tr></thead>
   <tbody>${rows}</tbody></table>`:`
   <div class="empty-state"><div class="empty-icon">📂</div><p>No transactions for ${moLabel(S.currentMonth)}</p><p style="margin-top:5px">Upload a CSV above!</p></div>`}
 </div>`;
@@ -2834,6 +2853,21 @@ function setOwner(id,val) {
   learnRule(t.description,t.shared,t.category,t.person);
   schedSave(); render();
 }
+function setPayer(id,val) {
+  const t=S.transactions.find(t=>t.id===id);
+  if(!t) return;
+  t.person=val;
+  schedSave(); render();
+}
+function setWhoPays(id,val) {
+  const t=S.transactions.find(t=>t.id===id);
+  if(!t) return;
+  if(val==='shared'){t.shared=true;}
+  else if(val===t.person){t.shared=false;} // same person paid & pays → not shared
+  else{t.shared=true;} // different person pays → shared (settle handles it)
+  learnRule(t.description,t.shared,t.category,t.person);
+  schedSave(); render();
+}
 function toggleShared(id) { const t=S.transactions.find(t=>t.id===id); if(t){t.shared=!t.shared; schedSave(); render();} }
 function delTxn(id) { if(!confirm('Delete this transaction?')) return; S.transactions=S.transactions.filter(t=>t.id!==id); schedSave(); render(); toast('Deleted'); }
 function toggleExclude(id) { const t=S.transactions.find(t=>t.id===id); if(t){t.excluded=!t.excluded; schedSave(); render(); toast(t.excluded?'Excluded from summaries':'Included in summaries'); } }
@@ -2967,8 +3001,8 @@ function settleUp() {
                  : `<span style="color:var(--p1)">${pn1} owes ${fc(-catNet)}</span>`;
     const txnList = txns.map(t => {
       const payer = t.person==='p1' ? pn1 : pn2;
-      return `<div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--text-3);padding:2px 0">
-        <span>${esc(t.description.slice(0,30))}${t.description.length>30?'...':''} <span style="opacity:.6">(${payer})</span></span>
+      return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--text-3);padding:2px 0">
+        <span><span style="opacity:.5;font-size:.72rem">${fmtDate(t.date)}</span> ${esc(t.description.slice(0,25))}${t.description.length>25?'...':''} <span style="opacity:.6">(${payer} paid)</span></span>
         <span style="font-weight:600">${fc(t.amount)}</span>
       </div>`;
     }).join('');
