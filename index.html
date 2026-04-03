@@ -1033,7 +1033,7 @@ async function ensureSheets() {
   const hRes = await sheetsReq('GET', '/values:batchGet?ranges=Transactions!A1&ranges=Budgets!A1&ranges=Settings!A1');
   const vals = (hRes.valueRanges || []).map(v => v.values?.[0]?.[0] || '');
   const hUpdates = [];
-  if (!vals[0]) hUpdates.push({ range:'Transactions!A1', values:[['id','date','amount','description','category','person','note','shared','settled','splitRatio','excluded']] });
+  if (!vals[0]) hUpdates.push({ range:'Transactions!A1', values:[['id','date','amount','description','category','person','note','shared','settled','splitRatio','excluded','settledDate']] });
   if (!vals[1]) hUpdates.push({ range:'Budgets!A1',      values:[['key','amount']] });
   if (!vals[2]) hUpdates.push({ range:'Settings!A1',     values:[['key','value']] });
   if (hUpdates.length) await sheetsReq('POST', '/values:batchUpdate', { valueInputOption:'RAW', data:hUpdates });
@@ -1055,12 +1055,13 @@ const DB = {
     }
     try {
       await ensureSheets();
-      const res = await sheetsReq('GET', '/values:batchGet?ranges=Transactions!A1:K&ranges=Budgets!A1:B&ranges=Settings!A1:B');
+      const res = await sheetsReq('GET', '/values:batchGet?ranges=Transactions!A1:L&ranges=Budgets!A1:B&ranges=Settings!A1:B');
       const [tSheet, bSheet, sSheet] = res.valueRanges || [];
       const transactions = (tSheet?.values||[]).slice(1).filter(r=>r[0]).map(r=>({
         id:r[0]||'', date:parseDt(r[1])||r[1]||'', amount:parseFloat(r[2])||0, description:r[3]||'',
         category:r[4]||'other', person:r[5]||'p1', note:r[6]||'',
         shared:r[7]==='true', settled:r[8]==='true', splitRatio:parseFloat(r[9])||0.5, excluded:r[10]==='true',
+        settledDate:r[11]||'',
       }));
       const budgets = {};
       (bSheet?.values||[]).slice(1).forEach(r => { if(r[0]) budgets[r[0]]=parseFloat(r[1])||0; });
@@ -1090,10 +1091,10 @@ const DB = {
       return;
     }
     try {
-      const tRows = data.transactions.map(t=>[t.id,t.date,t.amount,t.description||'',t.category,t.person,t.note||'',t.shared?'true':'false',t.settled?'true':'false',t.splitRatio||0.5,t.excluded?'true':'false']);
+      const tRows = data.transactions.map(t=>[t.id,t.date,t.amount,t.description||'',t.category,t.person,t.note||'',t.shared?'true':'false',t.settled?'true':'false',t.splitRatio||0.5,t.excluded?'true':'false',t.settledDate||'']);
       const bRows = Object.entries(data.budgets).map(([k,v])=>[k,v]);
       const sRows = [...Object.entries(data.settings), ['rules', JSON.stringify(data.rules||{})], ['customCategories', JSON.stringify(data.customCategories||[])], ['catSplits', JSON.stringify(data.catSplits||{})], ['excludedFromAvg', JSON.stringify(data.excludedFromAvg||[])], ['recurringIncome', JSON.stringify(data.recurringIncome||[])], ['gamblingData', JSON.stringify(data.gamblingData||{})], ['incomeData', JSON.stringify(data.incomeData||{})], ['incomeTypeRules', JSON.stringify(data.incomeTypeRules||{})]].map(([k,v])=>[k,v]);
-      await sheetsReq('POST', '/values:batchClear', { ranges:['Transactions!A2:J','Budgets!A2:B','Settings!A2:B'] });
+      await sheetsReq('POST', '/values:batchClear', { ranges:['Transactions!A2:L','Budgets!A2:B','Settings!A2:B'] });
       const updates = [
         { range:'Transactions!A2', values:tRows },
         { range:'Budgets!A2',      values:bRows },
@@ -2308,7 +2309,10 @@ function renderTxns() {
       const fSty = `padding:3px 9px;border-radius:20px;font-size:.72rem;font-weight:700;cursor:pointer;border:1px solid ${fAct?'#7c3aed':'var(--border)'};background:${fAct?'#f5f3ff':'white'};color:${fAct?'#7c3aed':'var(--text-3)'}`;
       return `<td style="white-space:nowrap"><button id="itn-${t.id}" style="${nSty}" onclick="setIncomeType('${t.id}','normal')">Normal</button> <button id="itr-${t.id}" style="${rSty}" onclick="setIncomeType('${t.id}','retirement')">Retirement</button> <button id="itf-${t.id}" style="${fSty}" onclick="setIncomeType('${t.id}','family')">Family</button></td>`;
     })() : '<td></td>';
-    return `<tr class="${t.excluded?'excluded':''}"><td style="white-space:nowrap"><input type="date" value="${t.date}" style="font-size:.78rem;color:var(--text-3);border:1px solid transparent;border-radius:6px;padding:2px 4px;background:transparent;cursor:pointer;width:118px" onchange="setDate('${t.id}',this.value)" onfocus="this.style.borderColor='var(--border)'" onblur="this.style.borderColor='transparent'"></td><td title="${esc(t.description)}" style="max-width:220px">${esc(t.description.slice(0,44))}${t.description.length>44?'…':''}</td><td><select class="cat-sel" onchange="setCat('${t.id}',this.value)">${getCats().map(c=>`<option value="${c.id}"${c.id===t.category?' selected':''}>${c.emoji} ${c.label}</option>`).join('')}</select></td><td><select class="owner-sel ${ownerCls}" onchange="setOwner('${t.id}',this.value)"><option value="p1"${ownerVal==='p1'?' selected':''}>${esc(S.settings.person1)}</option><option value="p2"${ownerVal==='p2'?' selected':''}>${esc(S.settings.person2)}</option><option value="shared"${ownerVal==='shared'?' selected':''}>⇄ Shared</option></select></td><td style="text-align:right"><span class="${t.amount<0?'amt-inc':'amt-exp'}">${t.amount<0?'+':''}${fc(t.amount)}</span></td>${incPills}<td style="white-space:nowrap"><button class="excl-btn${t.excluded?' on':''}" onclick="toggleExclude('${t.id}')" title="${t.excluded?'Include in summaries':'Exclude from summaries'}">⊘</button><button class="del-btn" onclick="delTxn('${t.id}')" title="Delete">🗑</button></td></tr>`;
+    const settledBadge = t.settled && t.settledDate
+      ? `<td><span style="font-size:.7rem;font-weight:600;padding:2px 7px;border-radius:10px;background:#d1fae5;color:#065f46;white-space:nowrap" title="Settled on ${t.settledDate}">${fmtDate(t.settledDate)}</span></td>`
+      : t.settled ? `<td><span style="font-size:.7rem;font-weight:600;padding:2px 7px;border-radius:10px;background:#d1fae5;color:#065f46">Settled</span></td>` : '<td></td>';
+    return `<tr class="${t.excluded?'excluded':''}"><td style="white-space:nowrap"><input type="date" value="${t.date}" style="font-size:.78rem;color:var(--text-3);border:1px solid transparent;border-radius:6px;padding:2px 4px;background:transparent;cursor:pointer;width:118px" onchange="setDate('${t.id}',this.value)" onfocus="this.style.borderColor='var(--border)'" onblur="this.style.borderColor='transparent'"></td><td title="${esc(t.description)}" style="max-width:220px">${esc(t.description.slice(0,44))}${t.description.length>44?'…':''}</td><td><select class="cat-sel" onchange="setCat('${t.id}',this.value)">${getCats().map(c=>`<option value="${c.id}"${c.id===t.category?' selected':''}>${c.emoji} ${c.label}</option>`).join('')}</select></td><td><select class="owner-sel ${ownerCls}" onchange="setOwner('${t.id}',this.value)"><option value="p1"${ownerVal==='p1'?' selected':''}>${esc(S.settings.person1)}</option><option value="p2"${ownerVal==='p2'?' selected':''}>${esc(S.settings.person2)}</option><option value="shared"${ownerVal==='shared'?' selected':''}>⇄ Shared</option></select></td><td style="text-align:right"><span class="${t.amount<0?'amt-inc':'amt-exp'}">${t.amount<0?'+':''}${fc(t.amount)}</span></td>${incPills}${settledBadge}<td style="white-space:nowrap"><button class="excl-btn${t.excluded?' on':''}" onclick="toggleExclude('${t.id}')" title="${t.excluded?'Include in summaries':'Exclude from summaries'}">⊘</button><button class="del-btn" onclick="delTxn('${t.id}')" title="Delete">🗑</button></td></tr>`;
   }).join('');
 
   // ── Mobile: card list ──────────────────────────────────
@@ -2349,6 +2353,7 @@ function renderTxns() {
               <span>${ownerLabel}</span>
               ${t.shared?'<span>· ⇄</span>':''}
               <span>· ${esc(cat.label)}</span>
+              ${t.settled?`<span style="color:#065f46;font-weight:600">· Settled${t.settledDate?' '+fmtDate(t.settledDate):''}</span>`:''}
             </div>
           </div>
           <div class="txn-card-amt${isInc?' inc':''}">${isInc?'+':''}${fc0(t.amount)}</div>
@@ -2412,7 +2417,7 @@ ${privacyBanner}<div class="filters-bar">
   <span class="text-muted">${txns.length} transaction${txns.length!==1?'s':''}</span>
 </div>
 <div class="table-wrap">${txns.length?`
-  <table><thead><tr>${[['date','Date'],['description','Description'],['category','Category']].map(([c,l])=>`<th class="sortable${sCol===c?' sort-active':''}" onclick="setSortTxn('${c}')">${l}<i class="sort-arrow">${sCol===c?(sDir==='asc'?'▲':'▼'):'▼'}</i></th>`).join('')}<th>Who Pays</th><th class="sortable${sCol==='amount'?' sort-active':''}" style="text-align:right" onclick="setSortTxn('amount')">Amount<i class="sort-arrow">${sCol==='amount'?(sDir==='asc'?'▲':'▼'):'▼'}</i></th><th>Type</th><th></th></tr></thead>
+  <table><thead><tr>${[['date','Date'],['description','Description'],['category','Category']].map(([c,l])=>`<th class="sortable${sCol===c?' sort-active':''}" onclick="setSortTxn('${c}')">${l}<i class="sort-arrow">${sCol===c?(sDir==='asc'?'▲':'▼'):'▼'}</i></th>`).join('')}<th>Who Pays</th><th class="sortable${sCol==='amount'?' sort-active':''}" style="text-align:right" onclick="setSortTxn('amount')">Amount<i class="sort-arrow">${sCol==='amount'?(sDir==='asc'?'▲':'▼'):'▼'}</i></th><th>Type</th><th>Settled</th><th></th></tr></thead>
   <tbody>${rows}</tbody></table>`:`
   <div class="empty-state"><div class="empty-icon">📂</div><p>No transactions for ${moLabel(S.currentMonth)}</p><p style="margin-top:5px">Upload a CSV above!</p></div>`}
 </div>`;
@@ -2899,6 +2904,10 @@ function showTxnEditModal(id) {
       <div class="card-owners txe-owner" style="display:flex;gap:8px">${ownerBtns}</div>
     </div>
     ${incomeTypeBtns}
+    ${t.settled ? `<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#d1fae5;border-radius:10px;margin-top:12px;border:1px solid #a7f3d0">
+      <span style="font-size:.82rem;font-weight:700;color:#065f46">Settled${t.settledDate ? ' on '+fmtDate(t.settledDate) : ''}</span>
+      <button style="margin-left:auto;font-size:.75rem;padding:4px 10px;border-radius:8px;border:1px solid #065f46;background:white;color:#065f46;font-weight:600;cursor:pointer" onclick="unsettle('${t.id}');closeModal()">Unsettle</button>
+    </div>` : ''}
     <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--border);margin-top:12px">
       <span style="font-size:.88rem;font-weight:600;color:var(--text-2)">Exclude from summaries</span>
       <button class="toggle${t.excluded?' on':''}" id="txe-excl" onclick="this.classList.toggle('on')"></button>
@@ -2934,17 +2943,80 @@ function setCatSplitMode(catId, mode) { S.catSplits[catId] = {...(S.catSplits[ca
 function setCatSplitPct(catId, pct)  { pct=Math.min(100,Math.max(0,pct)); S.catSplits[catId] = {...(S.catSplits[catId]||{}), mode:'pct', p1Pct:pct}; schedSave(); render(); }
 function setCatSplitAmt(catId, amt)  { S.catSplits[catId] = {...(S.catSplits[catId]||{}), mode:'dollar', p1Amt:Math.max(0,amt)}; schedSave(); render(); }
 function settleUp() {
-  if (!confirm('Mark all shared expenses as settled?')) return;
-  S.transactions.forEach(t => { if(t.shared && !t.settled) t.settled=true; });
-  schedSave(); render(); toast('Settled up! 🎉');
+  const {net, active} = calcSplit();
+  if (!active.length) return;
+  const pn1 = esc(S.settings.person1), pn2 = esc(S.settings.person2);
+  const today = new Date().toISOString().slice(0,10);
+
+  // Group by category for breakdown
+  const byCat = {};
+  for (const t of active) {
+    if (!byCat[t.category]) byCat[t.category] = { p1paid:0, p2paid:0, txns:[] };
+    byCat[t.category][t.person==='p1'?'p1paid':'p2paid'] += t.amount;
+    byCat[t.category].txns.push(t);
+  }
+
+  const catRows = Object.entries(byCat).map(([catId, {p1paid, p2paid, txns}]) => {
+    const cat = getCat(catId);
+    const total = p1paid + p2paid;
+    const {p1Share, p2Share, p1Pct} = getCatSplitAmts(catId, total);
+    const catNet = p1paid - p1Share;
+    const netLabel = Math.abs(catNet)<0.005
+      ? '<span style="color:var(--green)">Even</span>'
+      : catNet>0 ? `<span style="color:var(--p2)">${pn2} owes ${fc(catNet)}</span>`
+                 : `<span style="color:var(--p1)">${pn1} owes ${fc(-catNet)}</span>`;
+    const txnList = txns.map(t => {
+      const payer = t.person==='p1' ? pn1 : pn2;
+      return `<div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--text-3);padding:2px 0">
+        <span>${esc(t.description.slice(0,30))}${t.description.length>30?'...':''} <span style="opacity:.6">(${payer})</span></span>
+        <span style="font-weight:600">${fc(t.amount)}</span>
+      </div>`;
+    }).join('');
+    return `<div style="border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-weight:700">${cat.emoji} ${esc(cat.label)}</span>
+        <span style="font-weight:700">${fc(total)}</span>
+      </div>
+      <div style="font-size:.8rem;margin-bottom:4px">Split: ${pn1} ${p1Pct}% (${fc(p1Share)}) / ${pn2} ${100-p1Pct}% (${fc(p2Share)})</div>
+      <div style="font-size:.8rem;font-weight:600;margin-bottom:6px">${netLabel}</div>
+      ${txnList}
+    </div>`;
+  }).join('');
+
+  const heroText = Math.abs(net)<0.005
+    ? `<div style="color:var(--green);font-size:1.2rem;font-weight:800">Even — $0.00</div>`
+    : net>0
+      ? `<div style="font-size:1.2rem;font-weight:800;color:var(--p2)">${pn2} owes ${pn1} ${fc(net)}</div>`
+      : `<div style="font-size:1.2rem;font-weight:800;color:var(--p1)">${pn1} owes ${pn2} ${fc(-net)}</div>`;
+
+  showModal(`<div class="modal">
+    <h2>Settle Preview</h2>
+    <div style="text-align:center;padding:16px 0;border-bottom:1px solid var(--border);margin-bottom:12px">
+      ${heroText}
+      <div style="font-size:.8rem;color:var(--text-3);margin-top:4px">${active.length} transaction${active.length!==1?'s':''} · Settle date: ${fmtDate(today)}</div>
+    </div>
+    <div style="max-height:50vh;overflow-y:auto;padding-right:4px">${catRows}</div>
+    <button class="btn-pri" style="margin-top:14px;background:linear-gradient(135deg, var(--ios-green), #2EC46A);width:100%" onclick="confirmSettle()">Confirm Settle</button>
+    <button style="width:100%;margin-top:8px;padding:11px;background:var(--bg);color:var(--text-2);border:none;border-radius:8px;font-size:.92rem;font-weight:600;cursor:pointer" onclick="closeModal()">Cancel</button>
+  </div>`);
+}
+function confirmSettle() {
+  const today = new Date().toISOString().slice(0,10);
+  S.transactions.forEach(t => {
+    if (t.shared && !t.settled && t.amount>0 && !getCat(t.category).ignored && !t.excluded) {
+      t.settled = true;
+      t.settledDate = today;
+    }
+  });
+  closeModal(); schedSave(); render(); toast('Settled up!');
 }
 function unsettle(id) {
   const t = S.transactions.find(t=>t.id===id);
-  if (t) { t.settled=false; schedSave(); render(); toast('Marked as unsettled'); }
+  if (t) { t.settled=false; t.settledDate=''; schedSave(); render(); toast('Marked as unsettled'); }
 }
 function unsettleAll() {
   if (!confirm('Unsettle all previously settled shared expenses?')) return;
-  S.transactions.forEach(t => { if(t.shared && t.settled) t.settled=false; });
+  S.transactions.forEach(t => { if(t.shared && t.settled) { t.settled=false; t.settledDate=''; } });
   schedSave(); render(); toast('All unsettled');
 }
 

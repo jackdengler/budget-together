@@ -56,9 +56,9 @@ function getSheet_() {
   props.setProperty('SS_ID', ss.getId());
 
   const ts = ss.getActiveSheet().setName('Transactions');
-  ts.appendRow(['id','date','amount','description','category','person','note','shared','settled','splitRatio','excluded']);
+  ts.appendRow(['id','date','amount','description','category','person','note','shared','settled','splitRatio','excluded','settledDate']);
   ts.setFrozenRows(1);
-  ts.getRange(1,1,1,11).setFontWeight('bold');
+  ts.getRange(1,1,1,12).setFontWeight('bold');
 
   const bs = ss.insertSheet('Budgets');
   bs.appendRow(['key','amount']);
@@ -82,7 +82,7 @@ function loadAll() {
   const lastR = ts.getLastRow();
   const transactions = [];
   if (lastR > 1) {
-    ts.getRange(2, 1, lastR - 1, 11).getValues().forEach(r => {
+    ts.getRange(2, 1, lastR - 1, 12).getValues().forEach(r => {
       if (!r[0]) return;
       // Google Sheets returns dates as Date objects; normalize to YYYY-MM-DD
       const rawDate = r[1];
@@ -123,6 +123,7 @@ function loadAll() {
         settled:     r[8] === true || String(r[8]).toLowerCase() === 'true',
         splitRatio:  parseFloat(r[9]) || 0.5,
         excluded:    r[10] === true || String(r[10]).toLowerCase() === 'true',
+        settledDate: r[11] ? String(r[11]) : '',
       });
     });
   }
@@ -176,13 +177,13 @@ function saveAll(data) {
   // Transactions
   const ts = ss.getSheetByName('Transactions');
   ts.clearContents();
-  const th = ['id','date','amount','description','category','person','note','shared','settled','splitRatio','excluded'];
+  const th = ['id','date','amount','description','category','person','note','shared','settled','splitRatio','excluded','settledDate'];
   const tRows = [th, ...(data.transactions || []).map(t =>
     [t.id, t.date, t.amount||0, t.description||'', t.category, t.person, t.note||'',
-     !!t.shared, !!t.settled, t.splitRatio||0.5, !!t.excluded]
+     !!t.shared, !!t.settled, t.splitRatio||0.5, !!t.excluded, t.settledDate||'']
   )];
-  ts.getRange(1, 1, tRows.length, 11).setValues(tRows);
-  ts.getRange(1, 1, 1, 11).setFontWeight('bold');
+  ts.getRange(1, 1, tRows.length, 12).setValues(tRows);
+  ts.getRange(1, 1, 1, 12).setFontWeight('bold');
 
   // Budgets
   const bs = ss.getSheetByName('Budgets');
