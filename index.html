@@ -2955,6 +2955,9 @@ function showTxnEditModal(id) {
     ${t.settled ? `<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#d1fae5;border-radius:10px;margin-top:12px;border:1px solid #a7f3d0">
       <span style="font-size:.82rem;font-weight:700;color:#065f46">Settled${t.settledDate ? ' on '+fmtDate(t.settledDate) : ''}</span>
       <button style="margin-left:auto;font-size:.75rem;padding:4px 10px;border-radius:8px;border:1px solid #065f46;background:white;color:#065f46;font-weight:600;cursor:pointer" onclick="unsettle('${t.id}');closeModal()">Unsettle</button>
+    </div>` : t.shared ? `<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#f0f9ff;border-radius:10px;margin-top:12px;border:1px solid #bae6fd">
+      <span style="font-size:.82rem;font-weight:600;color:#0369a1">Unsettled shared expense</span>
+      <button style="margin-left:auto;font-size:.75rem;padding:4px 10px;border-radius:8px;border:none;background:linear-gradient(135deg, var(--ios-green), #2EC46A);color:white;font-weight:600;cursor:pointer" onclick="settleOne('${t.id}');closeModal()">Mark Settled</button>
     </div>` : ''}
     <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--border);margin-top:12px">
       <span style="font-size:.88rem;font-weight:600;color:var(--text-2)">Exclude from summaries</span>
@@ -3057,6 +3060,10 @@ function confirmSettle() {
     }
   });
   closeModal(); schedSave(); render(); toast('Settled up!');
+}
+function settleOne(id) {
+  const t = S.transactions.find(t=>t.id===id);
+  if (t) { t.settled=true; t.settledDate=new Date().toISOString().slice(0,10); schedSave(); render(); toast('Marked as settled'); }
 }
 function unsettle(id) {
   const t = S.transactions.find(t=>t.id===id);
