@@ -6,6 +6,14 @@ const ALLOWED_EMAILS = [
   'jleaf355@gmail.com'
 ];
 
+function assertAllowed_() {
+  var email = '';
+  try { email = Session.getActiveUser().getEmail() || ''; } catch(e) {}
+  if (!ALLOWED_EMAILS.includes(email.toLowerCase())) {
+    throw new Error('Unauthorized');
+  }
+}
+
 function doGet(e) {
   try {
     var user = '';
@@ -22,9 +30,9 @@ function doGet(e) {
                (e && e.parameter && e.parameter.v === 'tournament') ? 'tournament' : 'index';
     return HtmlService.createHtmlOutputFromFile(page)
       .setTitle('Budget Together')
-      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
   } catch(err) {
-    return HtmlService.createHtmlOutput('<h2>Something went wrong</h2><p>' + err.message + '</p>');
+    return HtmlService.createHtmlOutput('<h2>Something went wrong</h2><p>Please try again or contact the app owner.</p>');
   }
 }
 
@@ -75,6 +83,7 @@ function getSheet_() {
 
 // ── Load all data ──────────────────────────────────────────
 function loadAll() {
+  assertAllowed_();
   const ss = getSheet_();
 
   // Transactions: id, date, amount, description, category, person, note, shared, settled, splitRatio, excluded
@@ -172,6 +181,7 @@ function loadAll() {
 
 // ── Save all data ──────────────────────────────────────────
 function saveAll(data) {
+  assertAllowed_();
   const ss = getSheet_();
 
   // Transactions
@@ -218,11 +228,13 @@ function saveAll(data) {
 
 // ── Spreadsheet URL (for "Open in Sheets" link) ────────────
 function getSheetUrl() {
+  assertAllowed_();
   return getSheet_().getUrl();
 }
 
 // ── Link an existing spreadsheet ───────────────────────────
 function linkSheet(urlOrId) {
+  assertAllowed_();
   const match = String(urlOrId).match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
   const id = match ? match[1] : String(urlOrId).trim();
   if (!id) throw new Error('Invalid sheet URL or ID');
@@ -233,12 +245,14 @@ function linkSheet(urlOrId) {
 
 // ── Unlink the current spreadsheet ─────────────────────────
 function unlinkSheet() {
+  assertAllowed_();
   PropertiesService.getScriptProperties().deleteProperty('SS_ID');
   return { ok: true };
 }
 
 // ── Import data from a JSON backup (sent from the browser) ──
 function importDataJson(json) {
+  assertAllowed_();
   const data = JSON.parse(json);
   delete data._exportDate;
   delete data._backupDate;
@@ -248,15 +262,18 @@ function importDataJson(json) {
 
 // ── GitHub Backup ─────────────────────────────────────────
 function setGitHubToken(token) {
+  assertAllowed_();
   PropertiesService.getScriptProperties().setProperty('GITHUB_TOKEN', token.trim());
   return { ok: true };
 }
 
 function hasGitHubToken() {
+  assertAllowed_();
   return !!PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN');
 }
 
 function backupToGitHub() {
+  assertAllowed_();
   const props = PropertiesService.getScriptProperties();
   const token = props.getProperty('GITHUB_TOKEN');
   if (!token) throw new Error('No GitHub token configured. Set one in Settings first.');

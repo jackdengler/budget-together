@@ -4212,7 +4212,7 @@ function loadData() {
             <button onclick="manualSignIn()" style="padding:14px 32px;background:#D4663A;color:white;border:none;border-radius:12px;font-size:1.1rem;font-weight:700;cursor:pointer">Sign in again</button>
           </div>`;
       } else {
-        $('loading').innerHTML = `<div style="font-size:3.5rem;margin-bottom:12px">⚠️</div><p style="color:#dc2626;margin:12px 20px;font-size:1.05rem;font-weight:600">Failed to load: ${err.message}</p><button onclick="localStorage.removeItem('bt_client_id');localStorage.removeItem('bt_sheet_id');location.reload()" style="margin-top:16px;padding:14px 32px;background:#D4663A;color:white;border:none;border-radius:12px;cursor:pointer;font-size:1.05rem;font-weight:700">Reset config</button>`;
+        $('loading').innerHTML = `<div style="font-size:3.5rem;margin-bottom:12px">⚠️</div><p style="color:#dc2626;margin:12px 20px;font-size:1.05rem;font-weight:600">Failed to load: ${esc(err.message)}</p><button onclick="localStorage.removeItem('bt_client_id');localStorage.removeItem('bt_sheet_id');location.reload()" style="margin-top:16px;padding:14px 32px;background:#D4663A;color:white;border:none;border-radius:12px;cursor:pointer;font-size:1.05rem;font-weight:700">Reset config</button>`;
       }
     }
   );
