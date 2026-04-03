@@ -2296,6 +2296,20 @@ function renderTxns() {
   const lockedBanner = ['p1','p2'].filter(p => (S.settings[p==='p1'?'person1Pin':'person2Pin']||'').trim() && !canSeePrivate(p))
     .map(p => `🔒 ${esc(p==='p1'?S.settings.person1:S.settings.person2)}'s private transactions are hidden`);
   const privacyBanner = lockedBanner.length ? `<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:9px 16px;margin-bottom:12px;font-size:.82rem;color:#92400e">${lockedBanner.join(' &nbsp;·&nbsp; ')}</div>` : '';
+
+  // ── Month summary: income, spending, net ──────────────────
+  const allMoTxns = moTxns(S.currentMonth).filter(t => isVisible(t) && !t.excluded && !getCat(t.category).ignored);
+  const moIncome = allMoTxns.filter(t => t.amount < 0).reduce((s,t) => s + Math.abs(t.amount), 0);
+  const moSpend = allMoTxns.filter(t => t.amount > 0).reduce((s,t) => s + t.amount, 0);
+  const moNet = moIncome - moSpend;
+  const summaryBar = `<div style="display:flex;gap:16px;align-items:center;padding:12px 16px;background:var(--surface);border:1px solid var(--surface-border);border-radius:var(--radius);margin-bottom:12px;flex-wrap:wrap">
+    <div style="display:flex;align-items:baseline;gap:6px"><span style="font-size:.75rem;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em">Income</span><span style="font-size:1.1rem;font-weight:800;color:var(--green)">${fc(moIncome)}</span></div>
+    <div style="color:var(--border);font-size:1.2rem">|</div>
+    <div style="display:flex;align-items:baseline;gap:6px"><span style="font-size:.75rem;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em">Spending</span><span style="font-size:1.1rem;font-weight:800;color:var(--text)">${fc(moSpend)}</span></div>
+    <div style="color:var(--border);font-size:1.2rem">|</div>
+    <div style="display:flex;align-items:baseline;gap:6px"><span style="font-size:.75rem;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em">Net</span><span style="font-size:1.1rem;font-weight:800;color:${moNet>=0?'var(--green)':'#dc2626'}">${moNet>=0?'+':'−'}${fc(Math.abs(moNet))}</span></div>
+  </div>`;
+
   // ── Desktop: table rows ──────────────────────────────────
   const pn1 = esc(S.settings.person1), pn2 = esc(S.settings.person2);
   const rows = txns.map(t => {
@@ -2402,7 +2416,7 @@ function renderTxns() {
 
     const emptyMobile = `<div style="text-align:center;padding:40px 20px;color:var(--text-3)"><div style="font-size:2.5rem;margin-bottom:10px">📂</div><p>No transactions for ${moLabel(S.currentMonth)}</p><p style="margin-top:5px;font-size:.85rem">Upload a CSV above!</p></div>`;
 
-    return `${uploadMobile}${privacyBanner}${filterPills}${countLabel}${txns.length ? cardHtml : emptyMobile}`;
+    return `${uploadMobile}${privacyBanner}${summaryBar}${filterPills}${countLabel}${txns.length ? cardHtml : emptyMobile}`;
   }
 
   // ── Desktop: table layout ──────────────────────────────
@@ -2421,7 +2435,7 @@ function renderTxns() {
     <input type="file" id="fp2" accept=".csv,.pdf" multiple onchange="onFile(event,'p2')">
   </div>
 </div>
-${privacyBanner}<div class="filters-bar">
+${privacyBanner}${summaryBar}<div class="filters-bar">
   <input class="search-input" type="text" placeholder="🔍 Search…" value="${esc(search)}" oninput="setFilter('search',this.value)">
   <select class="filter-sel" onchange="setFilter('person',this.value)">
     <option value="all">All</option>
