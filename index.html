@@ -2325,11 +2325,12 @@ function renderTxns() {
       if (t.person === 'p1') p1Owes = t.amount; else p2Owes = t.amount;
     }
     const settledBadge = t.settled && t.settledDate
-      ? `<td><span style="font-size:.7rem;font-weight:600;padding:2px 7px;border-radius:10px;background:#d1fae5;color:#065f46;white-space:nowrap" title="Settled on ${t.settledDate}">${fmtDate(t.settledDate)}</span></td>`
-      : t.settled ? `<td><span style="font-size:.7rem;font-weight:600;padding:2px 7px;border-radius:10px;background:#d1fae5;color:#065f46">Settled</span></td>` : '<td></td>';
+      ? `<td><span style="font-size:.7rem;font-weight:600;padding:2px 7px;border-radius:10px;background:#d1fae5;color:#065f46;white-space:nowrap;cursor:pointer" title="Click to unsettle" onclick="unsettle('${t.id}')">${fmtDate(t.settledDate)}</span></td>`
+      : t.settled ? `<td><span style="font-size:.7rem;font-weight:600;padding:2px 7px;border-radius:10px;background:#d1fae5;color:#065f46;cursor:pointer" title="Click to unsettle" onclick="unsettle('${t.id}')">Settled</span></td>`
+      : t.shared ? `<td><button style="font-size:.7rem;font-weight:600;padding:2px 7px;border-radius:10px;background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;cursor:pointer;white-space:nowrap" onclick="settleOne('${t.id}')" title="Mark as settled">Settle</button></td>` : '<td></td>';
     return `<tr class="${t.excluded?'excluded':''}">
       <td style="white-space:nowrap"><input type="date" value="${t.date}" style="font-size:.78rem;color:var(--text-3);border:1px solid transparent;border-radius:6px;padding:2px 4px;background:transparent;cursor:pointer;width:118px" onchange="setDate('${t.id}',this.value)" onfocus="this.style.borderColor='var(--border)'" onblur="this.style.borderColor='transparent'"></td>
-      <td title="${esc(t.description)}" style="max-width:220px">${esc(t.description.slice(0,44))}${t.description.length>44?'...':''}</td>
+      <td title="${esc(t.description)}" style="max-width:220px;cursor:pointer" onclick="showTxnEditModal('${t.id}')">${esc(t.description.slice(0,44))}${t.description.length>44?'...':''}</td>
       <td><select class="cat-sel" onchange="setCat('${t.id}',this.value)">${getCats().map(c=>`<option value="${c.id}"${c.id===t.category?' selected':''}>${c.emoji} ${c.label}</option>`).join('')}</select></td>
       <td><select class="owner-sel ${payerCls}" onchange="setPayer('${t.id}',this.value)"><option value="p1"${t.person==='p1'?' selected':''}>${pn1}</option><option value="p2"${t.person==='p2'?' selected':''}>${pn2}</option></select></td>
       <td><select class="owner-sel ${whoPaysCls}" onchange="setWhoPays('${t.id}',this.value)"><option value="p1"${whoPaysVal==='p1'?' selected':''}>${pn1}</option><option value="p2"${whoPaysVal==='p2'?' selected':''}>${pn2}</option><option value="shared"${whoPaysVal==='shared'?' selected':''}>Shared</option></select></td>
