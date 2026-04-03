@@ -2538,6 +2538,10 @@ function renderSplit() {
       <div class="split-track-seg" style="background:var(--p2);width:${p2Pct}%">${p2Pct>=16?`${p2Pct}%`:''}</div>
     </div>`;
 
+    // How much each person over/underpaid vs their share
+    const p1diff = p1paid - p1Share; // positive = p1 overpaid
+    const p2diff = p2paid - p2Share;
+
     return `<div class="scc">
       <div class="scc-top">
         <span class="badge" style="background:${cat.color}20;color:${cat.color}">${cat.emoji} ${cat.label}</span>
@@ -2546,11 +2550,27 @@ function renderSplit() {
       <div class="scc-modes">${modeBtn('pct','%')}${modeBtn('dollar','$')}</div>
       ${customInput}
       ${bar}
-      <div class="scc-amts">
-        <div><div style="color:var(--p1);font-weight:700">${fc(p1Share)}</div><div class="scc-sub">${esc(pn1)}'s share</div></div>
-        <div style="text-align:right">${netLabel}</div>
-        <div style="text-align:right"><div style="color:var(--p2);font-weight:700">${fc(p2Share)}</div><div class="scc-sub">${esc(pn2)}'s share</div></div>
-      </div>
+      <table style="width:100%;font-size:.82rem;border-collapse:collapse;margin:8px 0 4px">
+        <thead><tr style="color:var(--text-3);font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em">
+          <th style="text-align:left;padding:2px 0"></th>
+          <th style="text-align:right;padding:2px 4px">Paid</th>
+          <th style="text-align:right;padding:2px 4px">Share</th>
+          <th style="text-align:right;padding:2px 0">Diff</th>
+        </tr></thead>
+        <tbody>
+          <tr><td style="color:var(--p1);font-weight:700;padding:3px 0">${esc(pn1)}</td>
+            <td style="text-align:right;padding:3px 4px">${fc(p1paid)}</td>
+            <td style="text-align:right;padding:3px 4px;font-weight:600">${fc(p1Share)}</td>
+            <td style="text-align:right;padding:3px 0;font-weight:700;color:${p1diff>0.005?'var(--green)':p1diff<-0.005?'#dc2626':'var(--text-3)'}">${p1diff>0.005?'+':''}${Math.abs(p1diff)<0.005?'-':fc(p1diff)}</td>
+          </tr>
+          <tr><td style="color:var(--p2);font-weight:700;padding:3px 0">${esc(pn2)}</td>
+            <td style="text-align:right;padding:3px 4px">${fc(p2paid)}</td>
+            <td style="text-align:right;padding:3px 4px;font-weight:600">${fc(p2Share)}</td>
+            <td style="text-align:right;padding:3px 0;font-weight:700;color:${p2diff>0.005?'var(--green)':p2diff<-0.005?'#dc2626':'var(--text-3)'}">${p2diff>0.005?'+':''}${Math.abs(p2diff)<0.005?'-':fc(p2diff)}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="text-align:center;font-size:.82rem;font-weight:600;margin-top:4px">${netLabel}</div>
     </div>`;
   }).join('');
 
