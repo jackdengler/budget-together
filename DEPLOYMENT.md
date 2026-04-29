@@ -18,10 +18,10 @@ https://script.google.com/macros/s/AKfycbz00_wJSijk4uL7KHMHpIi3u4OlWxmJmouGlHX2X
 ```
 
 The web app settings (in `appsscript.json`):
-- **Execute as:** `USER_ACCESSING` — each user runs the app as themselves
-- **Access:** `ANYONE_ANONYMOUS` — available to anyone, no sign-in required
+- **Execute as:** `USER_DEPLOYING` — the app always runs as the deployer's Google account, regardless of who opens the URL
+- **Access:** `ANYONE` — anyone with a Google account can reach the URL (Google sign-in is required; anonymous access is not allowed)
 
-Access is further restricted in `Code.gs` via an `ALLOWED_EMAILS` list — only specific Google accounts can use the app.
+Access is further restricted in `Code.gs` via the `ALLOWED_EMAILS` Script Property — only specific Google accounts can use the app.
 
 ## Deployment Pipeline
 
