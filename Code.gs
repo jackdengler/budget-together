@@ -1,15 +1,18 @@
 // ── Budget Together — Google Apps Script Backend ──────────
 // Deploy as a Web App: Execute as "Me", access "Anyone with Google account"
+//
+// Set the allowlist as a comma-separated Script Property named ALLOWED_EMAILS,
+// e.g. "alice@example.com,bob@example.com".
 
-const ALLOWED_EMAILS = [
-  'denglerjack@gmail.com',
-  'jleaf355@gmail.com'
-];
+function getAllowedEmails_() {
+  const raw = PropertiesService.getScriptProperties().getProperty('ALLOWED_EMAILS') || '';
+  return raw.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+}
 
 function assertAllowed_() {
   var email = '';
   try { email = Session.getActiveUser().getEmail() || ''; } catch(e) {}
-  if (!ALLOWED_EMAILS.includes(email.toLowerCase())) {
+  if (!getAllowedEmails_().includes(email.toLowerCase())) {
     throw new Error('Unauthorized');
   }
 }
@@ -23,7 +26,7 @@ function doGet(e) {
     } catch(authErr) {
       user = '';
     }
-    if (!ALLOWED_EMAILS.includes(user.toLowerCase())) {
+    if (!getAllowedEmails_().includes(user.toLowerCase())) {
       return HtmlService.createHtmlOutput('<h2>Access denied</h2><p>This app is private. Please sign in with an authorized Google account.</p>');
     }
     var page = (e && e.parameter && e.parameter.v === 'mobile') ? 'mobile' :
@@ -283,7 +286,7 @@ function backupToGitHub() {
   const content = JSON.stringify(data, null, 2);
   const encoded = Utilities.base64Encode(Utilities.newBlob(content).getBytes());
 
-  const repo = 'jackdengler/budget-together';
+  const repo = 'jackdengler/private-data-storage';
   const path = 'backups/budget-backup.json';
   const apiUrl = 'https://api.github.com/repos/' + repo + '/contents/' + path;
 
