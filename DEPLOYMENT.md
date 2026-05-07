@@ -21,7 +21,7 @@ The web app settings (in `appsscript.json`):
 - **Execute as:** `USER_ACCESSING` — each user runs the app as themselves
 - **Access:** `ANYONE_ANONYMOUS` — available to anyone, no sign-in required
 
-Access is further restricted in `Code.gs` via an `ALLOWED_EMAILS` list — only specific Google accounts can use the app.
+Access is further restricted in `Code.gs` by an allow-list read from Script Properties (key: `ALLOWED_EMAILS`, comma-separated). On a fresh deploy the deployer's email is auto-seeded; additional users are added via `addAllowedEmail()` or by editing the property in **Project Settings → Script Properties**.
 
 ## Deployment Pipeline
 

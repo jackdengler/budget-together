@@ -1,17 +1,50 @@
 // ── Budget Together — Google Apps Script Backend ──────────
 // Deploy as a Web App: Execute as "Me", access "Anyone with Google account"
+//
+// Configuration lives in Script Properties (Project Settings → Script Properties):
+//   ALLOWED_EMAILS    comma-separated list of Google account emails allowed to use the app.
+//                     Auto-seeds with the deployer's email on first request if unset.
+//   BACKUP_REPO       (optional) "<owner>/<repo>" for the GitHub backup feature.
+//   BACKUP_PATH       (optional) path within that repo to write the backup JSON to.
+//   GITHUB_TOKEN      (optional) personal access token used by the GitHub backup feature.
 
-const ALLOWED_EMAILS = [
-  'denglerjack@gmail.com',
-  'jleaf355@gmail.com'
-];
+function getAllowedEmails_() {
+  const props = PropertiesService.getScriptProperties();
+  const raw = props.getProperty('ALLOWED_EMAILS') || '';
+  const list = raw.split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+  if (list.length) return list;
+  // First-run bootstrap: only the deployer can hit the script before any
+  // property is set, so seeding from their email is safe and keeps the app
+  // self-configuring on a fresh deploy. Add additional accounts later via
+  // Project Settings → Script Properties or addAllowedEmail().
+  try {
+    const me = (Session.getActiveUser().getEmail() || '').toLowerCase();
+    if (me) {
+      props.setProperty('ALLOWED_EMAILS', me);
+      return [me];
+    }
+  } catch(e) {}
+  return [];
+}
 
 function assertAllowed_() {
   var email = '';
   try { email = Session.getActiveUser().getEmail() || ''; } catch(e) {}
-  if (!ALLOWED_EMAILS.includes(email.toLowerCase())) {
+  if (!getAllowedEmails_().includes(email.toLowerCase())) {
     throw new Error('Unauthorized');
   }
+}
+
+// Admin helper: any currently-allowed user can authorize an additional email.
+function addAllowedEmail(email) {
+  assertAllowed_();
+  const next = String(email || '').trim().toLowerCase();
+  if (!next || next.indexOf('@') < 0) throw new Error('Invalid email');
+  const props = PropertiesService.getScriptProperties();
+  const set = new Set(getAllowedEmails_());
+  set.add(next);
+  props.setProperty('ALLOWED_EMAILS', Array.from(set).join(','));
+  return { ok: true, allowed: Array.from(set) };
 }
 
 function doGet(e) {
@@ -278,13 +311,17 @@ function backupToGitHub() {
   const token = props.getProperty('GITHUB_TOKEN');
   if (!token) throw new Error('No GitHub token configured. Set one in Settings first.');
 
+  const repo = props.getProperty('BACKUP_REPO');
+  const path = props.getProperty('BACKUP_PATH');
+  if (!repo || !path) {
+    throw new Error('Set BACKUP_REPO ("<owner>/<repo>") and BACKUP_PATH in Script Properties.');
+  }
+
   const data = loadAll();
   data._backupDate = new Date().toISOString();
   const content = JSON.stringify(data, null, 2);
   const encoded = Utilities.base64Encode(Utilities.newBlob(content).getBytes());
 
-  const repo = 'jackdengler/budget-together';
-  const path = 'backups/budget-backup.json';
   const apiUrl = 'https://api.github.com/repos/' + repo + '/contents/' + path;
 
   // Check if file exists to get its SHA (required for updates)

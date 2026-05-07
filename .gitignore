@@ -1,2 +1,3 @@
 .clasprc.json
 *.command
+backups/
