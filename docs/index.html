@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Budget Together">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#F2F2F7">
+  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="manifest" href="manifest.json">
+  <title>Budget Together</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+      background: #F2F2F7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+    .container {
+      text-align: center;
+      padding: 2rem;
+      max-width: 340px;
+    }
+    .container img {
+      width: 100px;
+      height: 100px;
+      border-radius: 22px;
+      margin-bottom: 1.2rem;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1C1C1E;
+      margin-bottom: 0.5rem;
+    }
+    .subtitle {
+      color: #8E8E93;
+      font-size: 15px;
+      margin-bottom: 1.5rem;
+      line-height: 1.4;
+    }
+    .instructions {
+      background: #FFFFFF;
+      border-radius: 14px;
+      padding: 1.2rem;
+      text-align: left;
+      font-size: 15px;
+      color: #3A3A3C;
+      line-height: 1.6;
+    }
+    .instructions .step {
+      margin-bottom: 0.6rem;
+    }
+    .instructions .step:last-child {
+      margin-bottom: 0;
+    }
+    .share-icon {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      vertical-align: text-bottom;
+    }
+    .open-btn {
+      display: inline-block;
+      margin-top: 1.5rem;
+      padding: 14px 32px;
+      background: #FF6B47;
+      color: #fff;
+      font-size: 17px;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    /* Fullscreen iframe for standalone PWA mode */
+    #app-frame {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: none;
+    }
+    /* Fallback strip shown after iframe load — visible only if iframe is blank (e.g. auth required) */
+    #auth-fallback {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 12px 20px;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom));
+      background: rgba(242,242,247,0.95);
+      border-top: 0.5px solid #C6C6C8;
+      text-align: center;
+      font-size: 14px;
+      color: #8E8E93;
+      display: none;
+    }
+    #auth-fallback a {
+      color: #007AFF;
+      font-weight: 600;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Fullscreen iframe — used in standalone mode to avoid cross-origin navigation breaking PWA -->
+  <iframe id="app-frame" src="" allow="fullscreen" sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-top-navigation-by-user-activation"></iframe>
+  <!-- Shown after iframe loads in case Google auth blocked it (accounts.google.com blocks cross-origin iframes) -->
+  <div id="auth-fallback">
+    App not loading? <a id="auth-link" href="">Open in browser to sign in →</a>
+  </div>
+
+  <div class="container" id="install-view" style="display:none;">
+    <img src="icon.png" alt="Budget Together">
+    <h1>Budget Together</h1>
+    <p class="subtitle">Add this to your home screen to get the custom icon!</p>
+    <div class="instructions">
+      <div class="step">1. Tap the <strong>Share</strong> button <svg class="share-icon" viewBox="0 0 24 24" fill="none" stroke="#007AFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a2 2 0 002 2h12a2 2 0 002-2v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> below</div>
+      <div class="step">2. Scroll down and tap <strong>Add to Home Screen</strong></div>
+      <div class="step">3. Tap <strong>Add</strong></div>
+    </div>
+    <a class="open-btn" href="https://script.google.com/macros/s/AKfycbz00_wJSijk4uL7KHMHpIi3u4OlWxmJmouGlHX2X106jwh_yDZFTVC9NyW9tFq0N1KpEg/exec?v=mobile">Open App Now</a>
+  </div>
+  <script>
+    var APP_URL = 'https://script.google.com/macros/s/AKfycbz00_wJSijk4uL7KHMHpIi3u4OlWxmJmouGlHX2X106jwh_yDZFTVC9NyW9tFq0N1KpEg/exec?v=mobile';
+    // Detect if launched from home screen (standalone mode)
+    var isStandalone = window.navigator.standalone === true
+      || window.matchMedia('(display-mode: standalone)').matches;
+    if (isStandalone) {
+      // Launched from home screen — load app in iframe to stay on same origin
+      // and avoid iOS breaking out of standalone mode on cross-origin navigation
+      var frame = document.getElementById('app-frame');
+      var fallback = document.getElementById('auth-fallback');
+      document.getElementById('auth-link').href = APP_URL;
+      frame.src = APP_URL;
+      frame.style.display = 'block';
+      // Show fallback strip after iframe loads — if Google auth was required and
+      // got blocked (accounts.google.com refuses cross-origin iframes), the iframe
+      // will be blank and the user can tap the fallback link to sign in via Safari.
+      frame.addEventListener('load', function() {
+        fallback.style.display = 'block';
+        // After 3s, if user hasn't tapped it, hide the strip (app loaded fine)
+        setTimeout(function() { fallback.style.display = 'none'; }, 3000);
+      });
+    } else {
+      // Opened in Safari — show "Add to Home Screen" instructions
+      document.getElementById('install-view').style.display = '';
+    }
+  </script>
+</body>
+</html>
