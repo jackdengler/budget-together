@@ -18,10 +18,14 @@ https://script.google.com/macros/s/AKfycbz00_wJSijk4uL7KHMHpIi3u4OlWxmJmouGlHX2X
 ```
 
 The web app settings (in `appsscript.json`):
-- **Execute as:** `USER_ACCESSING` — each user runs the app as themselves
-- **Access:** `ANYONE_ANONYMOUS` — available to anyone, no sign-in required
+- **Execute as:** `USER_DEPLOYING` — the app always runs as the owner, so it can read the owner's budget spreadsheet on everyone's behalf.
+- **Access:** `ANYONE` — anyone with a Google account can open the URL (a Google sign-in is required).
 
-Access is further restricted in `Code.gs` by an allow-list read from Script Properties (key: `ALLOWED_EMAILS`, comma-separated). On a fresh deploy the deployer's email is auto-seeded; additional users are added via `addAllowedEmail()` or by editing the property in **Project Settings → Script Properties**.
+**Public pages, private data.** The pages are public — anyone who opens the URL gets a real response, never an error. But `doGet` only hands the actual app (`index` / `mobile` / `tournament`) to accounts on the allow-list; everyone else gets `welcome.html`, a friendly landing page that exposes no app code and no data. As defense-in-depth, every data function (`loadAll`, `saveAll`, …) is independently gated by `assertAllowed_()`, so private financial info can never be returned to an unauthorized visitor even if they reach the backend directly.
+
+The allow-list is read from Script Properties (key: `ALLOWED_EMAILS`, comma-separated, case-insensitive). On a fresh deploy the deployer's email is auto-seeded; **the partner's email must be added** via `addAllowedEmail('partner@example.com')` or by editing the property in **Project Settings → Script Properties**.
+
+> **Cross-domain note:** With *Execute as: owner*, `Session.getActiveUser().getEmail()` is only reliably populated for accounts in the **same Google Workspace domain** as the owner. If the partner uses a different domain (e.g. a personal `@gmail.com`) and the welcome page shows a blank "signed in as", their email won't be visible to the allow-list. If that happens, switch to a shared-secret unlock (the app already has a `secretPin` field) instead of email matching.
 
 ## Deployment Pipeline
 

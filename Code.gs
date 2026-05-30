@@ -56,9 +56,20 @@ function doGet(e) {
     } catch(authErr) {
       user = '';
     }
-    if (!ALLOWED_EMAILS.includes(user.toLowerCase())) {
-      return HtmlService.createHtmlOutput('<h2>Access denied</h2><p>This app is private. Please sign in with an authorized Google account.</p>');
+
+    // The pages are public: anyone who reaches this URL gets a real response,
+    // never an error wall. Only allow-listed accounts (owner + partner) are
+    // handed the actual app; everyone else gets a friendly welcome page and
+    // never receives the app's code or data. Private info stays private
+    // because every data function is independently gated by assertAllowed_().
+    if (!getAllowedEmails_().includes(user.toLowerCase())) {
+      var welcome = HtmlService.createTemplateFromFile('welcome');
+      welcome.userJson = JSON.stringify(user); // safe JS string literal for the page
+      return welcome.evaluate()
+        .setTitle('Budget Together')
+        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
     }
+
     var page = (e && e.parameter && e.parameter.v === 'mobile') ? 'mobile' :
                (e && e.parameter && e.parameter.v === 'tournament') ? 'tournament' : 'index';
     return HtmlService.createHtmlOutputFromFile(page)
