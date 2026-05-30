@@ -1,8 +1,25 @@
 // ── Budget Together — Google Apps Script Backend ──────────
-// Deploy as a Web App: Execute as "Me", access "Anyone with Google account"
+// Deploy as a Web App: Execute as "Me", access "Anyone with Google account".
+//
+// PUBLIC PAGES, PRIVATE DATA:
+//   doGet serves the app shell to anyone — it holds no data and no secrets.
+//   Real budget data is unlocked PER PERSON with a PIN that is verified
+//   server-side (unlockWithPin). A correct PIN returns a short-lived,
+//   HMAC-signed session token; every data function requires a valid token
+//   (assertSession_). PINs are never stored in source or sent to the browser —
+//   only a salted, iterated hash lives in Script Properties.
+//
+//   First-time setup (owner, once, from the Apps Script editor):
+//     setUserPin('p1', '<your-pin>');     // e.g. Run > setUserPin after editing
+//     setUserPin('p2', '<partner-pin>');
+//   Afterwards each person can change their own PIN from Settings in the app.
 //
 // Configuration lives in Script Properties (Project Settings → Script Properties):
-//   ALLOWED_EMAILS    comma-separated list of Google account emails allowed to use the app.
+//   PIN_HASH_P1 / PIN_HASH_P2   salted+iterated hash of each person's PIN. Managed
+//                               by setUserPin(); never edit by hand.
+//   PIN_SALT / SESSION_SECRET   auto-generated secrets for hashing/signing. Do NOT
+//                               share or commit these.
+//   ALLOWED_EMAILS    comma-separated emails allowed to ADMINISTER PINs (owner).
 //                     Auto-seeds with the deployer's email on first request if unset.
 //   BACKUP_REPO       (optional) "<owner>/<repo>" for the GitHub backup feature.
 //   BACKUP_PATH       (optional) path within that repo to write the backup JSON to.
@@ -49,27 +66,10 @@ function addAllowedEmail(email) {
 
 function doGet(e) {
   try {
-    var user = '';
-    try {
-      var activeUser = Session.getActiveUser();
-      if (activeUser) user = activeUser.getEmail() || '';
-    } catch(authErr) {
-      user = '';
-    }
-
-    // The pages are public: anyone who reaches this URL gets a real response,
-    // never an error wall. Only allow-listed accounts (owner + partner) are
-    // handed the actual app; everyone else gets a friendly welcome page and
-    // never receives the app's code or data. Private info stays private
-    // because every data function is independently gated by assertAllowed_().
-    if (!getAllowedEmails_().includes(user.toLowerCase())) {
-      var welcome = HtmlService.createTemplateFromFile('welcome');
-      welcome.userJson = JSON.stringify(user); // safe JS string literal for the page
-      return welcome.evaluate()
-        .setTitle('Budget Together')
-        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
-    }
-
+    // The pages are public: anyone who reaches this URL gets the app shell,
+    // which contains no budget data and no secrets. Real data is unlocked
+    // per-person with a PIN that is verified server-side (see unlockWithPin /
+    // assertSession_). The app boots into a PIN lock screen until then.
     var page = (e && e.parameter && e.parameter.v === 'mobile') ? 'mobile' :
                (e && e.parameter && e.parameter.v === 'tournament') ? 'tournament' : 'index';
     return HtmlService.createHtmlOutputFromFile(page)
@@ -77,6 +77,159 @@ function doGet(e) {
       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
   } catch(err) {
     return HtmlService.createHtmlOutput('<h2>Something went wrong</h2><p>Please try again or contact the app owner.</p>');
+  }
+}
+
+// ── Per-person PIN authentication ──────────────────────────
+// Two people each have their own PIN. PINs are NEVER stored in this source
+// file or sent to the browser — only a salted, iterated hash lives in Script
+// Properties. A correct PIN returns a short-lived, HMAC-signed session token
+// that the browser presents on every data call. Forging a token requires the
+// server-only SESSION_SECRET, so it can't be faked client-side.
+var PIN_TTL_MS = 7 * 24 * 60 * 60 * 1000;   // session token lifetime
+var PIN_HASH_ITERS = 1000;                  // slows offline brute force
+var PIN_MAX_FAILS = 8;                       // lockout threshold per window
+var PIN_FAIL_WINDOW_S = 60;                  // lockout window (seconds)
+
+function pinPersonKey_(person) {
+  if (person !== 'p1' && person !== 'p2') throw new Error('Invalid person');
+  return 'PIN_HASH_' + person.toUpperCase();
+}
+
+function getOrCreateSecret_(key) {
+  var props = PropertiesService.getScriptProperties();
+  var val = props.getProperty(key);
+  if (!val) {
+    var bytes = Math.random().toString(36) + Utilities.getUuid() + Utilities.getUuid();
+    val = Utilities.base64EncodeWebSafe(
+      Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, bytes)
+    );
+    props.setProperty(key, val);
+  }
+  return val;
+}
+
+function hashPin_(pin) {
+  var salt = getOrCreateSecret_('PIN_SALT');
+  var acc = salt + '|' + pin;
+  for (var i = 0; i < PIN_HASH_ITERS; i++) {
+    acc = Utilities.base64Encode(
+      Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, salt + ':' + acc)
+    );
+  }
+  return acc;
+}
+
+// Constant-time-ish string compare to avoid leaking match position via timing.
+function safeEquals_(a, b) {
+  a = String(a); b = String(b);
+  if (a.length !== b.length) return false;
+  var diff = 0;
+  for (var i = 0; i < a.length; i++) diff |= (a.charCodeAt(i) ^ b.charCodeAt(i));
+  return diff === 0;
+}
+
+function signToken_(payload) {
+  var secret = getOrCreateSecret_('SESSION_SECRET');
+  var sig = Utilities.computeHmacSha256Signature(payload, secret);
+  return Utilities.base64EncodeWebSafe(sig);
+}
+
+function makeToken_(person) {
+  var payload = person + '|' + (Date.now() + PIN_TTL_MS);
+  return Utilities.base64EncodeWebSafe(Utilities.newBlob(payload).getBytes()) + '.' + signToken_(payload);
+}
+
+function verifyToken_(token) {
+  if (!token || typeof token !== 'string' || token.indexOf('.') < 0) return '';
+  var parts = token.split('.');
+  var payload;
+  try { payload = Utilities.newBlob(Utilities.base64DecodeWebSafe(parts[0])).getDataAsString(); }
+  catch (e) { return ''; }
+  if (!safeEquals_(parts[1], signToken_(payload))) return '';
+  var seg = payload.split('|');
+  var person = seg[0], exp = Number(seg[1]);
+  if ((person !== 'p1' && person !== 'p2') || !exp || Date.now() > exp) return '';
+  return person;
+}
+
+// Gate for every data function. A valid session token is required; the active
+// Google account is irrelevant, so this works the same for both people
+// regardless of their email domain.
+function assertSession_(token) {
+  var person = verifyToken_(token);
+  if (!person) throw new Error('Locked: enter your PIN to continue.');
+  return person;
+}
+
+function pinsConfigured_() {
+  var props = PropertiesService.getScriptProperties();
+  return { p1: !!props.getProperty('PIN_HASH_P1'), p2: !!props.getProperty('PIN_HASH_P2') };
+}
+
+// Reports whether each PIN exists (booleans only — never the PINs themselves).
+function pinStatus() {
+  return pinsConfigured_();
+}
+
+// Set or change a person's PIN. Callable by an allow-listed admin (the owner,
+// e.g. from the Apps Script editor or the in-app Settings) or by that same
+// person from an unlocked session. PINs must be 4–10 digits.
+function setUserPin(person, pin, token) {
+  var key = pinPersonKey_(person); // validates person
+  var isAdmin = false;
+  try { assertAllowed_(); isAdmin = true; } catch (e) {}
+  if (!isAdmin && verifyToken_(token) !== person) {
+    throw new Error('Not authorized to set this PIN.');
+  }
+  var clean = String(pin || '').trim();
+  if (!/^\d{4,10}$/.test(clean)) throw new Error('PIN must be 4–10 digits.');
+  PropertiesService.getScriptProperties().setProperty(key, hashPin_(clean));
+  return { ok: true, person: person };
+}
+
+// Verify a PIN and, on success, issue a session token. Throttled and locked
+// out after repeated failures to blunt brute-force attempts.
+function unlockWithPin(pin, clientId) {
+  var cache = CacheService.getScriptCache();
+  var failKey = 'pinfail_' + (String(clientId || 'anon').slice(0, 64));
+  var fails = Number(cache.get(failKey) || 0);
+  if (fails >= PIN_MAX_FAILS) {
+    throw new Error('Too many attempts. Wait a minute and try again.');
+  }
+
+  Utilities.sleep(500); // cap guess throughput
+
+  var clean = String(pin || '').trim();
+  var props = PropertiesService.getScriptProperties();
+  if (!props.getProperty('PIN_HASH_P1') && !props.getProperty('PIN_HASH_P2')) {
+    throw new Error('No PINs set up yet. The owner must set them first.');
+  }
+
+  var attempt = hashPin_(clean);
+  var match = '';
+  var h1 = props.getProperty('PIN_HASH_P1');
+  var h2 = props.getProperty('PIN_HASH_P2');
+  if (h1 && safeEquals_(attempt, h1)) match = 'p1';
+  else if (h2 && safeEquals_(attempt, h2)) match = 'p2';
+
+  if (!match) {
+    cache.put(failKey, fails + 1, PIN_FAIL_WINDOW_S);
+    throw new Error('Incorrect PIN.');
+  }
+
+  cache.remove(failKey);
+  var names = personNames_();
+  return { ok: true, token: makeToken_(match), person: match, name: names[match] || '' };
+}
+
+function personNames_() {
+  try {
+    var data = loadAll_();
+    return { p1: (data.settings && data.settings.person1) || 'Person 1',
+             p2: (data.settings && data.settings.person2) || 'Person 2' };
+  } catch (e) {
+    return { p1: 'Person 1', p2: 'Person 2' };
   }
 }
 
@@ -126,8 +279,12 @@ function getSheet_() {
 }
 
 // ── Load all data ──────────────────────────────────────────
-function loadAll() {
-  assertAllowed_();
+function loadAll(token) {
+  assertSession_(token);
+  return loadAll_();
+}
+
+function loadAll_() {
   const ss = getSheet_();
 
   // Transactions: id, date, amount, description, category, person, note, shared, settled, splitRatio, excluded
@@ -224,8 +381,12 @@ function loadAll() {
 }
 
 // ── Save all data ──────────────────────────────────────────
-function saveAll(data) {
-  assertAllowed_();
+function saveAll(data, token) {
+  assertSession_(token);
+  return saveAll_(data);
+}
+
+function saveAll_(data) {
   const ss = getSheet_();
 
   // Transactions
@@ -271,14 +432,14 @@ function saveAll(data) {
 }
 
 // ── Spreadsheet URL (for "Open in Sheets" link) ────────────
-function getSheetUrl() {
-  assertAllowed_();
+function getSheetUrl(token) {
+  assertSession_(token);
   return getSheet_().getUrl();
 }
 
 // ── Link an existing spreadsheet ───────────────────────────
-function linkSheet(urlOrId) {
-  assertAllowed_();
+function linkSheet(urlOrId, token) {
+  assertSession_(token);
   const match = String(urlOrId).match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
   const id = match ? match[1] : String(urlOrId).trim();
   if (!id) throw new Error('Invalid sheet URL or ID');
@@ -288,39 +449,39 @@ function linkSheet(urlOrId) {
 }
 
 // ── Unlink the current spreadsheet ─────────────────────────
-function unlinkSheet() {
-  assertAllowed_();
+function unlinkSheet(token) {
+  assertSession_(token);
   PropertiesService.getScriptProperties().deleteProperty('SS_ID');
   return { ok: true };
 }
 
 // ── Import data from a JSON backup (sent from the browser) ──
-function importDataJson(json) {
-  assertAllowed_();
+function importDataJson(json, token) {
+  assertSession_(token);
   const data = JSON.parse(json);
   delete data._exportDate;
   delete data._backupDate;
-  saveAll(data);
+  saveAll_(data);
   return { ok: true };
 }
 
 // ── GitHub Backup ─────────────────────────────────────────
-function setGitHubToken(token) {
-  assertAllowed_();
-  PropertiesService.getScriptProperties().setProperty('GITHUB_TOKEN', token.trim());
+function setGitHubToken(ghToken, token) {
+  assertSession_(token);
+  PropertiesService.getScriptProperties().setProperty('GITHUB_TOKEN', String(ghToken).trim());
   return { ok: true };
 }
 
-function hasGitHubToken() {
-  assertAllowed_();
+function hasGitHubToken(token) {
+  assertSession_(token);
   return !!PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN');
 }
 
-function backupToGitHub() {
-  assertAllowed_();
+function backupToGitHub(token) {
+  assertSession_(token);
   const props = PropertiesService.getScriptProperties();
-  const token = props.getProperty('GITHUB_TOKEN');
-  if (!token) throw new Error('No GitHub token configured. Set one in Settings first.');
+  const ghToken = props.getProperty('GITHUB_TOKEN');
+  if (!ghToken) throw new Error('No GitHub token configured. Set one in Settings first.');
 
   const repo = props.getProperty('BACKUP_REPO');
   const path = props.getProperty('BACKUP_PATH');
@@ -328,7 +489,7 @@ function backupToGitHub() {
     throw new Error('Set BACKUP_REPO ("<owner>/<repo>") and BACKUP_PATH in Script Properties.');
   }
 
-  const data = loadAll();
+  const data = loadAll_();
   data._backupDate = new Date().toISOString();
   const content = JSON.stringify(data, null, 2);
   const encoded = Utilities.base64Encode(Utilities.newBlob(content).getBytes());
@@ -340,7 +501,7 @@ function backupToGitHub() {
   try {
     var existing = UrlFetchApp.fetch(apiUrl, {
       method: 'get',
-      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' },
+      headers: { 'Authorization': 'token ' + ghToken, 'Accept': 'application/vnd.github.v3+json' },
       muteHttpExceptions: true
     });
     if (existing.getResponseCode() === 200) {

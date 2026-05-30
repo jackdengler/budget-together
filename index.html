@@ -1047,10 +1047,23 @@ function USE_GAS() {
   catch(e) { return false; }
 }
 
+// Per-person PIN session token (set after unlockWithPin succeeds). It is sent
+// with every backend call; the server rejects data requests without a valid
+// one. The PIN itself never lives in this file or in storage — only this
+// signed, expiring token does.
+function authToken() { try { return sessionStorage.getItem('bt_token') || ''; } catch(e) { return ''; } }
+function clientId() {
+  try {
+    var c = localStorage.getItem('bt_cid');
+    if (!c) { c = Date.now().toString(36) + Math.random().toString(36).slice(2, 10); localStorage.setItem('bt_cid', c); }
+    return c;
+  } catch(e) { return 'anon'; }
+}
+
 const DB = {
   async load(cb, errCb) {
     if (USE_GAS()) {
-      google.script.run.withSuccessHandler(cb).withFailureHandler(e => errCb(new Error(e.message||String(e)))).loadAll();
+      google.script.run.withSuccessHandler(cb).withFailureHandler(e => errCb(new Error(e.message||String(e)))).loadAll(authToken());
       return;
     }
     try {
@@ -1087,7 +1100,7 @@ const DB = {
 
   async save(data, onOk, onErr) {
     if (USE_GAS()) {
-      google.script.run.withSuccessHandler(onOk).withFailureHandler(e => onErr(new Error(e.message||String(e)))).saveAll(data);
+      google.script.run.withSuccessHandler(onOk).withFailureHandler(e => onErr(new Error(e.message||String(e)))).saveAll(data, authToken());
       return;
     }
     try {
@@ -1106,7 +1119,7 @@ const DB = {
   },
 
   sheetUrl(cb) {
-    if (USE_GAS()) { google.script.run.withSuccessHandler(cb).getSheetUrl(); return; }
+    if (USE_GAS()) { google.script.run.withSuccessHandler(cb).getSheetUrl(authToken()); return; }
     cb(CFG.sheetId ? `https://docs.google.com/spreadsheets/d/${CFG.sheetId}` : null);
   },
 };
@@ -3900,6 +3913,11 @@ function showSettings() {
       </div>
       <button onclick="doUnlinkSheet()" style="font-size:.78rem;color:var(--text-3);background:none;border:1px solid var(--border);border-radius:7px;padding:4px 10px;cursor:pointer">Unlink current sheet</button>
     </div>` : ''}
+    ${USE_GAS() ? `<div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
+      <div style="font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:6px">🔓 Your login PIN</div>
+      <p style="font-size:.8rem;color:var(--text-3);margin-bottom:10px">The PIN you type to unlock the app. Only you can change yours.</p>
+      <button onclick="changeLoginPin()" style="font-size:.82rem;padding:6px 14px;border:1px solid var(--border);border-radius:8px;background:white;cursor:pointer">Change my login PIN</button>
+    </div>` : ''}
     ${S.pinUnlocked ? `<div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
       <div style="font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:6px">🔒 Private Mode PIN</div>
       <p style="font-size:.8rem;color:var(--text-3);margin-bottom:10px">PIN protects private categories (gambling, cash).</p>
@@ -3953,14 +3971,14 @@ function doLinkSheet() {
   google.script.run
     .withSuccessHandler(() => { closeModal(); toast('Sheet linked! Reloading…'); setTimeout(() => location.reload(), 1200); })
     .withFailureHandler(e => toast('Error: ' + (e.message || String(e))))
-    .linkSheet(val);
+    .linkSheet(val, authToken());
 }
 function doUnlinkSheet() {
   if (!confirm('Unlink the current sheet? The app will create a new blank sheet on next load.')) return;
   google.script.run
     .withSuccessHandler(() => { closeModal(); toast('Sheet unlinked. Reloading…'); setTimeout(() => location.reload(), 1200); })
     .withFailureHandler(e => toast('Error: ' + (e.message || String(e))))
-    .unlinkSheet();
+    .unlinkSheet(authToken());
 }
 function clearData() { if(!confirm('Delete ALL transactions and budgets?')) return; S.transactions=[]; S.budgets={}; schedSave(); closeModal(); render(); toast('Cleared'); }
 
@@ -3978,9 +3996,9 @@ function doGitHubBackup() {
       google.script.run
         .withSuccessHandler(r => { btn.disabled = false; btn.textContent = '☁️ Backup to GitHub'; toast('Backed up to GitHub!'); })
         .withFailureHandler(e => { btn.disabled = false; btn.textContent = '☁️ Backup to GitHub'; toast('Backup failed: ' + (e.message || e)); })
-        .backupToGitHub();
+        .backupToGitHub(authToken());
     })
-    .hasGitHubToken();
+    .hasGitHubToken(authToken());
 }
 function saveGhToken() {
   const val = document.getElementById('gh-token-input').value.trim();
@@ -3988,7 +4006,33 @@ function saveGhToken() {
   google.script.run
     .withSuccessHandler(() => { document.getElementById('gh-token-row').style.display = 'none'; toast('Token saved! Click Backup again.'); })
     .withFailureHandler(e => toast('Error: ' + (e.message || e)))
-    .setGitHubToken(val);
+    .setGitHubToken(val, authToken());
+}
+
+// ── Change this person's login PIN (server-side) ────────────
+function changeLoginPin() {
+  showModal(`<div class="modal">
+    <h2>🔓 Change login PIN</h2>
+    <p style="font-size:.82rem;color:var(--text-2);margin-bottom:14px">Pick a new 4–10 digit PIN. You'll use it to unlock the app. It's stored only as a hash on the server.</p>
+    <div class="form-row"><label>New PIN</label><input id="lpin-new" type="password" inputmode="numeric" maxlength="10" class="form-input" placeholder="4–10 digits" autofocus></div>
+    <div class="form-row"><label>Confirm PIN</label><input id="lpin-confirm" type="password" inputmode="numeric" maxlength="10" class="form-input" placeholder="Re-enter PIN"></div>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="closeModal()">Cancel</button>
+      <button class="btn-sec" style="background:var(--primary);color:white;border-color:var(--primary)" onclick="saveLoginPin()">Save PIN</button>
+    </div>
+  </div>`);
+}
+function saveLoginPin() {
+  const a = ($('lpin-new').value || '').trim(), b = ($('lpin-confirm').value || '').trim();
+  if (!/^\d{4,10}$/.test(a)) { toast('PIN must be 4–10 digits'); return; }
+  if (a !== b) { toast('PINs do not match'); return; }
+  let person = '';
+  try { person = sessionStorage.getItem('bt_person') || ''; } catch(e) {}
+  if (!person) { toast('Unlock the app first'); return; }
+  google.script.run
+    .withSuccessHandler(() => { closeModal(); toast('Login PIN updated 🔓'); })
+    .withFailureHandler(e => toast('Error: ' + (e.message || e)))
+    .setUserPin(person, a, authToken());
 }
 
 // ── Export: download all data as a local JSON file ──────────
@@ -4018,7 +4062,7 @@ function doImportJson(evt) {
         google.script.run
           .withSuccessHandler(() => { toast('Restored! Reloading…'); setTimeout(() => location.reload(), 1200); })
           .withFailureHandler(ex => toast('Error: ' + (ex.message || String(ex))))
-          .importDataJson(e.target.result);
+          .importDataJson(e.target.result, authToken());
       } else {
         Object.assign(S, { transactions: data.transactions || [], budgets: data.budgets || {}, settings: Object.assign(S.settings, data.settings || {}), rules: data.rules || {}, customCategories: data.customCategories || [], catSplits: data.catSplits || {}, excludedFromAvg: data.excludedFromAvg || [], recurringIncome: data.recurringIncome || [], gamblingData: data.gamblingData || {}, incomeData: data.incomeData || {}, incomeTypeRules: data.incomeTypeRules || {} });
         schedSave(); closeModal(); render(); toast('Restored!');
@@ -4060,7 +4104,7 @@ function finishSetupWithSheet() {
   google.script.run
     .withSuccessHandler(() => { closeModal(); toast('Sheet linked! Reloading…'); setTimeout(() => location.reload(), 1200); })
     .withFailureHandler(e => { toast('Error: ' + (e.message || 'Could not link sheet. Check the URL and try again.')); if (btn) { btn.disabled = false; btn.textContent = 'Link & Load'; } })
-    .linkSheet(url);
+    .linkSheet(url, authToken());
 }
 
 // ── Google Setup screen ─────────────────────────────────────
@@ -4137,6 +4181,55 @@ function getDemoData() {
   };
 }
 
+// ── PIN lock screen (per-person, server-verified) ───────────
+function showLockScreen(msg) {
+  $('app').style.display = 'none';
+  const L = $('loading');
+  L.style.display = 'flex';
+  L.innerHTML = `
+    <div style="text-align:center;max-width:320px;margin:0 auto;padding:20px;width:100%">
+      <div style="font-size:3rem;margin-bottom:4px">💕</div>
+      <div class="load-title" style="margin-bottom:4px"><span style="color:var(--text)">Budget</span> <span style="color:var(--primary)">Together</span></div>
+      <p style="color:var(--text-2);font-size:.92rem;margin-bottom:20px">Enter your PIN to unlock</p>
+      <input id="pin-input" type="password" inputmode="numeric" maxlength="10" autocomplete="off"
+        onkeydown="if(event.key==='Enter')submitPin()"
+        style="width:100%;padding:14px 16px;font-size:1.3rem;text-align:center;letter-spacing:.3em;border:1.5px solid var(--border);border-radius:12px;background:var(--card,#fff);color:var(--text);outline:none;box-sizing:border-box" placeholder="••••">
+      <div id="pin-error" style="color:var(--primary);font-size:.85rem;min-height:1.2em;margin:10px 0;font-weight:600"></div>
+      <button id="pin-submit" onclick="submitPin()" style="width:100%;padding:14px;background:var(--primary);color:#fff;border:none;border-radius:12px;font-size:1.05rem;font-weight:700;cursor:pointer">Unlock</button>
+      ${msg ? `<p style="color:var(--text-2);font-size:.8rem;margin-top:14px">${esc(msg)}</p>` : ''}
+    </div>`;
+  setTimeout(() => { const i = $('pin-input'); if (i) i.focus(); }, 60);
+}
+
+function submitPin() {
+  const inp = $('pin-input'); if (!inp) return;
+  const pin = (inp.value || '').trim();
+  const err = $('pin-error');
+  if (pin.length < 4) { if (err) err.textContent = 'Enter your PIN'; return; }
+  const btn = $('pin-submit');
+  if (btn) { btn.disabled = true; btn.textContent = 'Checking…'; }
+  google.script.run
+    .withSuccessHandler(res => {
+      try {
+        sessionStorage.setItem('bt_token', res.token);
+        sessionStorage.setItem('bt_person', res.person || '');
+        if (res.name) sessionStorage.setItem('bt_name', res.name);
+      } catch(e) {}
+      loadData();
+    })
+    .withFailureHandler(e => {
+      if (btn) { btn.disabled = false; btn.textContent = 'Unlock'; }
+      if (err) err.textContent = (e && e.message) ? e.message : 'Incorrect PIN';
+      if (inp) { inp.value = ''; inp.focus(); }
+    })
+    .unlockWithPin(pin, clientId());
+}
+
+function lockApp() {
+  try { sessionStorage.removeItem('bt_token'); sessionStorage.removeItem('bt_person'); sessionStorage.removeItem('bt_name'); } catch(e) {}
+  showLockScreen('');
+}
+
 function loadData() {
   $('loading').innerHTML = `<div class="load-title"><span style="color:var(--text);">Budget</span> <span style="color:var(--primary);">Together</span></div><div class="load-dots"><div></div><div></div><div></div></div>`;
   // Demo mode: no Google connection available (preview / localhost without credentials)
@@ -4200,6 +4293,11 @@ function loadData() {
     },
     err => {
       clearTimeout(loadTimeout);
+      // Session token missing/expired/invalid → back to the PIN screen.
+      if (err.message && (err.message.indexOf('Locked') >= 0 || err.message.indexOf('enter your PIN') >= 0)) {
+        lockApp();
+        return;
+      }
       const isAuthErr = err.message && (err.message.includes('invalid authentication') || err.message.includes('401') || err.message.includes('credentials'));
       if (isAuthErr) {
         sessionStorage.removeItem('bt_token');
@@ -4278,7 +4376,8 @@ function init() {
   }, {passive: true});
 
   if (USE_GAS()) {
-    loadData();
+    if (authToken()) loadData();   // already unlocked this session
+    else showLockScreen();         // ask for a PIN before any data loads
   } else if (!CFG.clientId || !CFG.sheetId) {
     loadData(); // demo mode — getDemoData() fires since no credentials
   } else if (getToken()) {

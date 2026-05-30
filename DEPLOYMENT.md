@@ -21,11 +21,31 @@ The web app settings (in `appsscript.json`):
 - **Execute as:** `USER_DEPLOYING` — the app always runs as the owner, so it can read the owner's budget spreadsheet on everyone's behalf.
 - **Access:** `ANYONE` — anyone with a Google account can open the URL (a Google sign-in is required).
 
-**Public pages, private data.** The pages are public — anyone who opens the URL gets a real response, never an error. But `doGet` only hands the actual app (`index` / `mobile` / `tournament`) to accounts on the allow-list; everyone else gets `welcome.html`, a friendly landing page that exposes no app code and no data. As defense-in-depth, every data function (`loadAll`, `saveAll`, …) is independently gated by `assertAllowed_()`, so private financial info can never be returned to an unauthorized visitor even if they reach the backend directly.
+### Public pages, private data — per-person PINs
 
-The allow-list is read from Script Properties (key: `ALLOWED_EMAILS`, comma-separated, case-insensitive). On a fresh deploy the deployer's email is auto-seeded; **the partner's email must be added** via `addAllowedEmail('partner@example.com')` or by editing the property in **Project Settings → Script Properties**.
+The **pages are public**: `doGet` serves the app shell (`index` / `mobile` / `tournament`) to anyone. The shell contains no budget data and no secrets, so this is safe.
 
-> **Cross-domain note:** With *Execute as: owner*, `Session.getActiveUser().getEmail()` is only reliably populated for accounts in the **same Google Workspace domain** as the owner. If the partner uses a different domain (e.g. a personal `@gmail.com`) and the welcome page shows a blank "signed in as", their email won't be visible to the allow-list. If that happens, switch to a shared-secret unlock (the app already has a `secretPin` field) instead of email matching.
+**Real data is unlocked per person with a PIN, verified server-side.** The app boots into a PIN lock screen. A correct PIN (checked in `unlockWithPin`) returns a short-lived, **HMAC-signed session token**; the browser then sends that token with every backend call, and every data function (`loadAll`, `saveAll`, `getSheetUrl`, `importDataJson`, `backupToGitHub`, …) requires a valid token via `assertSession_()`. Without a valid token, the backend returns nothing.
+
+Why PINs instead of email matching: with *Execute as: owner*, `Session.getActiveUser().getEmail()` is only reliable for accounts in the **same Workspace domain** as the owner. Both owners here use personal `@gmail.com` accounts, where email identity isn't reliably exposed — so a server-checked PIN is the robust choice and works the same for both people.
+
+**Security properties of the PIN:**
+- The PIN is **never** in source or sent to the browser. Only a **salted, iterated SHA-256 hash** is stored in Script Properties (`PIN_HASH_P1` / `PIN_HASH_P2`).
+- The session token is signed with a server-only secret (`SESSION_SECRET`), so it can't be forged client-side. It expires after 7 days and lives only in `sessionStorage` (cleared when the tab closes).
+- `unlockWithPin` is **throttled** (a delay per attempt) and **locks out** after repeated failures, so short PINs can't be brute-forced online. Use a 6-digit PIN.
+
+### Setting the PINs (one-time)
+
+PINs are **not** in the repo — the owner sets them once. In the Apps Script editor, edit and run (Run ▸ select function), or use a temporary helper:
+
+```js
+setUserPin('p1', '123456');   // owner's PIN
+setUserPin('p2', '654321');   // partner's PIN
+```
+
+`setUserPin` is gated to an allow-listed admin (the deployer's own email auto-seeds `ALLOWED_EMAILS` on first run, so running it from the editor as the owner works) **or** to that same person from an already-unlocked session. After setup, each person can change their own PIN from **Settings ▸ Your login PIN** inside the app — no editor access needed.
+
+> The old `secretPin` "Private Mode" lock (hides gambling/cash categories) is a separate, cosmetic client-side feature and is unrelated to this login PIN.
 
 ## Deployment Pipeline
 
