@@ -1,100 +1,57 @@
-# Budget Together - Deployment & Hosting
+# Budget Together — Deployment & Hosting
 
 ## Architecture
 
-Budget Together is a **Google Apps Script web app**. There is no separate server or hosting provider — Google runs everything.
+Budget Together is a **static web app on GitHub Pages**. No server, no Google.
 
-- **Backend:** `Code.gs` — runs server-side on Google Apps Script (V8 runtime)
-- **Frontend:** `index.html` — served by Apps Script via `HtmlService`
-- **Data:** Google Sheets (created automatically on first use, stored in the owner's Google Drive)
-- **Config:** `appsscript.json` — Apps Script project settings (timezone, runtime version, web app access)
+- **Frontend:** `docs/index.html`, `docs/mobile.html`, `docs/tournament.html` — served as static files.
+- **Data:** `budget.json` in the **private** repo `jackdengler/private-data-storage`, read/written from the browser via the GitHub Contents API.
+- **Access (the lock):** a fine-grained GitHub token scoped to the data repo (Contents: read/write). Without it the page loads but can read/write nothing. Stored only in the browser's `localStorage`, never in source.
+- **Identity:** an app PIN identifies which of the two people you are. PIN *hashes* live inside `budget.json` under `_auth`; the PINs themselves are never stored or sent anywhere except once to compute the hash in your own browser.
 
 ## Hosting
 
-The app is hosted entirely on Google Apps Script. The live URL is:
+GitHub Pages serves the `docs/` folder of `main`:
 
-```
-https://script.google.com/macros/s/AKfycbz00_wJSijk4uL7KHMHpIi3u4OlWxmJmouGlHX2X106jwh_yDZFTVC9NyW9tFq0N1KpEg/exec
-```
+- **URL:** `https://jackdengler.github.io/budget-together/`
+- **Enable:** GitHub repo → **Settings → Pages** → Source: **Deploy from a branch**, Branch: **main**, Folder: **/docs**.
 
-The web app settings (in `appsscript.json`):
-- **Execute as:** `USER_DEPLOYING` — the app always runs as the owner, so it can read the owner's budget spreadsheet on everyone's behalf.
-- **Access:** `ANYONE` — anyone with a Google account can open the URL (a Google sign-in is required).
+Deploying a change = commit + push to `main`. Pages rebuilds within ~1 minute.
 
-### Public pages, private data — per-person PINs
+## One-time setup
 
-The **pages are public**: `doGet` serves the app shell (`index` / `mobile` / `tournament`) to anyone. The shell contains no budget data and no secrets, so this is safe.
+### 1. Create access tokens (one per person)
 
-**Real data is unlocked per person with a PIN, verified server-side.** The app boots into a PIN lock screen. A correct PIN (checked in `unlockWithPin`) returns a short-lived, **HMAC-signed session token**; the browser then sends that token with every backend call, and every data function (`loadAll`, `saveAll`, `getSheetUrl`, `importDataJson`, `backupToGitHub`, …) requires a valid token via `assertSession_()`. Without a valid token, the backend returns nothing.
+1. GitHub → **Settings → Developer settings → Fine-grained tokens → Generate new token**.
+2. **Repository access:** Only select repositories → `jackdengler/private-data-storage`.
+3. **Permissions:** Repository permissions → **Contents: Read and write**.
+4. Set an expiration, generate, copy the `github_pat_…` value.
+5. Each person does this with their own GitHub account (so tokens are individually revocable), or you generate two — either works.
 
-Why PINs instead of email matching: with *Execute as: owner*, `Session.getActiveUser().getEmail()` is only reliable for accounts in the **same Workspace domain** as the owner. Both owners here use personal `@gmail.com` accounts, where email identity isn't reliably exposed — so a server-checked PIN is the robust choice and works the same for both people.
+### 2. First run
 
-**Security properties of the PIN:**
-- The PIN is **never** in source or sent to the browser. Only a **salted, iterated SHA-256 hash** is stored in Script Properties (`PIN_HASH_P1` / `PIN_HASH_P2`).
-- The session token is signed with a server-only secret (`SESSION_SECRET`), so it can't be forged client-side. It expires after 7 days and lives only in `sessionStorage` (cleared when the tab closes).
-- `unlockWithPin` is **throttled** (a delay per attempt) and **locks out** after repeated failures, so short PINs can't be brute-forced online. Use a 6-digit PIN.
+Open the Pages URL. The app asks for:
 
-### Setting the PINs (one-time)
+1. **Access token** — paste the token. (Stored on that device only.)
+2. **First-time setup** — enter both names and a **PIN for each person**. You can also **Import a backup file first** (the JSON exported from the old app via Settings → Export JSON) so your existing data carries over. Saving writes `budget.json` to the data repo.
 
-PINs are **not** in the repo — the owner sets them once. In the Apps Script editor, edit and run (Run ▸ select function), or use a temporary helper:
+After setup, opening the app asks for the **token** (once per device) and then your **PIN** (identifies you). Each person can change their own PIN under **Settings → Your login PIN**.
 
-```js
-setUserPin('p1', '123456');   // owner's PIN
-setUserPin('p2', '654321');   // partner's PIN
-```
+## Migrating data off Google Sheets
 
-`setUserPin` is gated to an allow-listed admin (the deployer's own email auto-seeds `ALLOWED_EMAILS` on first run, so running it from the editor as the owner works) **or** to that same person from an already-unlocked session. After setup, each person can change their own PIN from **Settings ▸ Your login PIN** inside the app — no editor access needed.
+The old Apps Script app still runs until you stop using it. To bring data over:
 
-> The old `secretPin` "Private Mode" lock (hides gambling/cash categories) is a separate, cosmetic client-side feature and is unrelated to this login PIN.
+1. Open the old app → **Settings → Export JSON** → save the file.
+2. Open the new Pages app → paste your token → on the setup screen choose **Import a backup file first** → pick that JSON → set PINs → **Save & start**.
 
-## Deployment Pipeline
+## Security notes
 
-### Tools
+- The data repo is **private** — GitHub enforces that. The token is the access control; scope it to just that one repo and set an expiry so its blast radius is only the budget data.
+- Concurrent edits use the file's SHA; if both save at the same moment one retries automatically (last-write-wins). Fine for two people.
+- The app pages are public (static, no secrets) and safe to host on Pages.
 
-- **clasp** — Google's CLI for managing Apps Script projects locally
-- **Git / GitHub** — source control at `github.com/jackdengler/budget-together`
+## Legacy (Google Apps Script)
 
-### How code gets from this repo to the live app
-
-1. Edit files locally (`Code.gs`, `index.html`, `appsscript.json`)
-2. `git commit` + `git push` to GitHub
-3. `clasp push` uploads the files to the linked Google Apps Script project
-4. The live web app URL immediately reflects the new code (no separate "deploy" step needed for the default deployment)
-
-### Key config files
-
-| File | Purpose |
-|------|---------|
-| `.clasp.json` | Links this local folder to the Apps Script project (contains the `scriptId`) |
-| `.claspignore` | Tells clasp which files NOT to upload (`.claude/`, `.git/`, `CLAUDE.md`, etc.) |
-| `.gitignore` | Keeps `.clasprc.json` (auth token) and `.command` files out of git |
-| `appsscript.json` | Apps Script project manifest (timezone, runtime, web app settings) |
-
-### clasp setup
-
-If setting up on a new machine:
-
-```bash
-npm install -g @google/clasp
-clasp login          # authenticates with your Google account
-clasp push           # uploads local files to the Apps Script project
-```
-
-The `.clasp.json` file already has the `scriptId` so clasp knows which project to push to.
-
-## iOS Home Screen Launcher (GitHub Pages)
-
-To get a custom icon on the iOS home screen, we serve a lightweight launcher page from GitHub Pages that redirects to the Apps Script URL.
-
-- **Launcher URL:** `https://jackdengler.github.io/budget-together/`
-- **Files:** `docs/index.html`, `docs/manifest.json`, `docs/icon.png`
-- **How it works:** User adds the GitHub Pages URL to their home screen. iOS picks up the `apple-touch-icon` (the dog face icon). Tapping it opens the launcher, which immediately redirects to the Apps Script app.
-
-To enable: Go to **GitHub repo > Settings > Pages** and set source to "Deploy from a branch", branch `main`, folder `/docs`.
-
-## What's NOT in this repo
-
-- No `package.json` / `node_modules` — clasp is the only Node dependency (installed globally)
-- No build step — the HTML and GS files are pushed as-is
-- No CI/CD pipeline — deployment is done manually via `clasp push`
-- No separate database — Google Sheets is the data store, managed automatically by `Code.gs`
+`Code.gs`, `appsscript.json`, `.clasp.json`, `.claspignore` are the previous
+backend, kept for reference. Not used by the live app. The old deployment can be
+deleted from Google once you've migrated your data.

@@ -1,35 +1,43 @@
 # Budget Together - Development Instructions
 
-## Auto-Deploy Workflow
+## Architecture (static + GitHub)
 
-**IMPORTANT:** After every code change in this repo, automatically:
-1. Commit the changes with a clear message
-2. Push to the current branch
-3. Merge to `main` (create a PR and merge it, or push directly to main)
-4. Deploy to Google Apps Script:
-   ```bash
-   npx @google/clasp push
-   npx @google/clasp version "Description of changes"
-   npx @google/clasp deploy -i "AKfycbz00_wJSijk4uL7KHMHpIi3u4OlWxmJmouGlHX2X106jwh_yDZFTVC9NyW9tFq0N1KpEg" -V <version_number> -d "Description"
-   ```
-   All three steps are required — `clasp push` alone only updates HEAD, not the live deployment.
+Budget Together is now a **static web app hosted on GitHub Pages**. There is no
+server and no Google Apps Script.
 
-Do NOT wait for the user to ask — this should happen after every edit, every time.
+- **Frontend:** `docs/index.html` (web/desktop), `docs/mobile.html` (mobile dashboard),
+  `docs/tournament.html`. All self-contained (inline CSS/JS).
+- **Data:** a single JSON file (`budget.json`) in the **private** repo
+  `jackdengler/private-data-storage`, read/written via the GitHub Contents API
+  directly from the browser.
+- **Access:** a fine-grained GitHub token (scoped to the data repo, Contents
+  read/write) is the access boundary — pasted into the app once per device,
+  stored only in `localStorage`, never in source.
+- **Identity:** an app PIN tells the app which of the two people you are (`p1`/`p2`).
+  PIN hashes live inside `budget.json` (`_auth`), never the PINs themselves.
 
-## Project Info
+## Deploy workflow
 
-- This is a Google Apps Script web app (Budget Together)
-- Frontend: `index.html` (web/desktop), `mobile.html` (mobile dashboard, served via `?v=mobile`)
-- Backend: `Code.gs` (shared across both frontends)
-- Config: `appsscript.json`
-- iOS launcher: `docs/index.html` (GitHub Pages, points to `?v=mobile`)
-- The user has a single deployed web app URL that should always reflect the latest code
-- Live deployment ID: `AKfycbz00_wJSijk4uL7KHMHpIi3u4OlWxmJmouGlHX2X106jwh_yDZFTVC9NyW9tFq0N1KpEg`
+Deploys are just git:
+
+1. Commit changes.
+2. Push to the current branch.
+3. Merge to `main` (GitHub Pages serves `docs/` from `main`).
+
+That's it — no clasp, no Google. GitHub Pages rebuilds within a minute of the
+push to `main`.
 
 ## Web vs Mobile
 
-Always ask whether a UI change applies to **web** (`index.html`) or **mobile** (`mobile.html`) before starting work. Never assume one or the other.
+Always ask whether a UI change applies to **web** (`docs/index.html`) or
+**mobile** (`docs/mobile.html`) before starting work. Never assume one or the other.
+
+## Legacy
+
+`Code.gs`, `appsscript.json`, `.clasp.json`, `.claspignore` are the old Google
+Apps Script backend, kept for reference only. They are not used by the live app.
 
 ## Manual Tasks
 
-When a task requires something that must be done manually (e.g., opening a website, changing a computer setting, configuring an account, enabling a toggle in an app, etc.), offer to do it on the user's Mac for them.
+When a task requires something done manually (enabling GitHub Pages, creating a
+token, etc.), give clear step-by-step instructions.

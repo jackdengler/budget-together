@@ -739,89 +739,121 @@ function updateDots(active, total){
   if (el) el.innerHTML = html;
 }
 
-// ── Per-person PIN session (verified server-side) ──────────
-function moAuthToken(){ try { return sessionStorage.getItem('bt_token') || ''; } catch(e){ return ''; } }
-function moClientId(){
-  try {
-    var c = localStorage.getItem('bt_cid');
-    if (!c){ c = Date.now().toString(36) + Math.random().toString(36).slice(2,10); localStorage.setItem('bt_cid', c); }
-    return c;
-  } catch(e){ return 'anon'; }
+// ── GitHub data store (read-only on mobile) ────────────────
+var GH = {
+  get repo(){ return localStorage.getItem('bt_gh_repo') || 'jackdengler/private-data-storage'; },
+  get path(){ return localStorage.getItem('bt_gh_path') || 'budget.json'; },
+  get branch(){ return localStorage.getItem('bt_gh_branch') || 'main'; },
+  get token(){ return localStorage.getItem('bt_gh_token') || ''; },
+  set token(v){ if (v) localStorage.setItem('bt_gh_token', v); else localStorage.removeItem('bt_gh_token'); },
+};
+var moPending = null;
+
+function _b64decodeUtf8(b64){ return decodeURIComponent(escape(atob(String(b64).replace(/\s/g,'')))); }
+
+function moReadData(cb, errCb){
+  fetch('https://api.github.com/repos/'+GH.repo+'/contents/'+encodeURIComponent(GH.path)+'?ref='+encodeURIComponent(GH.branch)+'&_='+Date.now(), {
+    headers: { 'Authorization':'Bearer '+GH.token, 'Accept':'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28' }
+  }).then(function(r){
+    if (r.status===404){ cb(null); return; }
+    if (r.status===401 || r.status===403){ errCb(new Error('TOKEN')); return; }
+    if (!r.ok){ errCb(new Error('HTTP '+r.status)); return; }
+    r.json().then(function(j){
+      try { cb(JSON.parse(_b64decodeUtf8(j.content))); } catch(e){ errCb(new Error('Bad JSON')); }
+    });
+  }).catch(errCb);
 }
 
-function moShowLock(msg){
-  var s = document.getElementById('status');
-  s.style.display = '';
-  s.innerHTML =
-    '<div style="text-align:center;max-width:300px;margin:0 auto;padding:24px;width:100%">'
-    + '<div style="font-size:2.6rem;margin-bottom:6px">💕</div>'
-    + '<div style="font-weight:800;font-size:1.2rem;margin-bottom:4px">Budget Together</div>'
-    + '<div style="color:#9A8A78;font-size:.9rem;margin-bottom:18px">Enter your PIN</div>'
-    + '<input id="mo-pin" type="password" inputmode="numeric" maxlength="10" autocomplete="off" placeholder="••••" '
-    +   'style="width:100%;padding:13px;font-size:1.25rem;text-align:center;letter-spacing:.3em;border:1.5px solid #e2d9cc;border-radius:12px;outline:none;box-sizing:border-box">'
-    + '<div id="mo-pin-err" style="color:var(--red);font-size:.82rem;min-height:1.1em;margin:9px 0;font-weight:600"></div>'
-    + '<button id="mo-pin-btn" style="width:100%;padding:13px;background:var(--primary);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700">Unlock</button>'
-    + (msg ? '<div style="color:#9A8A78;font-size:.78rem;margin-top:12px">'+msg+'</div>' : '')
-    + '</div>';
-  var inp = document.getElementById('mo-pin'), btn = document.getElementById('mo-pin-btn');
-  btn.addEventListener('click', moSubmitPin);
-  inp.addEventListener('keydown', function(e){ if (e.key === 'Enter') moSubmitPin(); });
+function moHashPin(pin){
+  return crypto.subtle.digest('SHA-256', new TextEncoder().encode('bt-identity-v1:'+String(pin))).then(function(buf){
+    return Array.prototype.map.call(new Uint8Array(buf), function(b){ return ('0'+b.toString(16)).slice(-2); }).join('');
+  });
+}
+
+function moStatusHtml(html){ var s=document.getElementById('status'); s.style.display=''; s.innerHTML=html; }
+
+function moShowToken(msg){
+  moStatusHtml(
+    '<div style="text-align:center;max-width:320px;margin:0 auto;padding:24px;width:100%">'
+    +'<div style="font-size:2.6rem;margin-bottom:6px">💕</div>'
+    +'<div style="font-weight:800;font-size:1.2rem;margin-bottom:4px">Budget Together</div>'
+    +'<div style="color:#9A8A78;font-size:.88rem;margin-bottom:16px">Paste your access token</div>'
+    +'<input id="mo-tok" type="password" autocomplete="off" placeholder="github_pat_…" style="width:100%;padding:12px;font-size:.92rem;border:1.5px solid #e2d9cc;border-radius:12px;outline:none;box-sizing:border-box">'
+    +'<div id="mo-tok-err" style="color:var(--red);font-size:.8rem;min-height:1.1em;margin:9px 0;font-weight:600">'+(msg||'')+'</div>'
+    +'<button id="mo-tok-btn" style="width:100%;padding:13px;background:var(--primary);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700">Connect</button>'
+    +'</div>');
+  var inp=document.getElementById('mo-tok'), btn=document.getElementById('mo-tok-btn');
+  btn.addEventListener('click', moSubmitToken);
+  inp.addEventListener('keydown', function(e){ if(e.key==='Enter') moSubmitToken(); });
   setTimeout(function(){ inp.focus(); }, 60);
 }
+function moSubmitToken(){
+  var inp=document.getElementById('mo-tok'); if(!inp) return;
+  var t=(inp.value||'').trim();
+  if(t.length<10){ document.getElementById('mo-tok-err').textContent='Paste a valid token'; return; }
+  GH.token=t; moStart();
+}
 
+function moShowPin(msg){
+  moStatusHtml(
+    '<div style="text-align:center;max-width:300px;margin:0 auto;padding:24px;width:100%">'
+    +'<div style="font-size:2.6rem;margin-bottom:6px">💕</div>'
+    +'<div style="font-weight:800;font-size:1.2rem;margin-bottom:4px">Budget Together</div>'
+    +'<div style="color:#9A8A78;font-size:.9rem;margin-bottom:18px">Enter your PIN</div>'
+    +'<input id="mo-pin" type="password" inputmode="numeric" maxlength="10" autocomplete="off" placeholder="••••" style="width:100%;padding:13px;font-size:1.25rem;text-align:center;letter-spacing:.3em;border:1.5px solid #e2d9cc;border-radius:12px;outline:none;box-sizing:border-box">'
+    +'<div id="mo-pin-err" style="color:var(--red);font-size:.82rem;min-height:1.1em;margin:9px 0;font-weight:600">'+(msg||'')+'</div>'
+    +'<button id="mo-pin-btn" style="width:100%;padding:13px;background:var(--primary);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700">Unlock</button>'
+    +'<div style="margin-top:12px;font-size:.76rem"><a href="#" onclick="GH.token=\'\';moShowToken(\'\');return false" style="color:#9A8A78">Use a different token</a></div>'
+    +'</div>');
+  var inp=document.getElementById('mo-pin'), btn=document.getElementById('mo-pin-btn');
+  btn.addEventListener('click', moSubmitPin);
+  inp.addEventListener('keydown', function(e){ if(e.key==='Enter') moSubmitPin(); });
+  setTimeout(function(){ inp.focus(); }, 60);
+}
 function moSubmitPin(){
-  var inp = document.getElementById('mo-pin'); if (!inp) return;
-  var pin = (inp.value || '').trim();
-  var err = document.getElementById('mo-pin-err');
-  if (pin.length < 4){ if (err) err.textContent = 'Enter your PIN'; return; }
-  var btn = document.getElementById('mo-pin-btn');
-  if (btn){ btn.disabled = true; btn.textContent = 'Checking…'; }
-  google.script.run
-    .withSuccessHandler(function(res){
-      try { sessionStorage.setItem('bt_token', res.token); sessionStorage.setItem('bt_person', res.person || ''); } catch(e){}
-      moLoad();
-    })
-    .withFailureHandler(function(e){
-      if (btn){ btn.disabled = false; btn.textContent = 'Unlock'; }
-      if (err) err.textContent = (e && e.message) ? e.message : 'Incorrect PIN';
-      inp.value = ''; inp.focus();
-    })
-    .unlockWithPin(pin, moClientId());
+  var inp=document.getElementById('mo-pin'); if(!inp) return;
+  var pin=(inp.value||'').trim();
+  var err=document.getElementById('mo-pin-err');
+  if(pin.length<4){ if(err) err.textContent='Enter your PIN'; return; }
+  var btn=document.getElementById('mo-pin-btn'); if(btn){ btn.disabled=true; btn.textContent='Checking…'; }
+  moHashPin(pin).then(function(h){
+    var a=(moPending&&moPending._auth)||{};
+    var person=(a.p1&&h===a.p1)?'p1':(a.p2&&h===a.p2)?'p2':'';
+    if(!person){ if(btn){btn.disabled=false;btn.textContent='Unlock';} if(err) err.textContent='Incorrect PIN'; inp.value=''; inp.focus(); return; }
+    try { sessionStorage.setItem('bt_person', person); } catch(e){}
+    moApply(moPending);
+  });
 }
 
-function moLoad(){
-  var s = document.getElementById('status');
-  s.style.display = '';
-  s.innerHTML = '<div class="ld-dots"><div></div><div></div><div></div></div><div class="ld-label">Loading</div>';
-  google.script.run
-    .withSuccessHandler(function(data){
-      D = data;
-      // If current month has no transactions, jump to most recent month with data
-      var curMoTxns = (D.transactions||[]).filter(function(t){ return t.date && t.date.slice(0,7)===currentMonth; });
-      if (curMoTxns.length === 0 && (D.transactions||[]).length > 0) {
-        var allMo = {};
-        for (var i=0; i<D.transactions.length; i++) { if (D.transactions[i].date) allMo[D.transactions[i].date.slice(0,7)] = true; }
-        var sorted = Object.keys(allMo).sort();
-        if (sorted.length) currentMonth = sorted[sorted.length - 1];
-      }
-      document.getElementById('status').style.display = 'none';
-      document.getElementById('app').className = 'show';
-      try { render(); } catch(e){
-        document.getElementById('app').innerHTML = '<div style="padding:2rem;color:var(--red);font-size:14px;word-break:break-all"><b>Error:</b><br>'+e.message+'</div>';
-      }
-    })
-    .withFailureHandler(function(e){
-      if (e && e.message && (e.message.indexOf('Locked') >= 0 || e.message.indexOf('enter your PIN') >= 0)) {
-        try { sessionStorage.removeItem('bt_token'); } catch(_){}
-        moShowLock('');
-        return;
-      }
-      document.getElementById('status').innerHTML = '<div style="color:var(--red)">Load failed: '+(e.message||e)+'</div>';
-    })
-    .loadAll(moAuthToken());
+function moApply(data){
+  D = data;
+  var curMoTxns = (D.transactions||[]).filter(function(t){ return t.date && t.date.slice(0,7)===currentMonth; });
+  if (curMoTxns.length === 0 && (D.transactions||[]).length > 0) {
+    var allMo={}; for (var i=0;i<D.transactions.length;i++){ if(D.transactions[i].date) allMo[D.transactions[i].date.slice(0,7)]=true; }
+    var sorted=Object.keys(allMo).sort(); if(sorted.length) currentMonth=sorted[sorted.length-1];
+  }
+  document.getElementById('status').style.display='none';
+  document.getElementById('app').className='show';
+  try { render(); } catch(e){ document.getElementById('app').innerHTML='<div style="padding:2rem;color:var(--red);font-size:14px;word-break:break-all"><b>Error:</b><br>'+e.message+'</div>'; }
 }
 
-if (moAuthToken()) moLoad(); else moShowLock();
+function moStart(){
+  if(!GH.token){ moShowToken(''); return; }
+  moStatusHtml('<div class="ld-dots"><div></div><div></div><div></div></div><div class="ld-label">Loading</div>');
+  moReadData(function(data){
+    if(data===null){ moStatusHtml('<div style="text-align:center;padding:24px;color:#9A8A78">No budget yet — open the full web app to set it up first.</div>'); return; }
+    moPending=data;
+    if(!data._auth || (!data._auth.p1 && !data._auth.p2)){ moStatusHtml('<div style="text-align:center;padding:24px;color:#9A8A78">Set up your PINs in the full web app first.</div>'); return; }
+    var sp=''; try{ sp=sessionStorage.getItem('bt_person')||''; }catch(e){}
+    if(sp && data._auth[sp]){ moApply(data); return; }
+    moShowPin('');
+  }, function(e){
+    if(e.message==='TOKEN'){ GH.token=''; moShowToken("That token didn't work."); return; }
+    document.getElementById('status').innerHTML='<div style="color:var(--red)">Load failed: '+(e.message||e)+'</div>';
+  });
+}
+
+moStart();
 </script>
 </body>
 </html>
