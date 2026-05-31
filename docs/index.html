@@ -4174,7 +4174,8 @@ function showSetupScreen(data) {
       </div>
       <div id="set-error" style="color:var(--primary);font-size:.85rem;min-height:1.1em;margin-bottom:8px;font-weight:600"></div>
       <button id="set-go" onclick="finishGhSetup()" style="width:100%;padding:14px;background:var(--primary);color:#fff;border:none;border-radius:12px;font-size:1.05rem;font-weight:700;cursor:pointer">Save &amp; start</button>
-      <p style="margin-top:14px;font-size:.82rem"><label style="color:var(--text-2);cursor:pointer;text-decoration:underline">Import a backup file first…<input type="file" accept=".json" onchange="importSetupFile(event)" style="display:none"></label></p>
+      <p style="margin-top:14px;font-size:.82rem"><label style="color:var(--text-2);cursor:pointer;text-decoration:underline">Import a backup file first…<input type="file" accept=".json,application/json" onchange="importSetupFile(event)" style="display:none"></label></p>
+      <p style="margin-top:6px;font-size:.82rem"><label style="color:var(--text-2);cursor:pointer;text-decoration:underline">Import from old Google Sheet (.xlsx)…<input type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onchange="importSetupXlsx(event)" style="display:none"></label></p>
       <p style="margin-top:8px;font-size:.74rem"><a href="#" onclick="resetToken();return false" style="color:var(--text-2)">Use a different token</a></p>
     </div>`;
 }
@@ -4195,6 +4196,91 @@ function importSetupFile(evt) {
     } catch(ex) { toast('Could not read file: ' + ex.message); }
   };
   r.readAsText(f);
+}
+
+// ── Import from the old Google Sheet exported as .xlsx ──────
+// The Apps Script backend stored data in three tabs (Transactions,
+// Budgets, Settings) with the exact columns mirrored here. Several
+// Settings values are JSON-encoded strings (see saveAll_ in Code.gs),
+// so they're parsed back into objects. This reassembles the same
+// budget.json shape importSetupFile expects, then funnels through the
+// same pendingData wiring.
+async function loadSheetJs() {
+  if (window.XLSX) return;
+  await new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+
+function importSetupXlsx(evt) {
+  const f = evt.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = async e => {
+    try {
+      await loadSheetJs();
+      const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+      const sheet = (name) => {
+        const ws = wb.Sheets[name];
+        return ws ? XLSX.utils.sheet_to_json(ws, { defval: '' }) : [];
+      };
+
+      const truthy = (v) => v === true || String(v).toLowerCase() === 'true';
+      const transactions = sheet('Transactions')
+        .filter(row => row.id !== '' && row.id != null)
+        .map(row => ({
+          id:          String(row.id),
+          date:        String(row.date || ''),
+          amount:      parseFloat(row.amount) || 0,
+          description: String(row.description || ''),
+          category:    String(row.category || 'other'),
+          person:      String(row.person || 'p1'),
+          note:        String(row.note || ''),
+          shared:      truthy(row.shared),
+          settled:     truthy(row.settled),
+          splitRatio:  parseFloat(row.splitRatio) || 0.5,
+          excluded:    truthy(row.excluded),
+          settledDate: row.settledDate ? String(row.settledDate) : '',
+        }));
+
+      const budgets = {};
+      sheet('Budgets').forEach(row => {
+        if (row.key !== '' && row.key != null) budgets[String(row.key)] = parseFloat(row.amount) || 0;
+      });
+
+      const raw = {};
+      sheet('Settings').forEach(row => {
+        if (row.key !== '' && row.key != null) raw[String(row.key)] = row.value;
+      });
+      const parseJson = (v, fallback) => { try { return v ? JSON.parse(v) : fallback; } catch(_) { return fallback; } };
+      const settings = { person1: raw.person1 || 'Person 1', person2: raw.person2 || 'Person 2' };
+      if (raw.secretPin) settings.secretPin = String(raw.secretPin);
+
+      const d = {
+        transactions, budgets, settings,
+        rules:            parseJson(raw.rules, {}),
+        customCategories: parseJson(raw.customCategories, []),
+        catSplits:        parseJson(raw.catSplits, {}),
+        excludedFromAvg:  parseJson(raw.excludedFromAvg, []),
+        recurringIncome:  parseJson(raw.recurringIncome, []),
+        gamblingData:     parseJson(raw.gamblingData, {}),
+        incomeData:       parseJson(raw.incomeData, {}),
+        incomeTypeRules:  parseJson(raw.incomeTypeRules, {}),
+      };
+
+      if (!Array.isArray(d.transactions) || !d.transactions.length) {
+        toast('No Transactions tab found in that file'); return;
+      }
+      ['transactions','budgets','settings','rules','customCategories','catSplits','excludedFromAvg','recurringIncome','gamblingData','incomeData','incomeTypeRules'].forEach(k => { if (d[k] !== undefined) pendingData[k] = d[k]; });
+      const n1 = $('set-n1'), n2 = $('set-n2');
+      if (n1 && settings.person1 && settings.person1 !== 'Person 1') n1.value = settings.person1;
+      if (n2 && settings.person2 && settings.person2 !== 'Person 2') n2.value = settings.person2;
+      toast(`Loaded ${d.transactions.length} transactions — now set your PINs`);
+    } catch(ex) { toast('Could not read spreadsheet: ' + (ex.message || ex)); }
+  };
+  r.readAsArrayBuffer(f);
 }
 
 async function finishGhSetup() {
