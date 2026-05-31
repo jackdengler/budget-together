@@ -4234,32 +4234,41 @@ function importSetupXlsx(evt) {
   r.onload = async e => {
     try {
       await loadSheetJs();
-      // cellDates so Google's real date cells come back as Date objects, not
-      // serial numbers (otherwise dates parse as "Invalid Date" and the month
-      // tabs show garbage like "4611"). See normDate below.
-      const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array', cellDates: true });
+      // NOTE: do NOT pass cellDates here. We want raw Excel serial numbers for
+      // date cells and convert them ourselves in UTC (see normDate). cellDates
+      // hands back JS Date objects built in the *browser's* local timezone, and
+      // reading them shifts the day by ±1 for anyone not on UTC (the bug this
+      // replaces: US users saw every date land one day earlier).
+      const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
       const sheet = (name) => {
         const ws = wb.Sheets[name];
         return ws ? XLSX.utils.sheet_to_json(ws, { defval: '' }) : [];
       };
 
-      // Normalize a cell to YYYY-MM-DD, mirroring loadAll_ in the old backend.
-      // Handles Date objects (cellDates), Excel serial numbers (fallback), and
-      // string forms (ISO, M/D/YYYY, long date strings). Returns '' if unparseable.
-      const fmtYmd = (dt) => dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+      // Normalize a cell to YYYY-MM-DD. Timezone-independent: Excel serials are
+      // anchored to the 1899-12-30 epoch and read with UTC getters so the day
+      // never drifts regardless of the user's local timezone. Also handles stray
+      // Date objects and string forms (ISO, M/D/YYYY, long date strings).
+      const pad = (n) => String(n).padStart(2, '0');
+      const fmtUTC = (dt) => dt.getUTCFullYear() + '-' + pad(dt.getUTCMonth() + 1) + '-' + pad(dt.getUTCDate());
       const normDate = (v) => {
         if (v == null || v === '') return '';
-        if (v instanceof Date && !isNaN(v.getTime())) return fmtYmd(v);
         if (typeof v === 'number') { // Excel serial day count (epoch 1899-12-30)
-          const dt = new Date(Date.UTC(1899, 11, 30) + v * 86400000);
-          return isNaN(dt.getTime()) ? '' : fmtYmd(dt);
+          const dt = new Date(Date.UTC(1899, 11, 30) + Math.round(v) * 86400000);
+          return isNaN(dt.getTime()) ? '' : fmtUTC(dt);
+        }
+        if (v instanceof Date && !isNaN(v.getTime())) {
+          // A cellDates-style Date can land on 23:59:59 of the prior day due to
+          // float rounding; nudge to local noon, then read local components.
+          const dt = new Date(v.getTime() + 12 * 3600 * 1000);
+          return dt.getFullYear() + '-' + pad(dt.getMonth() + 1) + '-' + pad(dt.getDate());
         }
         let s = String(v).trim();
         if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
         const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
         if (m) { let [, mo, d, y] = m; if (y.length === 2) y = '20' + y; return y + '-' + mo.padStart(2, '0') + '-' + d.padStart(2, '0'); }
         const dt = new Date(s);
-        return isNaN(dt.getTime()) ? '' : fmtYmd(dt);
+        return isNaN(dt.getTime()) ? '' : dt.getFullYear() + '-' + pad(dt.getMonth() + 1) + '-' + pad(dt.getDate());
       };
 
       const truthy = (v) => v === true || String(v).toLowerCase() === 'true';
