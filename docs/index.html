@@ -3817,9 +3817,10 @@ function showSettings() {
     </div>` : ''}
     <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
       <div style="font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:6px">💾 Backup &amp; Export</div>
-      <p style="font-size:.8rem;color:var(--text-3);margin-bottom:10px">Export a local JSON backup anytime, or import one to restore data.</p>
+      <p style="font-size:.8rem;color:var(--text-3);margin-bottom:10px">Download a full JSON backup to your device, save a dated snapshot to your GitHub repo, or import a backup to restore.</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button onclick="doExportJson()" style="font-size:.82rem;padding:6px 13px;border:1px solid var(--border);border-radius:8px;background:white;cursor:pointer">⬇️ Export JSON</button>
+        <button id="gh-backup-btn" onclick="doCloudBackup()" style="font-size:.82rem;padding:6px 13px;border:1px solid var(--border);border-radius:8px;background:white;cursor:pointer">☁️ Backup to GitHub</button>
         <label style="font-size:.82rem;padding:6px 13px;border:1px solid var(--border);border-radius:8px;background:white;cursor:pointer;display:inline-block">⬆️ Import JSON<input type="file" accept=".json" onchange="doImportJson(event)" style="display:none"></label>
       </div>
     </div>
@@ -3866,31 +3867,43 @@ function doUnlinkSheet() {
 }
 function clearData() { if(!confirm('Delete ALL transactions and budgets?')) return; S.transactions=[]; S.budgets={}; schedSave(); closeModal(); render(); toast('Cleared'); }
 
-// ── GitHub Backup ─────────────────────────────────────────
-function doGitHubBackup() {
-  const btn = document.getElementById('gh-backup-btn');
-  google.script.run
-    .withSuccessHandler(hasToken => {
-      if (!hasToken) {
-        document.getElementById('gh-token-row').style.display = 'block';
-        toast('Enter a GitHub token first');
-        return;
-      }
-      btn.disabled = true; btn.textContent = 'Backing up…';
-      google.script.run
-        .withSuccessHandler(r => { btn.disabled = false; btn.textContent = '☁️ Backup to GitHub'; toast('Backed up to GitHub!'); })
-        .withFailureHandler(e => { btn.disabled = false; btn.textContent = '☁️ Backup to GitHub'; toast('Backup failed: ' + (e.message || e)); })
-        .backupToGitHub(authToken());
-    })
-    .hasGitHubToken(authToken());
+// ── Snapshot the full data object ──────────────────────────
+// Single source of truth for "everything that should be backed up". Mirrors
+// the fields DB.save persists so exports/snapshots never silently drop data
+// (incomeData/incomeTypeRules were previously missing from doExportJson).
+function snapshotData() {
+  return {
+    transactions: S.transactions, budgets: S.budgets, settings: S.settings,
+    rules: S.rules, customCategories: S.customCategories, catSplits: S.catSplits,
+    excludedFromAvg: S.excludedFromAvg, recurringIncome: S.recurringIncome,
+    gamblingData: S.gamblingData, incomeData: S.incomeData, incomeTypeRules: S.incomeTypeRules,
+  };
 }
-function saveGhToken() {
-  const val = document.getElementById('gh-token-input').value.trim();
-  if (!val) { toast('Enter a token'); return; }
-  google.script.run
-    .withSuccessHandler(() => { document.getElementById('gh-token-row').style.display = 'none'; toast('Token saved! Click Backup again.'); })
-    .withFailureHandler(e => toast('Error: ' + (e.message || e)))
-    .setGitHubToken(val, authToken());
+
+// ── Cloud snapshot: write a timestamped copy into the data repo ──
+// Unlike the live budget.json (last-write-wins, single file), this drops a
+// dated copy under backups/ so you have point-in-time snapshots without
+// digging through git history. Uses the same token/repo/branch as the app.
+async function doCloudBackup() {
+  const btn = document.getElementById('gh-backup-btn');
+  if (!GH.token) { toast('Sign in with your token first'); return; }
+  if (btn) { btn.disabled = true; btn.textContent = 'Backing up…'; }
+  try {
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19); // 2026-05-31T14-22-05
+    const path = 'backups/budget-' + stamp + '.json';
+    const content = _b64encodeUtf8(JSON.stringify(Object.assign({ _backupDate: new Date().toISOString() }, snapshotData()), null, 2));
+    const r = await ghApi('PUT', '/contents/' + encodeURIComponent(path), {
+      message: 'backup: ' + stamp, content, branch: GH.branch,
+    });
+    if (r.status === 401 || r.status === 403) throw new Error('TOKEN');
+    if (!r.ok) { const t = await r.text().catch(() => ''); throw new Error('HTTP ' + r.status + ' ' + t.slice(0, 120)); }
+    toast('Cloud backup saved ☁️');
+  } catch (e) {
+    if (e.message === 'TOKEN') { toast('Token rejected — sign in again'); }
+    else toast('Backup failed: ' + (e.message || e));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '☁️ Backup to GitHub'; }
+  }
 }
 
 // ── Change this person's login PIN (server-side) ────────────
@@ -3923,7 +3936,7 @@ async function saveLoginPin() {
 
 // ── Export: download all data as a local JSON file ──────────
 function doExportJson() {
-  const data = { _exportDate: new Date().toISOString(), transactions: S.transactions, budgets: S.budgets, settings: S.settings, rules: S.rules, customCategories: S.customCategories, catSplits: S.catSplits, excludedFromAvg: S.excludedFromAvg, recurringIncome: S.recurringIncome, gamblingData: S.gamblingData };
+  const data = Object.assign({ _exportDate: new Date().toISOString() }, snapshotData());
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
