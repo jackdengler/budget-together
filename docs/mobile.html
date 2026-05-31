@@ -115,25 +115,13 @@
     #app { display: none; flex-direction: column; height: 100%; }
     #app.show { display: flex; flex: 1; }
 
-    /* Month bar — bottom darker band */
+    /* Month bar — inner row inside .mo-bar-wrap */
     .mo-bar {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: calc(16px * var(--z));
-      padding: calc(10px * var(--z)) calc(16px * var(--z)) calc((10px + env(safe-area-inset-bottom)) * var(--z));
-      flex-shrink: 0;
-      background: var(--surface-border);
-      order: 3;
-    }
-    .mo-label {
-      font-size: calc(12px * var(--z));
-      font-weight: 800;
-      letter-spacing: calc(2px * var(--z));
-      text-transform: uppercase;
-      color: var(--text);
-      min-width: calc(160px * var(--z));
-      text-align: center;
+      gap: calc(12px * var(--z));
+      padding: calc(10px * var(--z)) calc(16px * var(--z));
     }
 
     /* Carousel */
@@ -335,6 +323,155 @@
       background: var(--primary);
       width: calc(24px * var(--z));
     }
+
+    /* Period bar (replaces plain month bar) */
+    .mo-bar-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      flex-shrink: 0;
+      background: var(--surface-border);
+      order: 3;
+      padding-bottom: calc(env(safe-area-inset-bottom) * var(--z));
+    }
+    .view-toggle {
+      display: flex;
+      justify-content: center;
+      gap: calc(4px * var(--z));
+      padding: calc(8px * var(--z)) calc(16px * var(--z)) 0;
+    }
+    .view-pill {
+      font-size: calc(11px * var(--z));
+      font-weight: 800;
+      letter-spacing: calc(.5px * var(--z));
+      text-transform: uppercase;
+      padding: calc(5px * var(--z)) calc(16px * var(--z));
+      border-radius: calc(20px * var(--z));
+      border: none;
+      background: transparent;
+      color: var(--text-sub);
+    }
+    .view-pill.on {
+      background: var(--surface);
+      color: var(--primary);
+      box-shadow: 0 calc(1px * var(--z)) calc(3px * var(--z)) rgba(0,0,0,0.08);
+    }
+    .mo-arrow {
+      border: none;
+      background: none;
+      color: var(--text);
+      font-size: calc(22px * var(--z));
+      line-height: 1;
+      padding: calc(2px * var(--z)) calc(8px * var(--z));
+    }
+    .mo-arrow:disabled { color: var(--text-3); opacity: .4; }
+    .mo-label-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: calc(6px * var(--z));
+      border: none;
+      background: none;
+      font-size: calc(12px * var(--z));
+      font-weight: 800;
+      letter-spacing: calc(1.5px * var(--z));
+      text-transform: uppercase;
+      color: var(--text);
+      min-width: calc(170px * var(--z));
+    }
+    .mo-label-btn .avg-tag {
+      font-size: calc(8px * var(--z));
+      font-weight: 900;
+      letter-spacing: calc(.5px * var(--z));
+      color: var(--primary);
+      background: rgba(212,102,58,0.12);
+      padding: calc(2px * var(--z)) calc(6px * var(--z));
+      border-radius: calc(6px * var(--z));
+    }
+    .mo-label-btn .caret { font-size: calc(9px * var(--z)); color: var(--text-sub); }
+
+    /* Avg subtitle under card titles */
+    .avg-sub {
+      font-size: calc(9px * var(--z));
+      font-weight: 800;
+      letter-spacing: calc(1.5px * var(--z));
+      text-transform: uppercase;
+      color: var(--text-sub);
+      text-align: center;
+      margin-top: calc(-4px * var(--z));
+      margin-bottom: calc(8px * var(--z));
+    }
+
+    /* Period picker bottom sheet */
+    .sheet-back {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.32);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      z-index: 50;
+      animation: fadeIn .2s ease;
+    }
+    .sheet {
+      background: var(--surface);
+      border-radius: calc(20px * var(--z)) calc(20px * var(--z)) 0 0;
+      padding: calc(18px * var(--z)) calc(18px * var(--z)) calc((18px + env(safe-area-inset-bottom)) * var(--z));
+      animation: sheetUp .28s var(--ease-out);
+      max-height: 80%;
+      display: flex;
+      flex-direction: column;
+    }
+    @keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .sheet-title {
+      font-size: calc(12px * var(--z));
+      font-weight: 800;
+      letter-spacing: calc(2px * var(--z));
+      text-transform: uppercase;
+      color: var(--text-sub);
+      text-align: center;
+      margin-bottom: calc(14px * var(--z));
+    }
+    .preset-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: calc(8px * var(--z)); }
+    .preset-btn {
+      padding: calc(12px * var(--z)) calc(4px * var(--z));
+      border-radius: calc(12px * var(--z));
+      border: calc(1.5px * var(--z)) solid var(--surface-border);
+      background: var(--surface);
+      font-size: calc(13px * var(--z));
+      font-weight: 700;
+      color: var(--text);
+    }
+    .preset-btn.on { border-color: var(--primary); background: rgba(212,102,58,0.08); color: var(--primary); }
+    .month-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: calc(8px * var(--z));
+      overflow-y: auto;
+      margin-top: calc(14px * var(--z));
+      padding-bottom: calc(6px * var(--z));
+    }
+    .month-chip {
+      padding: calc(8px * var(--z)) calc(12px * var(--z));
+      border-radius: calc(20px * var(--z));
+      border: calc(1.5px * var(--z)) solid var(--surface-border);
+      background: var(--surface);
+      font-size: calc(12px * var(--z));
+      font-weight: 700;
+      color: var(--text-2);
+    }
+    .month-chip.on { border-color: var(--primary); background: var(--primary); color: #fff; }
+    .sheet-done {
+      margin-top: calc(16px * var(--z));
+      padding: calc(13px * var(--z));
+      width: 100%;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: calc(12px * var(--z));
+      font-size: calc(15px * var(--z));
+      font-weight: 700;
+    }
   </style>
 </head>
 <body>
@@ -358,6 +495,9 @@ document.addEventListener('touchmove', function(e) {
 }, {passive: false});
 
 var D, currentMonth = new Date().toISOString().slice(0,7), currentCard = 0;
+// Period selection — mirrors the web app's overview ranges.
+// period: '1mo' | 'ytd' | 'all' | 'custom'.  periodView: 'total' | 'avg' (multi-month only).
+var period = '1mo', periodView = 'avg', customMonths = [];
 
 var FIXED = {housing:1, utilities:1, subs:1, insurance:1};
 var RET_RE = /\b(401k?|roth|retirement|pension|sep[\s-]?ira|hsa contrib)\b/i;
@@ -421,8 +561,14 @@ function getCatSplitAmts(catId, amt) {
   return {p1Share: amt * ratio, p2Share: amt * (1 - ratio)};
 }
 
-function compute(who){
-  var txns = (D.transactions||[]).filter(function(t){ return t.date && t.date.slice(0,7)===currentMonth && !t.excluded; });
+function compute(who, months){
+  months = months || [currentMonth];
+  var msSet = {}; for (var mi=0; mi<months.length; mi++) msSet[months[mi]] = 1;
+  // Divide aggregated totals by month count for the avg/mo view (ratios like savings
+  // rate are unaffected since both numerator and denominator scale together).
+  var div = (months.length > 1 && periodView === 'avg') ? months.length : 1;
+  function sc(o){ if (div <= 1) return o; var r = {}; for (var k in o) r[k] = o[k] / div; return r; }
+  var txns = (D.transactions||[]).filter(function(t){ return t.date && msSet[t.date.slice(0,7)] && !t.excluded; });
   var exp = txns.filter(function(t){ return t.amount > 0 && !isIgnored(t.category); });
   var inc = txns.filter(function(t){ return t.amount < 0 && t.category === 'income'; });
 
@@ -454,7 +600,7 @@ function compute(who){
       else if (tp==='family') fam += a;
     }
 
-    return {inc:totalInc, ret:ret, fam:fam, spend:spend, fixed:fixed, variable:spend-fixed};
+    return sc({inc:totalInc, ret:ret, fam:fam, spend:spend, fixed:fixed, variable:spend-fixed});
   }
 
   // Combined
@@ -470,10 +616,10 @@ function compute(who){
     if (tp2==='retirement') totalRet += a2;
     else if (tp2==='family') totalFam += a2;
   }
-  return {inc:totalInc2, ret:totalRet, fam:totalFam, spend:totalSpend, fixed:totalFixed, variable:totalSpend-totalFixed};
+  return sc({inc:totalInc2, ret:totalRet, fam:totalFam, spend:totalSpend, fixed:totalFixed, variable:totalSpend-totalFixed});
 }
 
-function ringCard(title, titleColor, d) {
+function ringCard(title, titleColor, d, avg) {
   var normalInc = d.inc - (d.ret||0) - (d.fam||0);
   var saved = d.inc - d.spend;
   var sRate = normalInc > 0 ? Math.round(saved / normalInc * 100) : 0;
@@ -492,6 +638,7 @@ function ringCard(title, titleColor, d) {
 
   return '<div class="card">'
     + '<div class="card-title" style="color:' + titleColor + '">' + title + '</div>'
+    + (avg ? '<div class="avg-sub">avg / month</div>' : '')
     + '<div class="rcs-section">'
     + '<div class="rcs-number" style="color:var(--green)">' + fc0(d.inc) + '</div>'
     + '<div class="rcs-pills">' + incPills + '</div>'
@@ -521,8 +668,10 @@ function ringCard(title, titleColor, d) {
     + '</div>';
 }
 
-function categoryCard(txns) {
-  var exp = txns.filter(function(t){ return t.amount > 0 && !isIgnored(t.category) && !t.excluded; });
+function categoryCard(months, div, avg) {
+  div = div || 1;
+  var msSet = {}; for (var mi=0; mi<months.length; mi++) msSet[months[mi]] = 1;
+  var exp = (D.transactions||[]).filter(function(t){ return t.date && msSet[t.date.slice(0,7)] && t.amount > 0 && !isIgnored(t.category) && !t.excluded; });
   var byCat = {};
   for (var i=0; i<exp.length; i++) {
     byCat[exp[i].category] = (byCat[exp[i].category]||0) + exp[i].amount;
@@ -563,20 +712,22 @@ function categoryCard(txns) {
     var p1pct = ptot>0 ? (p1a/ptot*100).toFixed(0) : 50;
     rows += '<div class="cat-row">'
       + '<div class="cat-header"><div class="cat-header-left"><i class="bi ' + c.icon + '" style="color:' + c.color + '"></i><span class="cat-name">' + c.label + '</span></div>'
-      + '<span class="cat-amt">' + fc0(amt) + '</span></div>'
+      + '<span class="cat-amt">' + fc0(amt/div) + '</span></div>'
       + '<div class="cat-bar-wrap"><div style="width:' + (p1pct) + '%;background:var(--p1-bar)"></div><div style="width:' + (100-p1pct) + '%;background:var(--p2-bar)"></div></div>'
       + '</div>';
   }
 
-  if (!rows) rows = '<div style="text-align:center;color:var(--text-3);padding:' + 18*parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--z')||'1') + 'px;font-size:13px">No expenses this month</div>';
+  if (!rows) rows = '<div style="text-align:center;color:var(--text-3);padding:' + 18*parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--z')||'1') + 'px;font-size:13px">No expenses this period</div>';
 
   return '<div class="card">'
     + '<div class="section-title">Spending by Category</div>'
+    + (avg ? '<div class="avg-sub">avg / month</div>' : '')
     + '<div class="card-scroll" style="display:flex;flex-direction:column;justify-content:space-evenly">' + rows + '</div>'
     + '</div>';
 }
 
-function spendingHistoryCard() {
+function spendingHistoryCard(periodMonths) {
+  periodMonths = periodMonths || [currentMonth];
   var z = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--z')||'1');
   var txAll = D.transactions||[];
   var allMonthSet = {};
@@ -619,7 +770,7 @@ function spendingHistoryCard() {
   var cards = '';
   for (var i=0; i<monthData.length; i++){
     var d = monthData[i];
-    var isCur = d.mo === currentMonth;
+    var isCur = periodMonths.indexOf(d.mo) >= 0;
     var parts = d.mo.split('-');
     var label = new Date(+parts[0], +parts[1]-1, 1).toLocaleDateString('en-US', {month:'short'}) + " '" + parts[0].slice(2);
     var barW = d.total > 0 ? (d.total / maxTotal * 100).toFixed(1) : 0;
@@ -655,32 +806,137 @@ function spendingHistoryCard() {
 function moLabel(ym){
   var p=ym.split('-'); return new Date(+p[0],+p[1]-1,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
 }
+function monShort(ym){ var p=ym.split('-'); return new Date(+p[0],+p[1]-1,1).toLocaleDateString('en-US',{month:'short'}); }
 function moShift(delta){
   var p=currentMonth.split('-'), d=new Date(+p[0],+p[1]-1+delta,1);
   currentMonth = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
   render();
 }
 
+// ── Period (range) helpers — mirror the web app's overview ranges ──────────
+function allDataMonths(){
+  var s={}, tx=D.transactions||[];
+  for (var i=0;i<tx.length;i++){ if(tx[i].date) s[tx[i].date.slice(0,7)]=1; }
+  var arr=Object.keys(s).sort();
+  if (arr.indexOf(currentMonth)<0){ arr.push(currentMonth); arr.sort(); }
+  return arr;
+}
+function getPeriodMonths(){
+  var all=allDataMonths();
+  if (!all.length) return [currentMonth];
+  var yr=currentMonth.slice(0,4);
+  switch(period){
+    case 'ytd':    return all.filter(function(m){ return m.slice(0,4)===yr && m<=currentMonth; });
+    case 'all':    return all.slice();
+    case 'custom': return customMonths.length ? all.filter(function(m){ return customMonths.indexOf(m)>=0; }) : [currentMonth];
+    default:       return [currentMonth]; // '1mo'
+  }
+}
+function periodLabel(months){
+  if (months.length<=1) return moLabel(months[0]||currentMonth);
+  if (period==='all') return 'All Time';
+  if (period==='ytd') return currentMonth.slice(0,4)+' YTD';
+  if (period==='custom') return 'Custom · '+months.length+' mo';
+  var a=months[0], b=months[months.length-1];
+  if (a.slice(0,4)===b.slice(0,4)) return monShort(a)+' – '+monShort(b)+' '+b.slice(0,4);
+  return monShort(a)+" '"+a.slice(2,4)+' – '+monShort(b)+" '"+b.slice(2,4);
+}
+function shiftPeriod(delta){
+  if (period==='all') return;
+  if (period==='ytd'){
+    var p=currentMonth.split('-'); currentMonth=(+p[0]+delta)+'-'+p[1]; render(); return;
+  }
+  if (period==='custom'){
+    if (!customMonths.length){ moShift(delta); return; }
+    customMonths = customMonths.map(function(m){ var q=m.split('-'); var d=new Date(+q[0],+q[1]-1+delta,1); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); });
+    render(); return;
+  }
+  moShift(delta); // '1mo'
+}
+function setPeriod(p){
+  period=p;
+  if (p==='custom' && !customMonths.length) customMonths = allDataMonths().slice(-3);
+  render();
+  if (p==='custom') refreshSheet(); else closeSheet();
+}
+function setPeriodView(v){ periodView=v; render(); }
+
+// ── Period picker bottom sheet ─────────────────────────────────────────────
+function openPeriodPicker(){
+  if (document.getElementById('sheet-back')) return;
+  var b=document.createElement('div');
+  b.id='sheet-back'; b.className='sheet-back';
+  b.addEventListener('click', function(e){ if(e.target===b) closeSheet(); });
+  document.body.appendChild(b);
+  refreshSheet();
+}
+function closeSheet(){ var b=document.getElementById('sheet-back'); if(b) b.remove(); }
+function refreshSheet(){
+  var b=document.getElementById('sheet-back'); if(!b) return;
+  var presets=[['1mo','Month'],['ytd','YTD'],['all','All'],['custom','Custom']];
+  var grid='';
+  for (var i=0;i<presets.length;i++){
+    grid+='<button class="preset-btn'+(period===presets[i][0]?' on':'')+'" onclick="setPeriod(\''+presets[i][0]+'\')">'+presets[i][1]+'</button>';
+  }
+  var custom='';
+  if (period==='custom'){
+    var all=allDataMonths().slice().reverse(), chips='';
+    for (var j=0;j<all.length;j++){
+      var on=customMonths.indexOf(all[j])>=0;
+      chips+='<button class="month-chip'+(on?' on':'')+'" onclick="toggleCustomMonth(\''+all[j]+'\')">'+monShort(all[j])+" '"+all[j].slice(2,4)+'</button>';
+    }
+    custom='<div class="month-chips">'+chips+'</div>';
+  }
+  b.innerHTML='<div class="sheet">'
+    +'<div class="sheet-title">Period</div>'
+    +'<div class="preset-grid">'+grid+'</div>'
+    +custom
+    +'<button class="sheet-done" onclick="closeSheet()">Done</button>'
+    +'</div>';
+}
+function toggleCustomMonth(m){
+  var i=customMonths.indexOf(m);
+  if (i>=0){ if(customMonths.length>1) customMonths.splice(i,1); } else customMonths.push(m);
+  customMonths.sort();
+  render(); refreshSheet();
+}
+
 function render(){
   var n1 = (D.settings||{}).person1||'Person 1';
   var n2 = (D.settings||{}).person2||'Person 2';
-  var d1 = compute('p1'), d2 = compute('p2'), dAll = compute('all');
 
-  var moTxns = (D.transactions||[]).filter(function(t){ return t.date && t.date.slice(0,7)===currentMonth; });
+  var months  = getPeriodMonths();
+  var isMulti = months.length > 1;
+  var avg     = isMulti && periodView === 'avg';
+  var div     = avg ? months.length : 1;
 
-  var cards = ringCard('Combined', 'var(--primary)', dAll)
-    + ringCard(esc(n1), 'var(--p1)', d1)
-    + ringCard(esc(n2), 'var(--p2)', d2)
-    + categoryCard(moTxns)
-    + spendingHistoryCard();
+  var d1 = compute('p1', months), d2 = compute('p2', months), dAll = compute('all', months);
+
+  var cards = ringCard('Combined', 'var(--primary)', dAll, avg)
+    + ringCard(esc(n1), 'var(--p1)', d1, avg)
+    + ringCard(esc(n2), 'var(--p2)', d2, avg)
+    + categoryCard(months, div, avg)
+    + spendingHistoryCard(months);
+
+  var viewToggle = isMulti
+    ? '<div class="view-toggle">'
+      + '<button class="view-pill' + (periodView==='total'?' on':'') + '" onclick="setPeriodView(\'total\')">Total</button>'
+      + '<button class="view-pill' + (periodView==='avg'?' on':'') + '" onclick="setPeriodView(\'avg\')">Avg / mo</button>'
+      + '</div>'
+    : '';
+  var avgTag = avg ? '<span class="avg-tag">AVG/MO</span>' : '';
+  var navDis = period==='all' ? 'disabled' : '';
 
   document.getElementById('app').innerHTML =
     '<div class="carousel" id="car">' + cards + '</div>'
     + '<div class="dots" id="dots"></div>'
+    + '<div class="mo-bar-wrap">'
+    + viewToggle
     + '<div class="mo-bar">'
-    + '<button onclick="moShift(-1)">\u2039</button>'
-    + '<span class="mo-label">' + moLabel(currentMonth) + '</span>'
-    + '<button onclick="moShift(1)">\u203A</button>'
+    + '<button class="mo-arrow" onclick="shiftPeriod(-1)" ' + navDis + '>\u2039</button>'
+    + '<button class="mo-label-btn" onclick="openPeriodPicker()">' + periodLabel(months) + avgTag + '<span class="caret">\u25BE</span></button>'
+    + '<button class="mo-arrow" onclick="shiftPeriod(1)" ' + navDis + '>\u203A</button>'
+    + '</div>'
     + '</div>';
 
   var car = document.getElementById('car');
@@ -723,7 +979,7 @@ function render(){
         e.preventDefault();
         if (!swiping && Math.abs(dy) > 40) {
           swiping = true;
-          moShift(dy > 0 ? -1 : 1);
+          shiftPeriod(dy > 0 ? -1 : 1);
         }
       }
     }, {passive: false});
