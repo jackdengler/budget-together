@@ -414,7 +414,14 @@
       color: var(--text);
       box-shadow: 0 calc(1px * var(--z)) calc(4px * var(--z)) rgba(0,0,0,0.1);
     }
-    .ct-list { overflow-y: auto; margin: calc(4px * var(--z)) 0; }
+    .ct-list {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      margin: calc(4px * var(--z)) 0;
+    }
     .ct-save-note {
       text-align: center;
       font-size: calc(11px * var(--z));
@@ -543,10 +550,11 @@
 <script>
 // Kill all vertical scrolling/bouncing at document level
 document.addEventListener('touchmove', function(e) {
-  // Only allow touches inside the carousel (for horizontal swiping)
+  // Allow touches inside the carousel (horizontal swiping) and inside any
+  // scrollable sheet content (e.g. the category-type list / month chips).
   var el = e.target;
   while (el && el !== document.body) {
-    if (el.classList && el.classList.contains('carousel')) return;
+    if (el.classList && (el.classList.contains('carousel') || el.classList.contains('ct-list') || el.classList.contains('month-chips'))) return;
     el = el.parentNode;
   }
   e.preventDefault();
