@@ -431,6 +431,55 @@
       min-height: calc(1.2em);
       margin-top: calc(8px * var(--z));
     }
+    /* Data review rows (read-only transaction list) */
+    .dt-date {
+      font-size: calc(11px * var(--z));
+      font-weight: 800;
+      letter-spacing: calc(.5px * var(--z));
+      text-transform: uppercase;
+      color: var(--text-sub);
+      padding: calc(12px * var(--z)) 0 calc(4px * var(--z));
+    }
+    .dt-row {
+      display: flex;
+      align-items: center;
+      gap: calc(10px * var(--z));
+      padding: calc(7px * var(--z)) 0;
+      border-top: 1px solid var(--surface-border);
+    }
+    .dt-emoji {
+      width: calc(34px * var(--z));
+      height: calc(34px * var(--z));
+      border-radius: calc(10px * var(--z));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: calc(16px * var(--z));
+    }
+    .dt-main { flex: 1; min-width: 0; }
+    .dt-desc {
+      font-size: calc(13px * var(--z));
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .dt-meta {
+      font-size: calc(10.5px * var(--z));
+      color: var(--text-2);
+      margin-top: calc(2px * var(--z));
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .dt-amt {
+      font-size: calc(14px * var(--z));
+      font-weight: 800;
+      flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+    }
     .mo-label-btn {
       display: flex;
       align-items: center;
@@ -1009,6 +1058,73 @@ function setCatTypeMobile(catId, type){
     refreshCatTypeSheet(e && e.message==='TOKEN' ? 'Save failed — token can’t write' : 'Save failed');
   });
 }
+
+// ── Data review (read-only transaction list) ───────────────────────────────
+// Mirrors the web app's mobile transaction cards exactly: same fields, same
+// date grouping, same per-person/shared split labels — single source of truth.
+function openDataSheet(){
+  if (document.getElementById('sheet-back')) return;
+  var b=document.createElement('div');
+  b.id='sheet-back'; b.className='sheet-back';
+  b.addEventListener('click', function(e){ if(e.target===b) closeSheet(); });
+  document.body.appendChild(b);
+  renderDataSheet();
+}
+function renderDataSheet(){
+  var b=document.getElementById('sheet-back'); if(!b) return;
+  var n1=(D.settings||{}).person1||'Person 1', n2=(D.settings||{}).person2||'Person 2';
+  var months=getPeriodMonths(), msSet={};
+  for (var i=0;i<months.length;i++) msSet[months[i]]=1;
+  // Same visibility rules the dashboard uses: drop hidden/ignored cats, but
+  // show income and excluded rows here so the data can be fully reviewed.
+  var txns=(D.transactions||[]).filter(function(t){ return t.date && msSet[t.date.slice(0,7)] && !HIDDEN_CATS[t.category]; });
+  txns.sort(function(a,b){ return (b.date||'').localeCompare(a.date||'') || (b.id||'').toString().localeCompare((a.id||'').toString()); });
+
+  // Group by date for section headers
+  var groups={}, order=[];
+  for (var j=0;j<txns.length;j++){
+    var dk=txns[j].date||'Unknown';
+    if (!groups[dk]){ groups[dk]=[]; order.push(dk); }
+    groups[dk].push(txns[j]);
+  }
+
+  var body='';
+  for (var g=0;g<order.length;g++){
+    var dk=order[g], day=groups[dk], parts=dk.split('-'), lbl=dk;
+    if (parts.length===3){
+      var dt=new Date(+parts[0],+parts[1]-1,+parts[2]);
+      if (!isNaN(dt.getTime())) lbl=dt.toLocaleDateString('en-US',{weekday:'long', month:'short', day:'numeric'});
+    }
+    var rows='';
+    for (var k=0;k<day.length;k++){
+      var t=day[k], c=getCat(t.category), isInc=t.amount<0;
+      var payerLabel=t.person==='p1'?esc(n1):esc(n2), payerColor=t.person==='p1'?'var(--p1)':'var(--p2)';
+      var split='';
+      if (t.shared && t.amount>0){
+        var sh=getCatSplitAmts(t.category, t.amount);
+        split=' · <span style="color:var(--p1)">'+fc0(sh.p1Share)+'</span>/<span style="color:var(--p2)">'+fc0(sh.p2Share)+'</span>';
+      }
+      var meta='<span style="color:'+payerColor+';font-weight:700">'+payerLabel+'</span>'
+        + (t.shared?' paid · <span style="color:var(--green);font-weight:700">Shared</span>':'')
+        + ' · '+esc(c.label) + split
+        + (t.excluded?' · <span style="color:var(--text-3)">excluded</span>':'')
+        + (t.settled?' · <span style="color:#3A6A3A;font-weight:600">Settled</span>':'');
+      rows+='<div class="dt-row"'+(t.excluded?' style="opacity:.55"':'')+'>'
+        + '<div class="dt-emoji" style="background:'+(c.color?c.color+'1a':'rgba(0,0,0,0.05)')+'"><i class="bi '+c.icon+'" style="color:'+c.color+'"></i></div>'
+        + '<div class="dt-main"><div class="dt-desc">'+esc(t.description||'(no description)')+'</div><div class="dt-meta">'+meta+'</div></div>'
+        + '<div class="dt-amt" style="color:'+(isInc?'var(--green)':'var(--text)')+'">'+(isInc?'+':'')+fc0(t.amount)+'</div>'
+        + '</div>';
+    }
+    body+='<div class="dt-date">'+esc(lbl)+'</div>'+rows;
+  }
+  if (!body) body='<div style="text-align:center;color:var(--text-3);padding:24px;font-size:13px">No transactions in this period</div>';
+
+  b.innerHTML='<div class="sheet">'
+    +'<div class="sheet-title">Data · '+esc(periodLabel(months))+'</div>'
+    +'<div class="ct-list">'+body+'</div>'
+    +'<button class="sheet-done" onclick="closeSheet()">Done</button>'
+    +'</div>';
+}
 function refreshSheet(){
   var b=document.getElementById('sheet-back'); if(!b) return;
   var presets=[['1mo','Month'],['ytd','YTD'],['all','All'],['custom','Custom']];
@@ -1074,6 +1190,7 @@ function render(){
     + '<button class="mo-arrow" onclick="shiftPeriod(-1)" ' + navDis + '>\u2039</button>'
     + '<button class="mo-label-btn" onclick="openPeriodPicker()">' + periodLabel(months) + avgTag + '<span class="caret">\u25BE</span></button>'
     + '<button class="mo-arrow" onclick="shiftPeriod(1)" ' + navDis + '>\u203A</button>'
+    + '<button class="mo-gear" onclick="openDataSheet()" aria-label="Review data">\u2630</button>'
     + '<button class="mo-gear" onclick="openCatTypeSheet()" aria-label="Category settings">\u2699</button>'
     + '</div>'
     + '</div>';
