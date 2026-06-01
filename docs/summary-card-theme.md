@@ -127,7 +127,7 @@ Three cards spanning full screen width: Combined, Person 1, Person 2.
 
 - **Left column**: Income total + breakdown (Regular / Retirement / Family), right-aligned
 - **Center**: Savings ring with $ amount and % inside (5px gap), no label — green = saving, red = loss
-- **Right column**: Spending total + breakdown (Fixed / Variable), left-aligned
+- **Right column**: Spending total + breakdown (Fixed / Variable / Annual), left-aligned
 - **Title**: Person name top-left
 
 ### Typography
