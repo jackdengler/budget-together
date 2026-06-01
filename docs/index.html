@@ -860,9 +860,20 @@ function catIcon(cat, size) {
 }
 // Backward compat: anywhere that used c.emoji now gets the icon
 BASE_CATS.forEach(c => { if (!c.emoji) Object.defineProperty(c, 'emoji', { get() { return catIcon(this, 16); }, configurable: true }); });
-// Fixed vs Variable expense categorization
-const FIXED_CATS = new Set(['housing','utilities','subs','insurance']);
-function isFixedCat(catId) { return FIXED_CATS.has(catId); }
+// Spending categorization: fixed / variable / annual.
+// Categories with no explicit type in S.catTypes fall back to this legacy
+// default (these four were the original hard-coded "fixed" set); everything
+// else defaults to variable.
+const CAT_TYPES = ['fixed', 'variable', 'annual'];
+const CAT_TYPE_LABELS = { fixed: 'Fixed', variable: 'Variable', annual: 'Annual' };
+const DEFAULT_FIXED_CATS = new Set(['housing','utilities','subs','insurance']);
+function catType(catId) {
+  const t = (S.catTypes || {})[catId];
+  if (t === 'fixed' || t === 'variable' || t === 'annual') return t;
+  return DEFAULT_FIXED_CATS.has(catId) ? 'fixed' : 'variable';
+}
+function isFixedCat(catId) { return catType(catId) === 'fixed'; }
+function isAnnualCat(catId) { return catType(catId) === 'annual'; }
 function getCats() {
   const all = [...BASE_CATS, ...S.customCategories];
   return S.pinUnlocked ? all : all.filter(c => !c.hidden);
@@ -899,6 +910,7 @@ const S = {
   rules: {},
   customCategories: [],
   catSplits: {}, // { [catId]: { mode:'even'|'pct'|'dollar', p1Pct:50, p1Amt:0 } }
+  catTypes: {}, // { [catId]: 'fixed'|'variable'|'annual' } — spending classification; unset falls back to legacy default
   gamblingData: {}, // { [txnId]: typeId }
   incomeData: {},        // { [txnId]: 'normal'|'retirement'|'family' }  explicit overrides
   incomeTypeRules: {},   // { [normalizedDesc]: 'normal'|'retirement'|'family' }  learned from user
@@ -1036,7 +1048,7 @@ function schedSave() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
     DB.save(
-      { transactions: S.transactions, budgets: S.budgets, settings: S.settings, rules: S.rules, customCategories: S.customCategories, catSplits: S.catSplits, excludedFromAvg: S.excludedFromAvg, recurringIncome: S.recurringIncome, gamblingData: S.gamblingData, incomeData: S.incomeData },
+      { transactions: S.transactions, budgets: S.budgets, settings: S.settings, rules: S.rules, customCategories: S.customCategories, catSplits: S.catSplits, catTypes: S.catTypes, excludedFromAvg: S.excludedFromAvg, recurringIncome: S.recurringIncome, gamblingData: S.gamblingData, incomeData: S.incomeData },
       () => setSaveStatus('saved'),
       () => setSaveStatus('error')
     );
@@ -1871,26 +1883,38 @@ function renderOverview() {
 
   // ── Mobile: iOS grouped overview ─────────────────────────
   if (isMobile()) {
-    // ── Compute fixed vs variable spending ──
-    const fixedTotal = scaleNum(exp.filter(t => isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0));
-    const varTotal = scaleNum(exp.reduce((s,t)=>s+t.amount,0)) - fixedTotal;
-    // Per-person fixed/variable: solo + settled share of shared (so fixed+var = spend total)
-    const p1SoloFixed = exp.filter(t => t.person==='p1' && !t.shared && isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0);
-    const p1SoloVar = exp.filter(t => t.person==='p1' && !t.shared && !isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0);
-    const p2SoloFixed = exp.filter(t => t.person==='p2' && !t.shared && isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0);
-    const p2SoloVar = exp.filter(t => t.person==='p2' && !t.shared && !isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0);
-    let sharedFixedP1 = 0, sharedFixedP2 = 0, sharedVarP1 = 0, sharedVarP2 = 0;
-    const sharedFixedByCat = {}, sharedVarByCat = {};
-    for (const t of sharedTxns) {
-      if (isFixedCat(t.category)) sharedFixedByCat[t.category] = (sharedFixedByCat[t.category]||0) + t.amount;
-      else sharedVarByCat[t.category] = (sharedVarByCat[t.category]||0) + t.amount;
-    }
-    for (const [cid, amt] of Object.entries(sharedFixedByCat)) { const {p1Share, p2Share} = getCatSplitAmts(cid, amt); sharedFixedP1 += p1Share; sharedFixedP2 += p2Share; }
-    for (const [cid, amt] of Object.entries(sharedVarByCat)) { const {p1Share, p2Share} = getCatSplitAmts(cid, amt); sharedVarP1 += p1Share; sharedVarP2 += p2Share; }
-    const p1Fixed = scaleNum(p1SoloFixed + sharedFixedP1);
-    const p1Var = scaleNum(p1SoloVar + sharedVarP1);
-    const p2Fixed = scaleNum(p2SoloFixed + sharedFixedP2);
-    const p2Var = scaleNum(p2SoloVar + sharedVarP2);
+    // ── Compute spending by type (fixed / variable / annual) ──
+    // Sum a person's solo expenses into the three type buckets.
+    const soloByType = (person) => {
+      const b = { fixed: 0, variable: 0, annual: 0 };
+      for (const t of exp) if (t.person===person && !t.shared) b[catType(t.category)] += t.amount;
+      return b;
+    };
+    // Each person's settled share of shared expenses, by type.
+    const sharedShareByType = () => {
+      const byCat = {};
+      for (const t of sharedTxns) byCat[t.category] = (byCat[t.category]||0) + t.amount;
+      const p1 = { fixed: 0, variable: 0, annual: 0 }, p2 = { fixed: 0, variable: 0, annual: 0 };
+      for (const [cid, amt] of Object.entries(byCat)) {
+        const { p1Share, p2Share } = getCatSplitAmts(cid, amt);
+        const ty = catType(cid);
+        p1[ty] += p1Share; p2[ty] += p2Share;
+      }
+      return { p1, p2 };
+    };
+    const allByType = { fixed: 0, variable: 0, annual: 0 };
+    for (const t of exp) allByType[catType(t.category)] += t.amount;
+    const fixedTotal = scaleNum(allByType.fixed);
+    const varTotal = scaleNum(allByType.variable);
+    const annualTotal = scaleNum(allByType.annual);
+    const p1Solo = soloByType('p1'), p2Solo = soloByType('p2');
+    const { p1: sharedP1ByType, p2: sharedP2ByType } = sharedShareByType();
+    const p1Fixed = scaleNum(p1Solo.fixed + sharedP1ByType.fixed);
+    const p1Var = scaleNum(p1Solo.variable + sharedP1ByType.variable);
+    const p1Annual = scaleNum(p1Solo.annual + sharedP1ByType.annual);
+    const p2Fixed = scaleNum(p2Solo.fixed + sharedP2ByType.fixed);
+    const p2Var = scaleNum(p2Solo.variable + sharedP2ByType.variable);
+    const p2Annual = scaleNum(p2Solo.annual + sharedP2ByType.annual);
 
     // ── 2x2 person card builder ──
     // Stocks-style currency: sign+$ as superscript, number weight 300 (zero) / 700 (non-zero)
@@ -1900,7 +1924,7 @@ function renderOverview() {
       return `<span style="color:${color}"><sup style="font-size:0.6em;font-weight:700;vertical-align:super;line-height:0">${sign}$</sup><span style="font-weight:${isZero?300:800}">${num}</span></span>`;
     }
 
-    function mobilePersonSlide(title, titleColor, cls, inc, spend, locked, ret, fam, fixed, variable) {
+    function mobilePersonSlide(title, titleColor, cls, inc, spend, locked, ret, fam, fixed, variable, annual) {
       if (locked) return `<div class="ov-slide"><div class="ov-slide-inner income-card ${cls}"><div class="ov-person-card"><div class="income-title" style="${titleColor?'color:'+titleColor:''}">${title}</div><div class="ov-card-grid"><div class="ov-card-cell" style="grid-column:1/-1;align-items:center"><div style="font-size:2rem;margin-bottom:8px">🔒</div><div style="font-size:1rem;color:var(--text-3)">Private</div></div></div></div></div></div>`;
       fam = fam || 0;
       const normalInc = inc - (ret||0) - fam;
@@ -1980,6 +2004,7 @@ function renderOverview() {
             <div class="ov-breakdown">
               <div class="ov-breakdown-row"><span class="ov-breakdown-label"><span class="ov-dot" style="background:var(--color-fixed)"></span>Fixed</span><span class="ov-breakdown-value" style="color:var(--color-fixed)">${fc0(fixed)}</span></div>
               <div class="ov-breakdown-row"><span class="ov-breakdown-label"><span class="ov-dot" style="background:var(--color-amber)"></span>Variable</span><span class="ov-breakdown-value" style="color:var(--color-amber)">${fc0(variable)}</span></div>
+              ${(annual||0) > 0.005 ? `<div class="ov-breakdown-row"><span class="ov-breakdown-label"><span class="ov-dot" style="background:var(--primary)"></span>Annual</span><span class="ov-breakdown-value" style="color:var(--primary)">${fc0(annual)}</span></div>` : ''}
             </div>
           </div>
         </div>
@@ -1987,9 +2012,9 @@ function renderOverview() {
     }
 
     const totalSpend = scaleNum(total);
-    const slide1 = mobilePersonSlide('Combined', 'var(--primary)', 'ic-combined', scaleNum(totalInc), totalSpend, false, scaleNum(retTot), scaleNum(famTot), fixedTotal, varTotal);
-    const slide2 = mobilePersonSlide(esc(S.settings.person1), 'var(--p1)', 'ic-p1', scaleNum(p1inc), scaleNum(p1sp+sharedP1), p1Locked, scaleNum(p1ret), scaleNum(p1fam), p1Fixed, p1Var);
-    const slide3 = mobilePersonSlide(esc(S.settings.person2), 'var(--p2)', 'ic-p2', scaleNum(p2inc), scaleNum(p2sp+sharedP2), p2Locked, scaleNum(p2ret), scaleNum(p2fam), p2Fixed, p2Var);
+    const slide1 = mobilePersonSlide('Combined', 'var(--primary)', 'ic-combined', scaleNum(totalInc), totalSpend, false, scaleNum(retTot), scaleNum(famTot), fixedTotal, varTotal, annualTotal);
+    const slide2 = mobilePersonSlide(esc(S.settings.person1), 'var(--p1)', 'ic-p1', scaleNum(p1inc), scaleNum(p1sp+sharedP1), p1Locked, scaleNum(p1ret), scaleNum(p1fam), p1Fixed, p1Var, p1Annual);
+    const slide3 = mobilePersonSlide(esc(S.settings.person2), 'var(--p2)', 'ic-p2', scaleNum(p2inc), scaleNum(p2sp+sharedP2), p2Locked, scaleNum(p2ret), scaleNum(p2fam), p2Fixed, p2Var, p2Annual);
 
     // ── Slide 4: Categories ──
     const slide4 = `<div class="ov-slide"><div class="ov-slide-inner ov-scrollable" style="display:flex;flex-direction:column">
@@ -2078,29 +2103,35 @@ ${dots}`;
   }
 
   // ── Desktop: standard overview ──────────────────────────
-  // Compute fixed vs variable for desktop
-  const dFixedTotal = scaleNum(exp.filter(t => isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0));
-  const dVarTotal = scaleNum(total) - dFixedTotal;
-  // Per-person fixed/variable: solo + settled share of shared (so fixed+var = spend total)
-  const dP1SoloFixed = exp.filter(t => t.person==='p1' && !t.shared && isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0);
-  const dP1SoloVar = exp.filter(t => t.person==='p1' && !t.shared && !isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0);
-  const dP2SoloFixed = exp.filter(t => t.person==='p2' && !t.shared && isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0);
-  const dP2SoloVar = exp.filter(t => t.person==='p2' && !t.shared && !isFixedCat(t.category)).reduce((s,t)=>s+t.amount,0);
-  let dSharedFixedP1 = 0, dSharedFixedP2 = 0, dSharedVarP1 = 0, dSharedVarP2 = 0;
-  const dSharedFixedByCat = {}, dSharedVarByCat = {};
-  for (const t of sharedTxns) {
-    if (isFixedCat(t.category)) dSharedFixedByCat[t.category] = (dSharedFixedByCat[t.category]||0) + t.amount;
-    else dSharedVarByCat[t.category] = (dSharedVarByCat[t.category]||0) + t.amount;
+  // Compute spending by type (fixed / variable / annual) for desktop
+  const dSoloByType = (person) => {
+    const b = { fixed: 0, variable: 0, annual: 0 };
+    for (const t of exp) if (t.person===person && !t.shared) b[catType(t.category)] += t.amount;
+    return b;
+  };
+  const dSharedByCat = {};
+  for (const t of sharedTxns) dSharedByCat[t.category] = (dSharedByCat[t.category]||0) + t.amount;
+  const dSharedP1 = { fixed: 0, variable: 0, annual: 0 }, dSharedP2 = { fixed: 0, variable: 0, annual: 0 };
+  for (const [cid, amt] of Object.entries(dSharedByCat)) {
+    const { p1Share, p2Share } = getCatSplitAmts(cid, amt);
+    const ty = catType(cid);
+    dSharedP1[ty] += p1Share; dSharedP2[ty] += p2Share;
   }
-  for (const [cid, amt] of Object.entries(dSharedFixedByCat)) { const {p1Share, p2Share} = getCatSplitAmts(cid, amt); dSharedFixedP1 += p1Share; dSharedFixedP2 += p2Share; }
-  for (const [cid, amt] of Object.entries(dSharedVarByCat)) { const {p1Share, p2Share} = getCatSplitAmts(cid, amt); dSharedVarP1 += p1Share; dSharedVarP2 += p2Share; }
-  const dP1Fixed = scaleNum(dP1SoloFixed + dSharedFixedP1);
-  const dP1Var = scaleNum(dP1SoloVar + dSharedVarP1);
-  const dP2Fixed = scaleNum(dP2SoloFixed + dSharedFixedP2);
-  const dP2Var = scaleNum(dP2SoloVar + dSharedVarP2);
+  const dAllByType = { fixed: 0, variable: 0, annual: 0 };
+  for (const t of exp) dAllByType[catType(t.category)] += t.amount;
+  const dFixedTotal = scaleNum(dAllByType.fixed);
+  const dVarTotal = scaleNum(dAllByType.variable);
+  const dAnnualTotal = scaleNum(dAllByType.annual);
+  const dP1Solo = dSoloByType('p1'), dP2Solo = dSoloByType('p2');
+  const dP1Fixed = scaleNum(dP1Solo.fixed + dSharedP1.fixed);
+  const dP1Var = scaleNum(dP1Solo.variable + dSharedP1.variable);
+  const dP1Annual = scaleNum(dP1Solo.annual + dSharedP1.annual);
+  const dP2Fixed = scaleNum(dP2Solo.fixed + dSharedP2.fixed);
+  const dP2Var = scaleNum(dP2Solo.variable + dSharedP2.variable);
+  const dP2Annual = scaleNum(dP2Solo.annual + dSharedP2.annual);
 
   // Ring Center Stage card builder
-  function ringCard(title, titleColor, inc, spend, locked, ret, fam, fixed, variable) {
+  function ringCard(title, titleColor, inc, spend, locked, ret, fam, fixed, variable, annual) {
     if (locked) return `<div class="rcs-card"><div class="rcs-title" style="color:${titleColor}">${title}</div><div style="padding:40px 0;text-align:center;color:#b0a090;font-size:1.2rem">🔒 Private</div></div>`;
     fam = fam || 0; ret = ret || 0;
     const normalInc = inc - ret - fam;
@@ -2145,15 +2176,16 @@ ${dots}`;
           <div class="rcs-breakdown">
             <div style="display:flex;justify-content:space-between;font-size:14px;"><span style="color:var(--text-3);">Fixed</span><span style="font-weight:700;color:var(--text-sub);">${fc0(fixed)}</span></div>
             <div style="display:flex;justify-content:space-between;font-size:14px;"><span style="color:var(--text-3);">Variable</span><span style="font-weight:700;color:var(--text-sub);">${fc0(variable)}</span></div>
+            ${(annual||0) > 0.005 ? `<div style="display:flex;justify-content:space-between;font-size:14px;"><span style="color:var(--text-3);">Annual</span><span style="font-weight:700;color:var(--text-sub);">${fc0(annual)}</span></div>` : ''}
           </div>
         </div>
       </div>
     </div>`;
   }
 
-  const rc1 = ringCard('Combined', 'var(--primary)', scaleNum(totalInc), scaleNum(p1sp+p2sp+shared), false, scaleNum(retTot), scaleNum(famTot), dFixedTotal, dVarTotal);
-  const rc2 = ringCard(esc(S.settings.person1), 'var(--p1)', scaleNum(p1inc), scaleNum(p1sp+sharedP1), p1Locked, scaleNum(p1ret), scaleNum(p1fam), dP1Fixed, dP1Var);
-  const rc3 = ringCard(esc(S.settings.person2), 'var(--p2)', scaleNum(p2inc), scaleNum(p2sp+sharedP2), p2Locked, scaleNum(p2ret), scaleNum(p2fam), dP2Fixed, dP2Var);
+  const rc1 = ringCard('Combined', 'var(--primary)', scaleNum(totalInc), scaleNum(p1sp+p2sp+shared), false, scaleNum(retTot), scaleNum(famTot), dFixedTotal, dVarTotal, dAnnualTotal);
+  const rc2 = ringCard(esc(S.settings.person1), 'var(--p1)', scaleNum(p1inc), scaleNum(p1sp+sharedP1), p1Locked, scaleNum(p1ret), scaleNum(p1fam), dP1Fixed, dP1Var, dP1Annual);
+  const rc3 = ringCard(esc(S.settings.person2), 'var(--p2)', scaleNum(p2inc), scaleNum(p2sp+sharedP2), p2Locked, scaleNum(p2ret), scaleNum(p2fam), dP2Fixed, dP2Var, dP2Annual);
 
   return `
 ${rangeToggle}
@@ -3824,9 +3856,36 @@ function showSettings() {
         <label style="font-size:.82rem;padding:6px 13px;border:1px solid var(--border);border-radius:8px;background:white;cursor:pointer;display:inline-block">⬆️ Import JSON<input type="file" accept=".json" onchange="doImportJson(event)" style="display:none"></label>
       </div>
     </div>
+    <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
+      <div style="font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:6px">🏷️ Spending categories</div>
+      <p style="font-size:.8rem;color:var(--text-3);margin-bottom:10px">Set each category as Fixed, Variable, or Annual. This drives the Fixed / Variable / Annual breakdown on the overview.</p>
+      ${renderCatTypeRows()}
+    </div>
     <div style="padding-top:14px;border-top:1px solid var(--border);margin-top:14px"><button onclick="clearData()" style="color:var(--red);background:none;border:1px solid var(--red);border-radius:8px;padding:7px 14px;cursor:pointer;font-size:.83rem">🗑️ Clear all data</button></div>
     <div class="modal-actions"><button class="btn-sec" onclick="closeModal()">Cancel</button><button class="btn-sec" style="background:var(--primary);color:white;border-color:var(--primary)" onclick="saveSettings()">Save</button></div>
   </div>`);
+}
+// Per-category Fixed/Variable/Annual selector rows for the Settings modal.
+function renderCatTypeRows() {
+  // Only spendable categories — skip income/ignored/hidden, which never count toward spend.
+  const cats = getAllCats().filter(c => !c.ignored && !c.hidden && c.id !== 'income');
+  return cats.map(c => {
+    const cur = catType(c.id);
+    const seg = CAT_TYPES.map(ty =>
+      `<button onclick="setCatType('${c.id}','${ty}')" style="flex:1;padding:5px 0;font-size:12px;font-weight:700;border:none;border-radius:7px;cursor:pointer;background:${cur===ty?'white':'transparent'};color:${cur===ty?'var(--text)':'var(--text-3)'};box-shadow:${cur===ty?'0 1px 4px rgba(0,0,0,0.1)':'none'}">${CAT_TYPE_LABELS[ty]}</button>`
+    ).join('');
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <span style="display:flex;align-items:center;gap:6px;min-width:120px;font-size:13px;font-weight:600">${catIcon(c, 15)}${esc(c.label)}</span>
+      <div style="flex:1;display:flex;gap:0;background:rgba(0,0,0,0.05);border-radius:10px;padding:3px">${seg}</div>
+    </div>`;
+  }).join('');
+}
+function setCatType(catId, type) {
+  if (!CAT_TYPES.includes(type)) return;
+  S.catTypes = { ...(S.catTypes || {}), [catId]: type };
+  schedSave();
+  showSettings(); // re-render the modal so the selection updates
+  render();
 }
 function addCat() {
   const emoji = ($('new-cat-emoji').value||'').trim().slice(0,2) || '⭐';
@@ -3874,7 +3933,7 @@ function clearData() { if(!confirm('Delete ALL transactions and budgets?')) retu
 function snapshotData() {
   return {
     transactions: S.transactions, budgets: S.budgets, settings: S.settings,
-    rules: S.rules, customCategories: S.customCategories, catSplits: S.catSplits,
+    rules: S.rules, customCategories: S.customCategories, catSplits: S.catSplits, catTypes: S.catTypes,
     excludedFromAvg: S.excludedFromAvg, recurringIncome: S.recurringIncome,
     gamblingData: S.gamblingData, incomeData: S.incomeData, incomeTypeRules: S.incomeTypeRules,
   };
@@ -3928,7 +3987,7 @@ async function saveLoginPin() {
   if (!pendingData._auth) pendingData._auth = {};
   pendingData._auth[currentPerson] = h;   // DB.save folds _auth back into the file
   DB.save(
-    { transactions: S.transactions, budgets: S.budgets, settings: S.settings, rules: S.rules, customCategories: S.customCategories, catSplits: S.catSplits, excludedFromAvg: S.excludedFromAvg, recurringIncome: S.recurringIncome, gamblingData: S.gamblingData, incomeData: S.incomeData, incomeTypeRules: S.incomeTypeRules },
+    { transactions: S.transactions, budgets: S.budgets, settings: S.settings, rules: S.rules, customCategories: S.customCategories, catSplits: S.catSplits, catTypes: S.catTypes, excludedFromAvg: S.excludedFromAvg, recurringIncome: S.recurringIncome, gamblingData: S.gamblingData, incomeData: S.incomeData, incomeTypeRules: S.incomeTypeRules },
     () => { closeModal(); toast('Login PIN updated 🔓'); },
     (e) => toast('Error: ' + (e.message || e))
   );
@@ -3963,7 +4022,7 @@ function doImportJson(evt) {
           .withFailureHandler(ex => toast('Error: ' + (ex.message || String(ex))))
           .importDataJson(e.target.result, authToken());
       } else {
-        Object.assign(S, { transactions: data.transactions || [], budgets: data.budgets || {}, settings: Object.assign(S.settings, data.settings || {}), rules: data.rules || {}, customCategories: data.customCategories || [], catSplits: data.catSplits || {}, excludedFromAvg: data.excludedFromAvg || [], recurringIncome: data.recurringIncome || [], gamblingData: data.gamblingData || {}, incomeData: data.incomeData || {}, incomeTypeRules: data.incomeTypeRules || {} });
+        Object.assign(S, { transactions: data.transactions || [], budgets: data.budgets || {}, settings: Object.assign(S.settings, data.settings || {}), rules: data.rules || {}, customCategories: data.customCategories || [], catSplits: data.catSplits || {}, catTypes: data.catTypes || {}, excludedFromAvg: data.excludedFromAvg || [], recurringIncome: data.recurringIncome || [], gamblingData: data.gamblingData || {}, incomeData: data.incomeData || {}, incomeTypeRules: data.incomeTypeRules || {} });
         schedSave(); closeModal(); render(); toast('Restored!');
       }
     } catch(ex) { toast('Could not read file: ' + ex.message); }
@@ -4054,7 +4113,7 @@ function getDemoData() {
   return {
     settings: { person1:'Jack', person2:'Jordan' },
     budgets: { groceries:600, dining:400, transport:200, entertain:150, subs:80, shopping:300, health:100, housing:2200, utilities:120 },
-    rules: {}, customCategories: [], catSplits: {}, excludedFromAvg: [], recurringIncome: [], gamblingData: {}, incomeData: {}, incomeTypeRules: {},
+    rules: {}, customCategories: [], catSplits: {}, catTypes: {}, excludedFromAvg: [], recurringIncome: [], gamblingData: {}, incomeData: {}, incomeTypeRules: {},
     transactions: [
       {id:'d1',date:m+'-01',amount:4500,description:'Paycheck',category:'income',person:'p1',note:'',shared:false,settled:false,splitRatio:0.5,excluded:false},
       {id:'d2',date:m+'-01',amount:3800,description:'Paycheck',category:'income',person:'p2',note:'',shared:false,settled:false,splitRatio:0.5,excluded:false},
@@ -4160,7 +4219,7 @@ async function submitPin() {
 
 function blankData() {
   return { transactions: [], budgets: {}, settings: { person1: 'Person 1', person2: 'Person 2' },
-    rules: {}, customCategories: [], catSplits: {}, excludedFromAvg: [], recurringIncome: [],
+    rules: {}, customCategories: [], catSplits: {}, catTypes: {}, excludedFromAvg: [], recurringIncome: [],
     gamblingData: {}, incomeData: {}, incomeTypeRules: {} };
 }
 
@@ -4201,7 +4260,7 @@ function importSetupFile(evt) {
       const d = JSON.parse(e.target.result);
       delete d._exportDate; delete d._backupDate; delete d._auth;
       if (!Array.isArray(d.transactions)) { toast('Invalid backup file'); return; }
-      ['transactions','budgets','settings','rules','customCategories','catSplits','excludedFromAvg','recurringIncome','gamblingData','incomeData','incomeTypeRules'].forEach(k => { if (d[k] !== undefined) pendingData[k] = d[k]; });
+      ['transactions','budgets','settings','rules','customCategories','catSplits','catTypes','excludedFromAvg','recurringIncome','gamblingData','incomeData','incomeTypeRules'].forEach(k => { if (d[k] !== undefined) pendingData[k] = d[k]; });
       const n1 = $('set-n1'), n2 = $('set-n2');
       if (n1 && pendingData.settings && pendingData.settings.person1 && pendingData.settings.person1 !== 'Person 1') n1.value = pendingData.settings.person1;
       if (n2 && pendingData.settings && pendingData.settings.person2 && pendingData.settings.person2 !== 'Person 2') n2.value = pendingData.settings.person2;
@@ -4307,6 +4366,7 @@ function importSetupXlsx(evt) {
         rules:            parseJson(raw.rules, {}),
         customCategories: parseJson(raw.customCategories, []),
         catSplits:        parseJson(raw.catSplits, {}),
+        catTypes:         parseJson(raw.catTypes, {}),
         excludedFromAvg:  parseJson(raw.excludedFromAvg, []),
         recurringIncome:  parseJson(raw.recurringIncome, []),
         gamblingData:     parseJson(raw.gamblingData, {}),
@@ -4317,7 +4377,7 @@ function importSetupXlsx(evt) {
       if (!Array.isArray(d.transactions) || !d.transactions.length) {
         toast('No Transactions tab found in that file'); return;
       }
-      ['transactions','budgets','settings','rules','customCategories','catSplits','excludedFromAvg','recurringIncome','gamblingData','incomeData','incomeTypeRules'].forEach(k => { if (d[k] !== undefined) pendingData[k] = d[k]; });
+      ['transactions','budgets','settings','rules','customCategories','catSplits','catTypes','excludedFromAvg','recurringIncome','gamblingData','incomeData','incomeTypeRules'].forEach(k => { if (d[k] !== undefined) pendingData[k] = d[k]; });
       const n1 = $('set-n1'), n2 = $('set-n2');
       if (n1 && settings.person1 && settings.person1 !== 'Person 1') n1.value = settings.person1;
       if (n2 && settings.person2 && settings.person2 !== 'Person 2') n2.value = settings.person2;
@@ -4359,6 +4419,7 @@ function applyData(data, person) {
   S.rules = data.rules || {};
   S.customCategories = data.customCategories || [];
   S.catSplits = data.catSplits || {};
+  S.catTypes = data.catTypes || {};
   S.excludedFromAvg = data.excludedFromAvg || [];
   try { const ls = localStorage.getItem('bt_excl_months'); if (ls) S.excludedFromAvg = JSON.parse(ls); } catch(e) {}
   S.recurringIncome = data.recurringIncome || [];

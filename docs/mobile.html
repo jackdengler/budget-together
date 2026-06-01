@@ -365,6 +365,64 @@
       padding: calc(2px * var(--z)) calc(8px * var(--z));
     }
     .mo-arrow:disabled { color: var(--text-3); opacity: .4; }
+    .mo-gear {
+      border: none;
+      background: none;
+      color: var(--text-sub);
+      font-size: calc(17px * var(--z));
+      line-height: 1;
+      padding: calc(2px * var(--z)) calc(6px * var(--z));
+      margin-left: calc(2px * var(--z));
+    }
+    /* Category-type editor rows (inside the bottom sheet) */
+    .ct-row {
+      display: flex;
+      align-items: center;
+      gap: calc(10px * var(--z));
+      padding: calc(7px * var(--z)) 0;
+    }
+    .ct-name {
+      display: flex;
+      align-items: center;
+      gap: calc(7px * var(--z));
+      min-width: calc(110px * var(--z));
+      font-size: calc(13px * var(--z));
+      font-weight: 600;
+      color: var(--text);
+    }
+    .ct-name i { font-size: calc(15px * var(--z)); flex-shrink: 0; }
+    .ct-seg {
+      flex: 1;
+      display: flex;
+      gap: 0;
+      background: rgba(0,0,0,0.05);
+      border-radius: calc(10px * var(--z));
+      padding: calc(3px * var(--z));
+    }
+    .ct-seg button {
+      flex: 1;
+      padding: calc(6px * var(--z)) 0;
+      font-size: calc(12px * var(--z));
+      font-weight: 700;
+      border: none;
+      border-radius: calc(7px * var(--z));
+      background: transparent;
+      color: var(--text-3);
+    }
+    .ct-seg button.on {
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 calc(1px * var(--z)) calc(4px * var(--z)) rgba(0,0,0,0.1);
+    }
+    .ct-list { overflow-y: auto; margin: calc(4px * var(--z)) 0; }
+    .ct-save-note {
+      text-align: center;
+      font-size: calc(11px * var(--z));
+      font-weight: 600;
+      color: var(--text-sub);
+      min-height: calc(1.2em);
+      margin-top: calc(8px * var(--z));
+    }
     .mo-label-btn {
       display: flex;
       align-items: center;
@@ -499,7 +557,12 @@ var D, currentMonth = new Date().toISOString().slice(0,7), currentCard = 0;
 // period: '1mo' | 'ytd' | 'all' | 'custom'.  periodView: 'total' | 'avg' (multi-month only).
 var period = '1mo', periodView = 'avg', customMonths = [];
 
-var FIXED = {housing:1, utilities:1, subs:1, insurance:1};
+// Spending categorization: fixed / variable / annual. Categories with no
+// explicit type in D.catTypes fall back to this legacy default (these four
+// were the original hard-coded "fixed" set); everything else is variable.
+var CAT_TYPES = ['fixed', 'variable', 'annual'];
+var CAT_TYPE_LABELS = {fixed:'Fixed', variable:'Variable', annual:'Annual'};
+var DEFAULT_FIXED = {housing:1, utilities:1, subs:1, insurance:1};
 var RET_RE = /\b(401k?|roth|retirement|pension|sep[\s-]?ira|hsa contrib)\b/i;
 
 // Default category definitions matching the web version
@@ -550,8 +613,13 @@ function isIgnored(cat){
   return f ? !!f.ignored : false;
 }
 
+function catType(cat){
+  var t = (D.catTypes||{})[cat];
+  if (t==='fixed' || t==='variable' || t==='annual') return t;
+  return DEFAULT_FIXED[cat] ? 'fixed' : 'variable';
+}
 function isFixedCat(cat){
-  return !!FIXED[cat];
+  return catType(cat) === 'fixed';
 }
 
 function getCatSplitAmts(catId, amt) {
@@ -577,7 +645,7 @@ function compute(who, months){
     var personExp = exp.filter(function(t){ return t.person===who || t.shared; });
     var personInc = inc.filter(function(t){ return t.person===who; });
 
-    var spend = 0, fixed = 0;
+    var spend = 0, fixed = 0, annual = 0;
     for (var i=0; i<personExp.length; i++){
       var t = personExp[i];
       var amt;
@@ -588,7 +656,9 @@ function compute(who, months){
         amt = t.amount;
       }
       spend += amt;
-      if (isFixedCat(t.category)) fixed += amt;
+      var ty = catType(t.category);
+      if (ty === 'fixed') fixed += amt;
+      else if (ty === 'annual') annual += amt;
     }
 
     var totalInc = 0, ret = 0, fam = 0;
@@ -600,14 +670,16 @@ function compute(who, months){
       else if (tp==='family') fam += a;
     }
 
-    return sc({inc:totalInc, ret:ret, fam:fam, spend:spend, fixed:fixed, variable:spend-fixed});
+    return sc({inc:totalInc, ret:ret, fam:fam, spend:spend, fixed:fixed, annual:annual, variable:spend-fixed-annual});
   }
 
   // Combined
-  var totalSpend = 0, totalFixed = 0, totalInc2 = 0, totalRet = 0, totalFam = 0;
+  var totalSpend = 0, totalFixed = 0, totalAnnual = 0, totalInc2 = 0, totalRet = 0, totalFam = 0;
   for (var i=0; i<exp.length; i++){
     totalSpend += exp[i].amount;
-    if (isFixedCat(exp[i].category)) totalFixed += exp[i].amount;
+    var cty = catType(exp[i].category);
+    if (cty === 'fixed') totalFixed += exp[i].amount;
+    else if (cty === 'annual') totalAnnual += exp[i].amount;
   }
   for (var j=0; j<inc.length; j++){
     var a2 = Math.abs(inc[j].amount);
@@ -616,7 +688,7 @@ function compute(who, months){
     if (tp2==='retirement') totalRet += a2;
     else if (tp2==='family') totalFam += a2;
   }
-  return sc({inc:totalInc2, ret:totalRet, fam:totalFam, spend:totalSpend, fixed:totalFixed, variable:totalSpend-totalFixed});
+  return sc({inc:totalInc2, ret:totalRet, fam:totalFam, spend:totalSpend, fixed:totalFixed, annual:totalAnnual, variable:totalSpend-totalFixed-totalAnnual});
 }
 
 function ringCard(title, titleColor, d, avg) {
@@ -663,6 +735,7 @@ function ringCard(title, titleColor, d, avg) {
     + '<div class="rcs-pills">'
     + '<div class="rcs-pill" style="background:rgba(168,74,42,0.08);color:var(--red)">Fixed ' + fc0(d.fixed) + '</div>'
     + '<div class="rcs-pill" style="background:rgba(168,74,42,0.06);color:var(--red)">Var ' + fc0(d.variable) + '</div>'
+    + ((d.annual||0) > 0.005 ? '<div class="rcs-pill" style="background:rgba(212,102,58,0.10);color:var(--primary)">Annual ' + fc0(d.annual) + '</div>' : '')
     + '</div>'
     + '</div>'
     + '</div>';
@@ -871,6 +944,58 @@ function openPeriodPicker(){
   refreshSheet();
 }
 function closeSheet(){ var b=document.getElementById('sheet-back'); if(b) b.remove(); }
+
+// ── Category-type editor (Fixed / Variable / Annual) ───────────────────────
+// Spendable categories only — income / ignored / hidden never count toward spend.
+function spendableCats(){
+  var ids = Object.keys(CATS).concat((D.customCategories||[]).map(function(c){return c.id;}));
+  var seen = {}, out = [];
+  for (var i=0;i<ids.length;i++){
+    var id = ids[i];
+    if (seen[id]) continue; seen[id] = 1;
+    if (id==='income' || HIDDEN_CATS[id] || isIgnored(id)) continue;
+    out.push(id);
+  }
+  return out;
+}
+function openCatTypeSheet(){
+  if (document.getElementById('sheet-back')) return;
+  var b=document.createElement('div');
+  b.id='sheet-back'; b.className='sheet-back';
+  b.addEventListener('click', function(e){ if(e.target===b) closeSheet(); });
+  document.body.appendChild(b);
+  refreshCatTypeSheet('');
+}
+function refreshCatTypeSheet(note){
+  var b=document.getElementById('sheet-back'); if(!b) return;
+  var cats = spendableCats(), rows='';
+  for (var i=0;i<cats.length;i++){
+    var id=cats[i], c=getCat(id), cur=catType(id), seg='';
+    for (var k=0;k<CAT_TYPES.length;k++){
+      var ty=CAT_TYPES[k];
+      seg += '<button class="'+(cur===ty?'on':'')+'" onclick="setCatTypeMobile(\''+id+'\',\''+ty+'\')">'+CAT_TYPE_LABELS[ty]+'</button>';
+    }
+    rows += '<div class="ct-row"><span class="ct-name"><i class="bi '+c.icon+'" style="color:'+c.color+'"></i>'+esc(c.label)+'</span><div class="ct-seg">'+seg+'</div></div>';
+  }
+  b.innerHTML='<div class="sheet">'
+    +'<div class="sheet-title">Category Types</div>'
+    +'<div class="ct-list">'+rows+'</div>'
+    +'<div class="ct-save-note">'+(note||'')+'</div>'
+    +'<button class="sheet-done" onclick="closeSheet()">Done</button>'
+    +'</div>';
+}
+function setCatTypeMobile(catId, type){
+  if (CAT_TYPES.indexOf(type) < 0) return;
+  if (!D.catTypes) D.catTypes = {};
+  D.catTypes[catId] = type;
+  render();
+  refreshCatTypeSheet('Saving…');
+  moWriteData(D, function(){
+    refreshCatTypeSheet('Saved ✓');
+  }, function(e){
+    refreshCatTypeSheet(e && e.message==='TOKEN' ? 'Save failed — token can’t write' : 'Save failed');
+  });
+}
 function refreshSheet(){
   var b=document.getElementById('sheet-back'); if(!b) return;
   var presets=[['1mo','Month'],['ytd','YTD'],['all','All'],['custom','Custom']];
@@ -936,6 +1061,7 @@ function render(){
     + '<button class="mo-arrow" onclick="shiftPeriod(-1)" ' + navDis + '>\u2039</button>'
     + '<button class="mo-label-btn" onclick="openPeriodPicker()">' + periodLabel(months) + avgTag + '<span class="caret">\u25BE</span></button>'
     + '<button class="mo-arrow" onclick="shiftPeriod(1)" ' + navDis + '>\u203A</button>'
+    + '<button class="mo-gear" onclick="openCatTypeSheet()" aria-label="Category settings">\u2699</button>'
     + '</div>'
     + '</div>';
 
@@ -995,7 +1121,9 @@ function updateDots(active, total){
   if (el) el.innerHTML = html;
 }
 
-// ── GitHub data store (read-only on mobile) ────────────────
+// ── GitHub data store ──────────────────────────────────────
+// Reads the budget for the dashboard, and can write back the small set of
+// settings the mobile app is allowed to change (category types).
 var GH = {
   get repo(){ return localStorage.getItem('bt_gh_repo') || 'jackdengler/private-data-storage'; },
   get path(){ return localStorage.getItem('bt_gh_path') || 'budget.json'; },
@@ -1004,20 +1132,52 @@ var GH = {
   set token(v){ if (v) localStorage.setItem('bt_gh_token', v); else localStorage.removeItem('bt_gh_token'); },
 };
 var moPending = null;
+var _moSha = null; // sha of the last-read file, required for safe writes
 
 function _b64decodeUtf8(b64){ return decodeURIComponent(escape(atob(String(b64).replace(/\s/g,'')))); }
+function _b64encodeUtf8(str){ return btoa(unescape(encodeURIComponent(str))); }
 
 function moReadData(cb, errCb){
   fetch('https://api.github.com/repos/'+GH.repo+'/contents/'+encodeURIComponent(GH.path)+'?ref='+encodeURIComponent(GH.branch)+'&_='+Date.now(), {
     headers: { 'Authorization':'Bearer '+GH.token, 'Accept':'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28' }
   }).then(function(r){
-    if (r.status===404){ cb(null); return; }
+    if (r.status===404){ _moSha=null; cb(null); return; }
     if (r.status===401 || r.status===403){ errCb(new Error('TOKEN')); return; }
     if (!r.ok){ errCb(new Error('HTTP '+r.status)); return; }
     r.json().then(function(j){
+      _moSha = j.sha;
       try { cb(JSON.parse(_b64decodeUtf8(j.content))); } catch(e){ errCb(new Error('Bad JSON')); }
     });
   }).catch(errCb);
+}
+
+// Write the whole data object back. The mobile app only mutates D in memory
+// (category types), so we persist D as-is. Last-write-wins with one retry on a
+// stale-sha conflict. The PUT preserves every field already in D, including
+// _auth, since D is the full object read from the file.
+function moWriteData(obj, cb, errCb){
+  var body = { message:'mobile: '+new Date().toISOString().slice(0,16).replace('T',' '), content:_b64encodeUtf8(JSON.stringify(obj, null, 2)), branch:GH.branch };
+  function put(sha){
+    var b = sha ? Object.assign({}, body, {sha:sha}) : body;
+    return fetch('https://api.github.com/repos/'+GH.repo+'/contents/'+encodeURIComponent(GH.path), {
+      method:'PUT',
+      headers:{ 'Authorization':'Bearer '+GH.token, 'Accept':'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28', 'Content-Type':'application/json' },
+      body: JSON.stringify(b)
+    });
+  }
+  put(_moSha).then(function(r){
+    if (r.status===409 || r.status===422){
+      // stale sha — refetch the sha and retry once
+      moReadData(function(){ put(_moSha).then(handle).catch(errCb); }, function(){ put(_moSha).then(handle).catch(errCb); });
+      return;
+    }
+    handle(r);
+  }).catch(errCb);
+  function handle(r){
+    if (r.status===401 || r.status===403){ errCb(new Error('TOKEN')); return; }
+    if (!r.ok){ errCb(new Error('HTTP '+r.status)); return; }
+    r.json().then(function(j){ _moSha = (j.content && j.content.sha) || _moSha; cb(); }).catch(function(){ cb(); });
+  }
 }
 
 function moHashPin(pin){
