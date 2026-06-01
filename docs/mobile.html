@@ -575,26 +575,29 @@ var CAT_TYPE_LABELS = {fixed:'Fixed', variable:'Variable', annual:'Annual'};
 var DEFAULT_FIXED = {housing:1, utilities:1, subs:1, insurance:1};
 var RET_RE = /\b(401k?|roth|retirement|pension|sep[\s-]?ira|hsa contrib)\b/i;
 
-// Default category definitions matching the web version
+// Default category definitions — must mirror the web app's BASE_CATS exactly
+// (same ids), since the web app owns the data. Mismatched ids (e.g. the data
+// uses 'entertain', not 'entertainment') break both the category labels and
+// the type editor.
 var CATS = {
-  groceries:   {icon:'bi-cart',        color:'#22c55e', label:'Groceries'},
-  dining:      {icon:'bi-cup-hot',     color:'#f59e0b', label:'Dining'},
-  transport:   {icon:'bi-car-front',   color:'#3b82f6', label:'Transport'},
-  shopping:    {icon:'bi-bag',         color:'#8b5cf6', label:'Shopping'},
-  entertainment:{icon:'bi-controller', color:'#ec4899', label:'Entertainment'},
-  health:      {icon:'bi-heart-pulse', color:'#ef4444', label:'Health'},
-  utilities:   {icon:'bi-lightning',   color:'#f97316', label:'Utilities'},
-  housing:     {icon:'bi-house',       color:'#6366f1', label:'Housing'},
-  subs:        {icon:'bi-arrow-repeat',color:'#14b8a6', label:'Subscriptions'},
-  income:      {icon:'bi-wallet2',     color:'#22c55e', label:'Income'},
-  insurance:   {icon:'bi-shield-check',color:'#64748b', label:'Insurance'},
-  transfer:    {icon:'bi-arrow-left-right',color:'#94a3b8', label:'Transfer'},
-  travel:      {icon:'bi-airplane',    color:'#0ea5e9', label:'Travel'},
-  personal:    {icon:'bi-person',      color:'#a855f7', label:'Personal'},
-  pets:        {icon:'bi-bug',         color:'#84cc16', label:'Pets'},
-  gifts:       {icon:'bi-gift',        color:'#f43f5e', label:'Gifts'},
-  other:       {icon:'bi-three-dots',  color:'#94a3b8', label:'Other'},
-  gambling:    {icon:'bi-dice-5',      color:'#eab308', label:'Gambling'}
+  groceries:   {icon:'bi-cart',             color:'#10b981', label:'Groceries'},
+  dining:      {icon:'bi-cup-hot',          color:'#f43f5e', label:'Dining'},
+  transport:   {icon:'bi-car-front',        color:'#3b82f6', label:'Transport'},
+  entertain:   {icon:'bi-film',             color:'#8b5cf6', label:'Entertainment'},
+  subs:        {icon:'bi-arrow-repeat',     color:'#6366f1', label:'Subscriptions'},
+  shopping:    {icon:'bi-bag',              color:'#f59e0b', label:'Shopping'},
+  health:      {icon:'bi-heart-pulse',      color:'#ef4444', label:'Health'},
+  housing:     {icon:'bi-house',            color:'#06b6d4', label:'Housing'},
+  utilities:   {icon:'bi-lightning',        color:'#84cc16', label:'Utilities'},
+  travel:      {icon:'bi-airplane',         color:'#0284c7', label:'Travel'},
+  skiing:      {icon:'bi-snow',             color:'#38bdf8', label:'Skiing'},
+  investing:   {icon:'bi-graph-up-arrow',   color:'#16a34a', label:'Investments'},
+  income:      {icon:'bi-wallet2',          color:'#22c55e', label:'Income'},
+  insurance:   {icon:'bi-shield',           color:'#0ea5e9', label:'Insurance'},
+  transfer:    {icon:'bi-arrow-left-right', color:'#a8b4c0', label:'Transfer'},
+  other:       {icon:'bi-credit-card',      color:'#94a3b8', label:'Other'},
+  gambling:    {icon:'bi-dice-5',           color:'#dc2626', label:'Gambling'},
+  cash:        {icon:'bi-bank',             color:'#b45309', label:'Cash Withdrawal'}
 };
 
 function getCat(id) {
