@@ -1471,13 +1471,7 @@ function renderSpendingHistory() {
     // Jack solo + Jack's share of shared
     const p1solo = exp.filter(t => t.person==='p1' && !t.shared).reduce((s,t) => s+t.amount, 0);
     const p2solo = exp.filter(t => t.person==='p2' && !t.shared).reduce((s,t) => s+t.amount, 0);
-    const sharedByCat = {};
-    for (const t of exp.filter(t => t.shared)) sharedByCat[t.category] = (sharedByCat[t.category]||0) + t.amount;
-    let p1shared = 0, p2shared = 0;
-    for (const [cid, amt] of Object.entries(sharedByCat)) {
-      const {p1Share, p2Share} = getCatSplitAmts(cid, amt);
-      p1shared += p1Share; p2shared += p2Share;
-    }
+    const { p1Share: p1shared, p2Share: p2shared } = sumSplitShares(exp.filter(t => t.shared));
     const p1total = p1solo + p1shared;
     const p2total = p2solo + p2shared;
     const total = p1total + p2total;
@@ -1520,10 +1514,7 @@ function renderOverview() {
   const p2sp  = exp.filter(t => t.person==='p2' && !t.shared).reduce((s,t) => s+t.amount, 0);
   const sharedTxns = exp.filter(t => t.shared);
   const shared = sharedTxns.reduce((s,t) => s+t.amount, 0);
-  const sharedByCat = {};
-  for (const t of sharedTxns) sharedByCat[t.category] = (sharedByCat[t.category]||0) + t.amount;
-  let sharedP1 = 0, sharedP2 = 0;
-  for (const [catId, amt] of Object.entries(sharedByCat)) { const {p1Share, p2Share} = getCatSplitAmts(catId, amt); sharedP1 += p1Share; sharedP2 += p2Share; }
+  const { p1Share: sharedP1, p2Share: sharedP2 } = sumSplitShares(sharedTxns);
   // income: visible-only so viewer can't back-calculate hidden spending via net savings
   const visInc = txns.filter(t => t.amount < 0 && !getCat(t.category).ignored && !t.excluded && isVisible(t));
   const totalInc = visInc.reduce((s,t) => s + Math.abs(t.amount), 0);
@@ -1643,8 +1634,8 @@ function renderOverview() {
   const p1ByCat = {}, p2ByCat = {};
   for (const t of exp) {
     if (t.shared) {
-      // Use catSplit ratios to determine each person's share
-      const {p1Share, p2Share} = getCatSplitAmts(t.category, t.amount);
+      // Use catSplit ratios to determine each person's share (settled = frozen)
+      const {p1Share, p2Share} = txSplitAmts(t);
       p1ByCat[t.category] = (p1ByCat[t.category]||0) + p1Share;
       p2ByCat[t.category] = (p2ByCat[t.category]||0) + p2Share;
     } else {
@@ -1810,10 +1801,10 @@ function renderOverview() {
     // Each person's settled share of shared expenses, by type.
     const sharedShareByType = () => {
       const byCat = {};
-      for (const t of sharedTxns) byCat[t.category] = (byCat[t.category]||0) + t.amount;
+      for (const t of sharedTxns) (byCat[t.category] = byCat[t.category] || []).push(t);
       const p1 = { fixed: 0, variable: 0, annual: 0 }, p2 = { fixed: 0, variable: 0, annual: 0 };
-      for (const [cid, amt] of Object.entries(byCat)) {
-        const { p1Share, p2Share } = getCatSplitAmts(cid, amt);
+      for (const [cid, ts] of Object.entries(byCat)) {
+        const { p1Share, p2Share } = sumSplitShares(ts);
         const ty = catType(cid);
         p1[ty] += p1Share; p2[ty] += p2Share;
       }
@@ -2027,10 +2018,10 @@ ${dots}`;
     return b;
   };
   const dSharedByCat = {};
-  for (const t of sharedTxns) dSharedByCat[t.category] = (dSharedByCat[t.category]||0) + t.amount;
+  for (const t of sharedTxns) (dSharedByCat[t.category] = dSharedByCat[t.category] || []).push(t);
   const dSharedP1 = { fixed: 0, variable: 0, annual: 0 }, dSharedP2 = { fixed: 0, variable: 0, annual: 0 };
-  for (const [cid, amt] of Object.entries(dSharedByCat)) {
-    const { p1Share, p2Share } = getCatSplitAmts(cid, amt);
+  for (const [cid, ts] of Object.entries(dSharedByCat)) {
+    const { p1Share, p2Share } = sumSplitShares(ts);
     const ty = catType(cid);
     dSharedP1[ty] += p1Share; dSharedP2[ty] += p2Share;
   }
@@ -2177,7 +2168,7 @@ function renderTxns() {
     // Post-split amounts
     let p1Owes = 0, p2Owes = 0;
     if (t.shared) {
-      const {p1Share, p2Share} = getCatSplitAmts(t.category, t.amount);
+      const {p1Share, p2Share} = txSplitAmts(t);
       p1Owes = p1Share; p2Owes = p2Share;
     } else {
       if (t.person === 'p1') p1Owes = t.amount; else p2Owes = t.amount;
@@ -2244,7 +2235,7 @@ function renderTxns() {
         // Post-split amounts for mobile
         let splitInfo = '';
         if (t.shared && t.amount > 0) {
-          const {p1Share, p2Share} = getCatSplitAmts(t.category, t.amount);
+          const {p1Share, p2Share} = txSplitAmts(t);
           splitInfo = `<span style="font-size:.7rem;color:var(--text-3)">· <span style="color:var(--p1)">${fc0(p1Share)}</span>/<span style="color:var(--p2)">${fc0(p2Share)}</span></span>`;
         }
         return `<div class="txn-card ${_ownerCls}${t.excluded?' excluded':''}" style="--i:${_staggerIdx}" onclick="showTxnEditModal('${t.id}')">
@@ -2339,6 +2330,53 @@ function getCatSplitAmts(catId, total) {
   }
   const pct = (mode === 'pct' || mode === 'even') ? (s.p1Pct ?? 50) : 50;
   return { p1Share: total * pct / 100, p2Share: total * (1 - pct / 100), p1Pct: pct };
+}
+// p1/p2 share of a single shared transaction. Settled transactions are frozen
+// at the split that applied when they were settled (settledSplit = p1 fraction
+// 0..1); unsettled transactions follow the live category split.
+function txSplitAmts(t) {
+  if (t.settled && t.settledSplit != null) {
+    const p1 = t.amount * t.settledSplit;
+    return { p1Share: p1, p2Share: t.amount - p1, p1Pct: Math.round(t.settledSplit * 100) };
+  }
+  return getCatSplitAmts(t.category, t.amount);
+}
+// Total p1/p2 shares across a list of shared transactions. Settled items are
+// frozen per-transaction; unsettled items are aggregated per category first so
+// dollar-mode splits stay correct.
+function sumSplitShares(txns) {
+  let p1 = 0, p2 = 0;
+  const liveByCat = {};
+  for (const t of txns) {
+    if (t.settled && t.settledSplit != null) {
+      const s = t.amount * t.settledSplit;
+      p1 += s; p2 += t.amount - s;
+    } else {
+      liveByCat[t.category] = (liveByCat[t.category] || 0) + t.amount;
+    }
+  }
+  for (const [cid, amt] of Object.entries(liveByCat)) {
+    const { p1Share, p2Share } = getCatSplitAmts(cid, amt);
+    p1 += p1Share; p2 += p2Share;
+  }
+  return { p1Share: p1, p2Share: p2 };
+}
+// Freeze legacy settled transactions (settled before snapshots existed) at the
+// category's current effective split so future split edits never move them.
+function migrateSettledSplits() {
+  const byCat = {};
+  for (const t of S.transactions) {
+    if (t.shared && t.settled && t.amount > 0 && t.settledSplit == null) {
+      (byCat[t.category] = byCat[t.category] || []).push(t);
+    }
+  }
+  let changed = 0;
+  for (const [cid, ts] of Object.entries(byCat)) {
+    const total = ts.reduce((s, t) => s + t.amount, 0);
+    const frac = (getCatSplitAmts(cid, total).p1Pct ?? 50) / 100;
+    ts.forEach(t => { t.settledSplit = frac; changed++; });
+  }
+  return changed;
 }
 function calcSplit() {
   const active = S.transactions.filter(t => t.shared && !t.settled && t.amount>0 && !getCat(t.category).ignored && !t.excluded);
@@ -2944,25 +2982,36 @@ function settleUp() {
 }
 function confirmSettle() {
   const today = new Date().toISOString().slice(0,10);
-  S.transactions.forEach(t => {
-    if (t.shared && !t.settled && t.amount>0 && !getCat(t.category).ignored && !t.excluded) {
-      t.settled = true;
-      t.settledDate = today;
-    }
+  // Snapshot the effective split per category, then freeze it onto each
+  // transaction so later split changes never touch what's already settled.
+  const batch = S.transactions.filter(t => t.shared && !t.settled && t.amount>0 && !getCat(t.category).ignored && !t.excluded);
+  const totByCat = {};
+  for (const t of batch) totByCat[t.category] = (totByCat[t.category]||0) + t.amount;
+  const fracByCat = {};
+  for (const [cid, total] of Object.entries(totByCat)) fracByCat[cid] = (getCatSplitAmts(cid, total).p1Pct ?? 50) / 100;
+  batch.forEach(t => {
+    t.settled = true;
+    t.settledDate = today;
+    t.settledSplit = fracByCat[t.category];
   });
   closeModal(); schedSave(); render(); toast('Settled up!');
 }
 function settleOne(id) {
   const t = S.transactions.find(t=>t.id===id);
-  if (t) { t.settled=true; t.settledDate=new Date().toISOString().slice(0,10); schedSave(); render(); toast('Marked as settled'); }
+  if (t) {
+    t.settled=true;
+    t.settledDate=new Date().toISOString().slice(0,10);
+    t.settledSplit=(getCatSplitAmts(t.category, t.amount).p1Pct ?? 50) / 100; // freeze split at settle time
+    schedSave(); render(); toast('Marked as settled');
+  }
 }
 function unsettle(id) {
   const t = S.transactions.find(t=>t.id===id);
-  if (t) { t.settled=false; t.settledDate=''; schedSave(); render(); toast('Marked as unsettled'); }
+  if (t) { t.settled=false; t.settledDate=''; t.settledSplit=null; schedSave(); render(); toast('Marked as unsettled'); }
 }
 function unsettleAll() {
   if (!confirm('Unsettle all previously settled shared expenses?')) return;
-  S.transactions.forEach(t => { if(t.shared && t.settled) { t.settled=false; t.settledDate=''; } });
+  S.transactions.forEach(t => { if(t.shared && t.settled) { t.settled=false; t.settledDate=''; t.settledSplit=null; } });
   schedSave(); render(); toast('All unsettled');
 }
 
@@ -3992,6 +4041,7 @@ function doImportJson(evt) {
           .importDataJson(e.target.result, authToken());
       } else {
         Object.assign(S, { transactions: data.transactions || [], budgets: data.budgets || {}, settings: Object.assign(S.settings, data.settings || {}), rules: data.rules || {}, customCategories: data.customCategories || [], catSplits: data.catSplits || {}, catTypes: data.catTypes || {}, excludedFromAvg: data.excludedFromAvg || [], recurringIncome: data.recurringIncome || [], gamblingData: data.gamblingData || {}, incomeData: data.incomeData || {}, incomeTypeRules: data.incomeTypeRules || {} });
+        migrateSettledSplits();
         schedSave(); closeModal(); render(); toast('Restored!');
       }
     } catch(ex) { toast('Could not read file: ' + ex.message); }
@@ -4315,6 +4365,7 @@ function importSetupXlsx(evt) {
           splitRatio:  parseFloat(row.splitRatio) || 0.5,
           excluded:    truthy(row.excluded),
           settledDate: normDate(row.settledDate),
+          settledSplit: (row.settledSplit != null && row.settledSplit !== '') ? parseFloat(row.settledSplit) : null,
         }));
 
       const budgets = {};
@@ -4394,6 +4445,7 @@ function applyData(data, person) {
   S.gamblingData    = data.gamblingData    || {};
   S.incomeData      = data.incomeData      || {};
   S.incomeTypeRules = data.incomeTypeRules || {};
+  if (migrateSettledSplits() > 0) schedSave(); // freeze any legacy settled txns
   materializeRecurring();
   const curMoTxns = S.transactions.filter(t => t.date && t.date.startsWith(S.currentMonth));
   if (curMoTxns.length === 0 && S.transactions.length > 0) {

@@ -724,6 +724,35 @@ function getCatSplitAmts(catId, amt) {
   if (isNaN(ratio)) ratio = 0.5;
   return {p1Share: amt * ratio, p2Share: amt * (1 - ratio)};
 }
+// p1/p2 share of a single shared transaction. Settled transactions are frozen
+// at the split that applied when they were settled (settledSplit = p1 fraction
+// 0..1); unsettled transactions follow the live category split.
+function txSplitAmts(t) {
+  if (t.settled && t.settledSplit != null) {
+    var p1 = t.amount * t.settledSplit;
+    return {p1Share: p1, p2Share: t.amount - p1};
+  }
+  return getCatSplitAmts(t.category, t.amount);
+}
+// Total p1/p2 shares across a list of shared transactions. Settled items are
+// frozen per-transaction; unsettled items aggregate per category.
+function sumSplitShares(txns) {
+  var p1 = 0, p2 = 0, liveByCat = {};
+  for (var i=0; i<txns.length; i++){
+    var t = txns[i];
+    if (t.settled && t.settledSplit != null) {
+      var s = t.amount * t.settledSplit;
+      p1 += s; p2 += t.amount - s;
+    } else {
+      liveByCat[t.category] = (liveByCat[t.category]||0) + t.amount;
+    }
+  }
+  for (var cid in liveByCat) {
+    var sh = getCatSplitAmts(cid, liveByCat[cid]);
+    p1 += sh.p1Share; p2 += sh.p2Share;
+  }
+  return {p1Share: p1, p2Share: p2};
+}
 
 function compute(who, months){
   months = months || [currentMonth];
@@ -746,7 +775,7 @@ function compute(who, months){
       var t = personExp[i];
       var amt;
       if (t.shared) {
-        var shares = getCatSplitAmts(t.category, t.amount);
+        var shares = txSplitAmts(t);
         amt = who === 'p1' ? shares.p1Share : shares.p2Share;
       } else {
         amt = t.amount;
@@ -853,7 +882,7 @@ function categoryCard(months, div, avg) {
   for (var i=0; i<exp.length; i++){
     var t = exp[i];
     if (t.shared) {
-      var shares = getCatSplitAmts(t.category, t.amount);
+      var shares = txSplitAmts(t);
       p1ByCat[t.category] = (p1ByCat[t.category]||0) + shares.p1Share;
       p2ByCat[t.category] = (p2ByCat[t.category]||0) + shares.p2Share;
     } else {
@@ -918,16 +947,10 @@ function spendingHistoryCard(periodMonths) {
         else p2solo += exp[j].amount;
       }
     }
-    var sharedByCat = {};
-    for (var j=0; j<exp.length; j++){
-      if (exp[j].shared) sharedByCat[exp[j].category] = (sharedByCat[exp[j].category]||0) + exp[j].amount;
-    }
-    var p1shared = 0, p2shared = 0;
-    var catKeys = Object.keys(sharedByCat);
-    for (var k=0; k<catKeys.length; k++){
-      var shares = getCatSplitAmts(catKeys[k], sharedByCat[catKeys[k]]);
-      p1shared += shares.p1Share; p2shared += shares.p2Share;
-    }
+    var sharedTxns = [];
+    for (var j=0; j<exp.length; j++){ if (exp[j].shared) sharedTxns.push(exp[j]); }
+    var shr = sumSplitShares(sharedTxns);
+    var p1shared = shr.p1Share, p2shared = shr.p2Share;
     var p1total = p1solo + p1shared;
     var p2total = p2solo + p2shared;
     monthData.push({mo:mo, total:p1total+p2total, p1total:p1total, p2total:p2total});
@@ -1157,7 +1180,7 @@ function renderDataSheet(){
       var payerLabel=t.person==='p1'?esc(n1):esc(n2), payerColor=t.person==='p1'?'var(--p1)':'var(--p2)';
       var split='';
       if (t.shared && t.amount>0){
-        var sh=getCatSplitAmts(t.category, t.amount);
+        var sh=txSplitAmts(t);
         split=' · <span style="color:var(--p1)">'+fc0(sh.p1Share)+'</span>/<span style="color:var(--p2)">'+fc0(sh.p2Share)+'</span>';
       }
       var meta='<span style="color:'+payerColor+';font-weight:700">'+payerLabel+'</span>'
