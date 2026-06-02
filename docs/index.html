@@ -1549,7 +1549,7 @@ function renderOverview() {
     const spend     = solo + sharedAmt;
     const normalInc = inc - ret - fam;   // post-tax take-home (excludes retirement + family)
     const tSaved    = inc - spend;       // total income minus total expenses
-    const sRate     = normalInc > 0 ? Math.round(tSaved / normalInc * 100) : 0;
+    const sRate     = inc > 0 ? Math.round(tSaved / inc * 100) : 0;
     const isDeficit = tSaved < 0;
     const useRet = ret > 0, useFam = fam > 0;
 
@@ -1834,7 +1834,7 @@ function renderOverview() {
       fam = fam || 0;
       const normalInc = inc - (ret||0) - fam;
       const tSaved = inc - spend;
-      const sRate = normalInc > 0 ? Math.round(tSaved / normalInc * 100) : 0;
+      const sRate = inc > 0 ? Math.round(tSaved / inc * 100) : 0;
       const isDeficit = tSaved < 0;
       // Token-based colors (accessible contrast on white)
       const ringColor = isDeficit ? 'var(--color-deficit)' : sRate >= 20 ? 'var(--color-saved-pos)' : 'var(--color-amber)';
@@ -2037,7 +2037,7 @@ ${dots}`;
     fam = fam || 0; ret = ret || 0;
     const normalInc = inc - ret - fam;
     const saved = inc - spend;
-    const sRate = normalInc > 0 ? Math.round(saved / normalInc * 100) : 0;
+    const sRate = inc > 0 ? Math.round(saved / inc * 100) : 0;
     const isLoss = saved < 0;
     const ringColor = isLoss ? 'var(--red)' : 'var(--green)';
     const ringColorRaw = isLoss ? '#A84A2A' : '#3A6A3A'; // SVG needs raw hex

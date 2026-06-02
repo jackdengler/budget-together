@@ -848,7 +848,7 @@ function compute(who, months){
 function ringCard(title, titleColor, d, avg) {
   var normalInc = d.inc - (d.ret||0) - (d.fam||0);
   var saved = d.inc - d.spend;
-  var sRate = normalInc > 0 ? Math.round(saved / normalInc * 100) : 0;
+  var sRate = d.inc > 0 ? Math.round(saved / d.inc * 100) : 0;
   var isLoss = saved < 0;
   var ringColor = isLoss ? 'var(--red)' : 'var(--green)';
   var ringColorRaw = isLoss ? '#A84A2A' : '#3A6A3A';
