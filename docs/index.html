@@ -367,6 +367,8 @@
     .scc-mode.active{background:white;color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,0.08)}
     .scc-custom{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;margin-bottom:10px;flex-wrap:wrap}
     .scc-input{width:64px;padding:6px 8px;border:none;border-radius:10px;font-size:14px;font-weight:600;text-align:center;background:rgba(0,0,0,0.04);font-family:var(--font-stack)}
+    .scc-settle{width:100%;margin-top:12px;padding:9px 0;font-size:13px;font-weight:700;border:none;border-radius:10px;background:linear-gradient(135deg,var(--ios-green),#2EC46A);color:white;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:filter 0.2s var(--ease-out);letter-spacing:-0.01em}
+    .scc-settle:hover{filter:brightness(1.05)}
     .split-track{display:flex;border-radius:20px;overflow:hidden;height:32px;width:100%}
     .split-track-seg{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:rgba(255,255,255,.95);transition:width .4s var(--ease-out);overflow:hidden;white-space:nowrap;padding:0 10px;letter-spacing:0.02em}
     .scc-amts{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;margin-top:14px;font-size:14px;font-weight:600}
@@ -2485,6 +2487,7 @@ function renderSplit() {
         </tbody>
       </table>
       <div style="text-align:center;font-size:.82rem;font-weight:600;margin-top:4px">${netLabel}</div>
+      <button class="scc-settle" onclick="settleCategory('${catId}')">Settle ${esc(cat.label)} ✓</button>
     </div>`;
   }).join('');
 
@@ -3001,6 +3004,17 @@ function confirmSettle() {
     t.settledSplit = fracByCat[t.category];
   });
   closeModal(); schedSave(); render(); toast('Settled up!');
+}
+function settleCategory(catId) {
+  // Settle every unsettled shared expense in one category, freezing that
+  // category's current split onto each transaction at settle time.
+  const today = new Date().toISOString().slice(0,10);
+  const batch = S.transactions.filter(t => t.category===catId && t.shared && !t.settled && t.amount>0 && !getCat(t.category).ignored && !t.excluded);
+  if (!batch.length) return;
+  const total = batch.reduce((s,t)=>s+t.amount, 0);
+  const frac = (getCatSplitAmts(catId, total).p1Pct ?? 50) / 100;
+  batch.forEach(t => { t.settled=true; t.settledDate=today; t.settledSplit=frac; });
+  schedSave(); render(); toast(`Settled ${getCat(catId).label}`);
 }
 function settleOne(id) {
   const t = S.transactions.find(t=>t.id===id);
