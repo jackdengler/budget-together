@@ -431,6 +431,33 @@
       min-height: calc(1.2em);
       margin-top: calc(8px * var(--z));
     }
+    .ct-bet {
+      border-top: 1px solid var(--line, rgba(0,0,0,0.08));
+      margin-top: calc(8px * var(--z));
+      padding-top: calc(10px * var(--z));
+    }
+    .ct-bet-title {
+      font-size: calc(13px * var(--z));
+      font-weight: 800;
+      color: var(--text);
+    }
+    .ct-bet-sub {
+      font-size: calc(11px * var(--z));
+      color: var(--text-2);
+      margin: calc(2px * var(--z)) 0 calc(8px * var(--z));
+    }
+    .ct-bet-btn {
+      width: 100%;
+      padding: calc(9px * var(--z));
+      border: 1px solid var(--primary);
+      border-radius: calc(9px * var(--z));
+      background: #fff;
+      color: var(--primary);
+      font-size: calc(12px * var(--z));
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .ct-bet-btn.on { background: var(--primary); color: #fff; }
     /* Data review rows (read-only transaction list) */
     .dt-date {
       font-size: calc(11px * var(--z));
@@ -668,8 +695,14 @@ function incType(id, desc){
 }
 
 var HIDDEN_CATS = {gambling:1, cash:1};
+// Betting mode (session-only): when on, the hidden gambling/cash categories
+// become visible. Only Person 1 (Jack) can turn it on — see isJack() / the
+// toggle in the category settings sheet. Never persisted; auto-locks on blur.
+var bettingMode = false;
+function isJack(){ try { return sessionStorage.getItem('bt_person') === 'p1'; } catch(e){ return false; } }
+function isHiddenCat(cat){ return !!HIDDEN_CATS[cat] && !bettingMode; }
 function isIgnored(cat){
-  if (HIDDEN_CATS[cat]) return true;
+  if (isHiddenCat(cat)) return true;
   var list = [{id:'insurance',ignored:true},{id:'transfer',ignored:true},{id:'investing',ignored:true}].concat(D.customCategories||[]);
   var f = list.find(function(c){return c.id===cat;});
   return f ? !!f.ignored : false;
@@ -1015,7 +1048,7 @@ function spendableCats(){
   for (var i=0;i<ids.length;i++){
     var id = ids[i];
     if (seen[id]) continue; seen[id] = 1;
-    if (id==='income' || HIDDEN_CATS[id] || isIgnored(id)) continue;
+    if (id==='income' || isHiddenCat(id) || isIgnored(id)) continue;
     out.push(id);
   }
   return out;
@@ -1039,13 +1072,35 @@ function refreshCatTypeSheet(note){
     }
     rows += '<div class="ct-row"><span class="ct-name"><i class="bi '+c.icon+'" style="color:'+c.color+'"></i>'+esc(c.label)+'</span><div class="ct-seg">'+seg+'</div></div>';
   }
+  // Betting-mode toggle — only Person 1 (Jack) ever sees this; Person 2 never
+  // knows it exists. Reveals the hidden gambling/cash categories for this session.
+  var betSection = '';
+  if (isJack()){
+    betSection = '<div class="ct-bet">'
+      +'<div class="ct-bet-title">🎲 Betting mode</div>'
+      +'<div class="ct-bet-sub">Reveals the private Gambling category. Turns off when you leave the app.</div>'
+      +'<button class="ct-bet-btn'+(bettingMode?' on':'')+'" onclick="toggleBettingModeMobile()">'
+      +(bettingMode?'Betting mode: ON — tap to turn off':'Turn on betting mode')+'</button>'
+      +'</div>';
+  }
   b.innerHTML='<div class="sheet">'
     +'<div class="sheet-title">Category Types</div>'
     +'<div class="ct-list">'+rows+'</div>'
+    +betSection
     +'<div class="ct-save-note">'+(note||'')+'</div>'
     +'<button class="sheet-done" onclick="closeSheet()">Done</button>'
     +'</div>';
 }
+function toggleBettingModeMobile(){
+  if (!isJack()) return;
+  bettingMode = !bettingMode;
+  render();
+  refreshCatTypeSheet('');
+}
+// Session-only: auto-lock betting mode when the app is backgrounded.
+document.addEventListener('visibilitychange', function(){
+  if (document.hidden && bettingMode){ bettingMode = false; try { render(); } catch(e){} }
+});
 function setCatTypeMobile(catId, type){
   if (CAT_TYPES.indexOf(type) < 0) return;
   if (!D.catTypes) D.catTypes = {};
@@ -1077,7 +1132,7 @@ function renderDataSheet(){
   for (var i=0;i<months.length;i++) msSet[months[i]]=1;
   // Same visibility rules the dashboard uses: drop hidden/ignored cats, but
   // show income and excluded rows here so the data can be fully reviewed.
-  var txns=(D.transactions||[]).filter(function(t){ return t.date && msSet[t.date.slice(0,7)] && !HIDDEN_CATS[t.category]; });
+  var txns=(D.transactions||[]).filter(function(t){ return t.date && msSet[t.date.slice(0,7)] && !isHiddenCat(t.category); });
   txns.sort(function(a,b){ return (b.date||'').localeCompare(a.date||'') || (b.id||'').toString().localeCompare((a.id||'').toString()); });
 
   // Group by date for section headers
