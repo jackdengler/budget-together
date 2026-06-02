@@ -4640,7 +4640,7 @@ function waitForGIS(cb, attempts) {
 try {
   if ('serviceWorker' in navigator) {
     const swCode = `
-      const CACHE = 'bt-v1';
+      const CACHE = 'bt-v2';
       const PRECACHE = [
         'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap'
       ];
@@ -4652,15 +4652,27 @@ try {
       });
       self.addEventListener('fetch', e => {
         if (e.request.method !== 'GET') return;
-        e.respondWith(
-          caches.match(e.request).then(cached => {
-            const fresh = fetch(e.request).then(r => {
+        const isDoc = e.request.mode === 'navigate' || e.request.destination === 'document';
+        if (isDoc) {
+          // Network-first for pages so deployed updates show immediately; fall back to cache offline.
+          e.respondWith(
+            fetch(e.request).then(r => {
               if (r.ok) caches.open(CACHE).then(c => c.put(e.request, r.clone()));
               return r;
-            }).catch(() => cached);
-            return cached || fresh;
-          })
-        );
+            }).catch(() => caches.match(e.request))
+          );
+        } else {
+          // Stale-while-revalidate for static assets (fonts, etc.).
+          e.respondWith(
+            caches.match(e.request).then(cached => {
+              const fresh = fetch(e.request).then(r => {
+                if (r.ok) caches.open(CACHE).then(c => c.put(e.request, r.clone()));
+                return r;
+              }).catch(() => cached);
+              return cached || fresh;
+            })
+          );
+        }
       });
     `;
     const blob = new Blob([swCode], {type: 'application/javascript'});
