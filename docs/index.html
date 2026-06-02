@@ -3003,15 +3003,23 @@ function materializeRecurring() {
 }
 
 // ── PDF Import (Paystubs + CNB Bank Statements) ─────────────
+let _pdfJsLoad = null;
 async function loadPdfJs() {
   if (window.pdfjsLib) return;
-  await new Promise((res, rej) => {
-    const s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-    s.onload = res; s.onerror = rej;
-    document.head.appendChild(s);
-  });
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  // Cache the in-flight promise so selecting several PDFs at once doesn't inject
+  // the script multiple times (which raced and could leave the load half-done).
+  if (!_pdfJsLoad) {
+    _pdfJsLoad = new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      s.onload = res;
+      s.onerror = () => { _pdfJsLoad = null; rej(new Error('Could not load PDF reader (network blocked?)')); };
+      document.head.appendChild(s);
+    }).then(() => {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    });
+  }
+  await _pdfJsLoad;
 }
 async function extractPdfText(file) {
   await loadPdfJs();
@@ -3170,6 +3178,41 @@ function parseChaseStatement(text, person) {
   }
   return txns;
 }
+// SoFi Bank monthly statement (Checking + Savings). Distinctive: "SoFi Bank" + per-txn "Transaction ID:" lines.
+function isSoFiStatement(text) {
+  return /sofi\s*bank/i.test(text) && /Transaction\s*ID:/i.test(text);
+}
+function parseSoFiStatement(text, person) {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  // Leading word(s) on each row are the transaction TYPE, jammed against the description
+  // by pdf.js (e.g. "Direct DepositCOMPENSIA INC PAYROLL"). Strip the known types.
+  const TYPES = 'Interest Earned|Direct Deposit|Direct Payment|Debit Card|Withdrawal|Overdraft|Deposit|Other|ATM|Check|Transfer|Fee';
+  const typeRe = new RegExp('^(?:' + TYPES + ')', 'i');
+  const txns = [];
+  const seen = new Set();
+  for (const line of lines) {
+    // "Apr 28, 2026Direct DepositCOMPENSIA INC PAYROLL$3,127.37$6,254.11"
+    // groups: date | type+description | amount | running balance (both may be negative)
+    const m = line.match(/^([A-Z][a-z]{2}\s+\d{1,2},\s*\d{4})(.+?)(-?\$[\d,]+\.\d{2})(-?\$[\d,]+\.\d{2})$/);
+    if (!m) continue;
+    const d = new Date(m[1]);
+    if (isNaN(d)) continue;
+    const date = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    let desc = m[2].replace(typeRe, '').replace(/\s+/g, ' ').trim();
+    if (!desc) desc = m[2].replace(/\s+/g, ' ').trim();
+    const amtStr = m[3];
+    const val = parseFloat(amtStr.replace(/[-$,]/g, ''));
+    if (!val) continue;
+    // SoFi shows credits as "$X" and debits as "-$X". Match CNB convention:
+    // credit → negative amount (income), debit → positive amount (expense).
+    const amount = /^-/.test(amtStr) ? val : -val;
+    const key = `${date}|${desc}|${amount}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    txns.push({ id: uid(), date, amount, description: desc, category: categorize(desc), person, shared: false, settled: false, splitRatio: 0.5, note: '', excluded: false });
+  }
+  return txns;
+}
 async function onPdfFile(ev, personHint) {
   const file = ev.target ? ev.target.files[0] : ev;
   if (!file) return;
@@ -3189,6 +3232,13 @@ async function onPdfFile(ev, personHint) {
       toast('Parsing Chase statement…');
       const txns = parseChaseStatement(text, personHint || 'p1');
       if (!txns.length) { toast('No transactions found in Chase statement'); return; }
+      doImportTxns(txns);
+      return;
+    }
+    if (isSoFiStatement(text)) {
+      toast('Parsing SoFi statement…');
+      const txns = parseSoFiStatement(text, personHint || 'p1');
+      if (!txns.length) { toast('No transactions found in SoFi statement'); return; }
       doImportTxns(txns);
       return;
     }
@@ -3379,8 +3429,10 @@ function showPaystubModal(parsed) {
       <label for="psi-${i}" style="flex:1;font-weight:600;font-size:.88rem;cursor:pointer">${esc(e.label)}</label>
       <span style="font-weight:700;color:${e.type==='expense'?'var(--red)':'var(--green)'};flex-shrink:0">${e.type==='expense'?'':'+'}${fc(e.amount)}</span>
     </div>`;
-  const incomeRows  = incomeEntries.map((e,i) => makeRow(e, i)).join('');
-  const expenseRows = expenseEntries.map((e,i) => makeRow(e, incomeEntries.length + i)).join('');
+  // Checkbox id MUST be the entry's index in parsed.entries — importPaystub reads
+  // psi-<i> against parsed.entries[i], so income-first display order can't drive the id.
+  const incomeRows  = incomeEntries.map(e => makeRow(e, parsed.entries.indexOf(e))).join('');
+  const expenseRows = expenseEntries.map(e => makeRow(e, parsed.entries.indexOf(e))).join('');
   const p1Sel = parsed.person === 'p1';
   showModal(`<div class="modal">
     <h2>📄 Import Paystub${pendingPaystubs.length > 1 ? ` <span style="font-size:.75em;font-weight:500;color:var(--text-3)">(${pendingPaystubs.indexOf(parsed)+1} of ${pendingPaystubs.length})</span>` : ''}</h2>
