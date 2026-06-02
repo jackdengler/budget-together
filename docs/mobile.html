@@ -658,6 +658,25 @@
     .gs-book-name { font-size: calc(14px * var(--z)); font-weight: 700; color: var(--text); }
     .gs-book-pl { font-size: calc(15px * var(--z)); font-weight: 800; grid-row: span 2; align-self: center; }
     .gs-book-meta { font-size: calc(11px * var(--z)); color: var(--text-3); }
+    .gs-txns-title {
+      font-size: calc(11px * var(--z));
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: calc(1px * var(--z));
+      color: var(--text-sub);
+      margin: calc(18px * var(--z)) 0 calc(8px * var(--z));
+    }
+    .gs-txn {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: baseline;
+      gap: calc(2px * var(--z)) calc(10px * var(--z));
+      padding: calc(9px * var(--z)) 0;
+      border-top: calc(1px * var(--z)) solid var(--surface-border);
+    }
+    .gs-txn-desc { font-size: calc(13px * var(--z)); font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .gs-txn-amt { font-size: calc(14px * var(--z)); font-weight: 800; align-self: center; grid-row: span 2; }
+    .gs-txn-meta { font-size: calc(11px * var(--z)); color: var(--text-3); }
   </style>
 </head>
 <body>
@@ -1216,6 +1235,22 @@ function openGamblingSheet(){
       + '</div>';
   }
 
+  // Individual transactions — newest first, same in/out classification as above.
+  var txnRows = '';
+  for (var k=0;k<all.length;k++){
+    var tt = all[k], tcl = (D.gamblingData||{})[tt.id];
+    var tIsIn = tcl ? tcl.dir==='in' : tt.amount > 0;
+    var tAmt = Math.abs(tt.amount);
+    var tBid = (tcl && tcl.book) || detectBook(tt.description);
+    var tC = tIsIn ? 'var(--red)' : 'var(--green)';
+    var tS = (tIsIn?'−':'+') + fc(tAmt);
+    txnRows += '<div class="gs-txn">'
+      + '<div class="gs-txn-desc">' + esc(tt.description || '(no description)') + '</div>'
+      + '<div class="gs-txn-amt" style="color:' + tC + '">' + tS + '</div>'
+      + '<div class="gs-txn-meta">' + esc(tt.date) + ' · ' + esc(GAMBLING_BOOKS[tBid]||tBid) + ' · ' + (tIsIn?'in':'back') + '</div>'
+      + '</div>';
+  }
+
   var body = all.length
     ? '<div class="gs-stats">'
         + '<div class="gs-stat"><div class="gs-stat-lbl">Net P&amp;L</div><div class="gs-stat-val" style="color:' + netColor + '">' + netStr + '</div></div>'
@@ -1223,6 +1258,7 @@ function openGamblingSheet(){
         + '<div class="gs-stat"><div class="gs-stat-lbl">Total Out</div><div class="gs-stat-val" style="color:var(--green)">' + fc(totalOut) + '</div></div>'
       + '</div>'
       + (bookRows ? '<div class="gs-books-title">By Book</div>' + bookRows : '')
+      + (txnRows ? '<div class="gs-txns-title">Transactions (' + all.length + ')</div>' + txnRows : '')
     : '<div style="text-align:center;color:var(--text-3);padding:30px 10px">🎰<div style="margin-top:8px">No gambling transactions yet.</div></div>';
 
   b.innerHTML = '<div class="sheet">'
