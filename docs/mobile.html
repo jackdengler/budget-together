@@ -615,6 +615,49 @@
       font-size: calc(15px * var(--z));
       font-weight: 700;
     }
+    .sheet-sub {
+      font-size: calc(12px * var(--z));
+      color: var(--text-3);
+      text-align: center;
+      line-height: 1.4;
+      margin: calc(-6px * var(--z)) calc(4px * var(--z)) calc(14px * var(--z));
+    }
+    .gs-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: calc(10px * var(--z)); }
+    .gs-stat {
+      background: var(--surface-2, rgba(0,0,0,0.03));
+      border: calc(1px * var(--z)) solid var(--surface-border);
+      border-radius: calc(12px * var(--z));
+      padding: calc(12px * var(--z)) calc(8px * var(--z));
+      text-align: center;
+    }
+    .gs-stat-lbl {
+      font-size: calc(10px * var(--z));
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: calc(0.5px * var(--z));
+      color: var(--text-3);
+      margin-bottom: calc(4px * var(--z));
+    }
+    .gs-stat-val { font-size: calc(18px * var(--z)); font-weight: 800; }
+    .gs-books-title {
+      font-size: calc(11px * var(--z));
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: calc(1px * var(--z));
+      color: var(--text-sub);
+      margin: calc(18px * var(--z)) 0 calc(8px * var(--z));
+    }
+    .gs-book {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: baseline;
+      gap: calc(2px * var(--z)) calc(10px * var(--z));
+      padding: calc(10px * var(--z)) 0;
+      border-top: calc(1px * var(--z)) solid var(--surface-border);
+    }
+    .gs-book-name { font-size: calc(14px * var(--z)); font-weight: 700; color: var(--text); }
+    .gs-book-pl { font-size: calc(15px * var(--z)); font-weight: 800; grid-row: span 2; align-self: center; }
+    .gs-book-meta { font-size: calc(11px * var(--z)); color: var(--text-3); }
   </style>
 </head>
 <body>
@@ -790,8 +833,25 @@ function compute(who, months){
   var div = (months.length > 1 && periodView === 'avg') ? months.length : 1;
   function sc(o){ if (div <= 1) return o; var r = {}; for (var k in o) r[k] = o[k] / div; return r; }
   var txns = (D.transactions||[]).filter(function(t){ return t.date && msSet[t.date.slice(0,7)] && !t.excluded; });
-  var exp = txns.filter(function(t){ return t.amount > 0 && !isIgnored(t.category); });
+  // Gambling is netted separately (see gamblingNetFor) — never an individual expense.
+  var exp = txns.filter(function(t){ return t.amount > 0 && t.category !== 'gambling' && !isIgnored(t.category); });
   var inc = txns.filter(function(t){ return t.amount < 0 && t.category === 'income'; });
+  // In betting mode, collapse gambling to a single net result over the range:
+  // a net win counts as income, a net loss as variable spend. E.g. $10k wagered
+  // returning $11k → +$1k income, not $10k spent and $11k earned.
+  function gamblingNetFor(match){
+    if (!bettingMode) return 0;
+    var net = 0;
+    for (var gi=0; gi<txns.length; gi++){
+      var gt = txns[gi];
+      if (gt.category !== 'gambling' || !match(gt)) continue;
+      var cl = (D.gamblingData||{})[gt.id];
+      var isIn = cl ? cl.dir === 'in' : gt.amount > 0; // money sent to the book
+      var amt = Math.abs(gt.amount);
+      net += isIn ? -amt : amt;
+    }
+    return net;
+  }
 
   if (who !== 'all') {
     // For person-specific, include solo + their share of shared
@@ -826,6 +886,9 @@ function compute(who, months){
       else if (tp==='family') fam += a;
     }
 
+    var gNet = gamblingNetFor(function(gt){ return gt.person === who; });
+    totalInc += Math.max(gNet, 0);   // net win → income
+    spend    += Math.max(-gNet, 0);  // net loss → variable spend
     return sc({inc:totalInc, ret:ret, fam:fam, spend:spend, fixed:fixed, annual:annual, variable:spend-fixed-annual});
   }
 
@@ -844,6 +907,9 @@ function compute(who, months){
     if (tp2==='retirement') totalRet += a2;
     else if (tp2==='family') totalFam += a2;
   }
+  var gNetAll = gamblingNetFor(function(){ return true; });
+  totalInc2 += Math.max(gNetAll, 0);   // net win → income
+  totalSpend += Math.max(-gNetAll, 0); // net loss → variable spend
   return sc({inc:totalInc2, ret:totalRet, fam:totalFam, spend:totalSpend, fixed:totalFixed, annual:totalAnnual, variable:totalSpend-totalFixed-totalAnnual});
 }
 
@@ -900,7 +966,7 @@ function ringCard(title, titleColor, d, avg) {
 function categoryCard(months, div, avg) {
   div = div || 1;
   var msSet = {}; for (var mi=0; mi<months.length; mi++) msSet[months[mi]] = 1;
-  var exp = (D.transactions||[]).filter(function(t){ return t.date && msSet[t.date.slice(0,7)] && t.amount > 0 && !isIgnored(t.category) && !t.excluded; });
+  var exp = (D.transactions||[]).filter(function(t){ return t.date && msSet[t.date.slice(0,7)] && t.amount > 0 && t.category !== 'gambling' && !isIgnored(t.category) && !t.excluded; });
   var byCat = {};
   for (var i=0; i<exp.length; i++) {
     byCat[exp[i].category] = (byCat[exp[i].category]||0) + exp[i].amount;
@@ -970,7 +1036,7 @@ function spendingHistoryCard(periodMonths) {
   for (var mi=0; mi<allMonths.length; mi++){
     var mo = allMonths[mi];
     var moTxns = txAll.filter(function(t){ return t.date && t.date.slice(0,7)===mo && !t.excluded; });
-    var exp = moTxns.filter(function(t){ return t.amount > 0 && !isIgnored(t.category); });
+    var exp = moTxns.filter(function(t){ return t.amount > 0 && t.category !== 'gambling' && !isIgnored(t.category); });
     var p1solo = 0, p2solo = 0;
     for (var j=0; j<exp.length; j++){
       if (!exp[j].shared) {
@@ -1094,6 +1160,78 @@ function openPeriodPicker(){
   refreshSheet();
 }
 function closeSheet(){ var b=document.getElementById('sheet-back'); if(b) b.remove(); }
+
+// ── Gambling summary (betting mode only) ───────────────────────────────────
+// All-time gambling P&L plus a per-book breakdown. The same classification the
+// web app uses (gamblingData dir, else amount sign) decides money-in vs money-out.
+var GAMBLING_BOOKS = {
+  fanduel:'FanDuel', draftkings:'DraftKings', coincasino:'CoinCasino',
+  kalshi:'Kalshi', inperson:'In Person', other:'Other'
+};
+function detectBook(desc){
+  var d = (desc||'').toLowerCase();
+  if (d.indexOf('fanduel')>=0) return 'fanduel';
+  if (d.indexOf('draftkings')>=0) return 'draftkings';
+  if (d.indexOf('coincasino')>=0 || d.indexOf('coin casino')>=0) return 'coincasino';
+  if (d.indexOf('kalshi')>=0) return 'kalshi';
+  return 'other';
+}
+function openGamblingSheet(){
+  if (!bettingMode) return;
+  if (document.getElementById('sheet-back')) return;
+  var b=document.createElement('div');
+  b.id='sheet-back'; b.className='sheet-back';
+  b.addEventListener('click', function(e){ if(e.target===b) closeSheet(); });
+  document.body.appendChild(b);
+
+  var all = (D.transactions||[]).filter(function(t){ return t.category==='gambling' && !t.excluded; })
+    .sort(function(a,b){ return b.date.localeCompare(a.date); });
+  var totalIn = 0, totalOut = 0, byBook = {};
+  for (var i=0;i<all.length;i++){
+    var t = all[i], cl = (D.gamblingData||{})[t.id];
+    var isIn = cl ? cl.dir==='in' : t.amount > 0;
+    var amt = Math.abs(t.amount);
+    var bid = (cl && cl.book) || detectBook(t.description);
+    if (!byBook[bid]) byBook[bid] = {inAmt:0, outAmt:0, count:0};
+    if (isIn){ totalIn += amt; byBook[bid].inAmt += amt; }
+    else { totalOut += amt; byBook[bid].outAmt += amt; }
+    byBook[bid].count++;
+  }
+  var net = totalOut - totalIn;
+  var netColor = net>=0 ? 'var(--green)' : 'var(--red)';
+  var netStr = (net>=0?'+':'−') + fc(Math.abs(net));
+
+  var bookIds = Object.keys(byBook).sort(function(a,c){
+    return (byBook[c].inAmt+byBook[c].outAmt) - (byBook[a].inAmt+byBook[a].outAmt);
+  });
+  var bookRows = '';
+  for (var j=0;j<bookIds.length;j++){
+    var bid2 = bookIds[j], bk = byBook[bid2], pl = bk.outAmt - bk.inAmt;
+    var plC = pl>=0 ? 'var(--green)' : 'var(--red)';
+    var plS = (pl>=0?'+':'−') + fc(Math.abs(pl));
+    bookRows += '<div class="gs-book">'
+      + '<div class="gs-book-name">' + esc(GAMBLING_BOOKS[bid2]||bid2) + '</div>'
+      + '<div class="gs-book-meta">' + fc(bk.inAmt) + ' in · ' + fc(bk.outAmt) + ' back · ' + bk.count + ' txn' + (bk.count!==1?'s':'') + '</div>'
+      + '<div class="gs-book-pl" style="color:' + plC + '">' + plS + '</div>'
+      + '</div>';
+  }
+
+  var body = all.length
+    ? '<div class="gs-stats">'
+        + '<div class="gs-stat"><div class="gs-stat-lbl">Net P&amp;L</div><div class="gs-stat-val" style="color:' + netColor + '">' + netStr + '</div></div>'
+        + '<div class="gs-stat"><div class="gs-stat-lbl">Total In</div><div class="gs-stat-val" style="color:var(--red)">' + fc(totalIn) + '</div></div>'
+        + '<div class="gs-stat"><div class="gs-stat-lbl">Total Out</div><div class="gs-stat-val" style="color:var(--green)">' + fc(totalOut) + '</div></div>'
+      + '</div>'
+      + (bookRows ? '<div class="gs-books-title">By Book</div>' + bookRows : '')
+    : '<div style="text-align:center;color:var(--text-3);padding:30px 10px">🎰<div style="margin-top:8px">No gambling transactions yet.</div></div>';
+
+  b.innerHTML = '<div class="sheet">'
+    + '<div class="sheet-title">🎰 Gambling Summary</div>'
+    + '<div class="sheet-sub">All-time. Only the net result feeds income/spending — a net win is income, a net loss is spending.</div>'
+    + '<div style="overflow-y:auto;flex:1">' + body + '</div>'
+    + '<button class="sheet-done" onclick="closeSheet()">Done</button>'
+    + '</div>';
+}
 
 // ── Category-type editor (Fixed / Variable / Annual) ───────────────────────
 // Spendable categories only — income / ignored / hidden never count toward spend.
@@ -1302,6 +1440,7 @@ function render(){
     + '<button class="mo-arrow" onclick="shiftPeriod(1)" ' + navDis + '>\u203A</button>'
     + '<button class="mo-gear" onclick="openDataSheet()" aria-label="Review data">\u2630</button>'
     + '<button class="mo-gear" onclick="openCatTypeSheet()" aria-label="Category settings">\u2699</button>'
+    + (bettingMode ? '<button class="mo-gear" onclick="openGamblingSheet()" aria-label="Gambling summary">\ud83c\udfb0</button>' : '')
     + '</div>'
     + '</div>';
 
