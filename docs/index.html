@@ -1520,10 +1520,10 @@ function renderOverview() {
   const p2sp  = exp.filter(t => t.person==='p2' && !t.shared).reduce((s,t) => s+t.amount, 0);
   const sharedTxns = exp.filter(t => t.shared);
   const shared = sharedTxns.reduce((s,t) => s+t.amount, 0);
-  const sharedByCat = {};
-  for (const t of sharedTxns) sharedByCat[t.category] = (sharedByCat[t.category]||0) + t.amount;
-  let sharedP1 = 0, sharedP2 = 0;
-  for (const [catId, amt] of Object.entries(sharedByCat)) { const {p1Share, p2Share} = getCatSplitAmts(catId, amt); sharedP1 += p1Share; sharedP2 += p2Share; }
+  // Per-month split so fixed-dollar category splits apply per month, not once across the range.
+  const { p1: sharedP1ByCat, p2: sharedP2ByCat } = splitSharedByCat(sharedTxns);
+  const sharedP1 = Object.values(sharedP1ByCat).reduce((s,v) => s+v, 0);
+  const sharedP2 = Object.values(sharedP2ByCat).reduce((s,v) => s+v, 0);
   // income: visible-only so viewer can't back-calculate hidden spending via net savings
   const visInc = txns.filter(t => t.amount < 0 && !getCat(t.category).ignored && !t.excluded && isVisible(t));
   const totalInc = visInc.reduce((s,t) => s + Math.abs(t.amount), 0);
@@ -1641,18 +1641,15 @@ function renderOverview() {
   const noExpMsg = isMulti ? 'No expenses in this range' : 'No expenses this month';
   // Per-person per-category for split bars — post-settle shares
   const p1ByCat = {}, p2ByCat = {};
+  // Solo expenses — 100% to the person who paid
   for (const t of exp) {
-    if (t.shared) {
-      // Use catSplit ratios to determine each person's share
-      const {p1Share, p2Share} = getCatSplitAmts(t.category, t.amount);
-      p1ByCat[t.category] = (p1ByCat[t.category]||0) + p1Share;
-      p2ByCat[t.category] = (p2ByCat[t.category]||0) + p2Share;
-    } else {
-      // Solo expense — 100% to the person who paid
-      if (t.person==='p1') p1ByCat[t.category] = (p1ByCat[t.category]||0) + t.amount;
-      else p2ByCat[t.category] = (p2ByCat[t.category]||0) + t.amount;
-    }
+    if (t.shared) continue;
+    if (t.person==='p1') p1ByCat[t.category] = (p1ByCat[t.category]||0) + t.amount;
+    else p2ByCat[t.category] = (p2ByCat[t.category]||0) + t.amount;
   }
+  // Shared expenses — per-month split shares computed above
+  for (const [cid, amt] of Object.entries(sharedP1ByCat)) p1ByCat[cid] = (p1ByCat[cid]||0) + amt;
+  for (const [cid, amt] of Object.entries(sharedP2ByCat)) p2ByCat[cid] = (p2ByCat[cid]||0) + amt;
   const catTotal = catArr.reduce((s,[,v])=>s+v, 0);
   // Limit to 6 visible rows; combine remainder into "All Other"
   const MAX_CAT_ROWS = 7;
@@ -1807,16 +1804,11 @@ function renderOverview() {
       for (const t of exp) if (t.person===person && !t.shared) b[catType(t.category)] += t.amount;
       return b;
     };
-    // Each person's settled share of shared expenses, by type.
+    // Each person's settled share of shared expenses, by type (per-month split).
     const sharedShareByType = () => {
-      const byCat = {};
-      for (const t of sharedTxns) byCat[t.category] = (byCat[t.category]||0) + t.amount;
       const p1 = { fixed: 0, variable: 0, annual: 0 }, p2 = { fixed: 0, variable: 0, annual: 0 };
-      for (const [cid, amt] of Object.entries(byCat)) {
-        const { p1Share, p2Share } = getCatSplitAmts(cid, amt);
-        const ty = catType(cid);
-        p1[ty] += p1Share; p2[ty] += p2Share;
-      }
+      for (const [cid, amt] of Object.entries(sharedP1ByCat)) p1[catType(cid)] += amt;
+      for (const [cid, amt] of Object.entries(sharedP2ByCat)) p2[catType(cid)] += amt;
       return { p1, p2 };
     };
     const allByType = { fixed: 0, variable: 0, annual: 0 };
@@ -2026,14 +2018,10 @@ ${dots}`;
     for (const t of exp) if (t.person===person && !t.shared) b[catType(t.category)] += t.amount;
     return b;
   };
-  const dSharedByCat = {};
-  for (const t of sharedTxns) dSharedByCat[t.category] = (dSharedByCat[t.category]||0) + t.amount;
+  // Per-month split shares bucketed by category type (fixed/variable/annual).
   const dSharedP1 = { fixed: 0, variable: 0, annual: 0 }, dSharedP2 = { fixed: 0, variable: 0, annual: 0 };
-  for (const [cid, amt] of Object.entries(dSharedByCat)) {
-    const { p1Share, p2Share } = getCatSplitAmts(cid, amt);
-    const ty = catType(cid);
-    dSharedP1[ty] += p1Share; dSharedP2[ty] += p2Share;
-  }
+  for (const [cid, amt] of Object.entries(sharedP1ByCat)) dSharedP1[catType(cid)] += amt;
+  for (const [cid, amt] of Object.entries(sharedP2ByCat)) dSharedP2[catType(cid)] += amt;
   const dAllByType = { fixed: 0, variable: 0, annual: 0 };
   for (const t of exp) dAllByType[catType(t.category)] += t.amount;
   const dFixedTotal = scaleNum(dAllByType.fixed);
@@ -2339,6 +2327,25 @@ function getCatSplitAmts(catId, total) {
   }
   const pct = (mode === 'pct' || mode === 'even') ? (s.p1Pct ?? 50) : 50;
   return { p1Share: total * pct / 100, p2Share: total * (1 - pct / 100), p1Pct: pct };
+}
+// Split a set of shared expenses into each person's share, computed PER MONTH so
+// that fixed-dollar category splits ("p1 pays $X of utilities") apply once per
+// month — not once across an entire multi-month range. Percentage splits are
+// linear, so this is a no-op for them. Returns { p1:{catId:amt}, p2:{catId:amt} }.
+function splitSharedByCat(sharedTxns) {
+  const byMoCat = {}; // 'YYYY-MM|catId' -> summed amount for that month+category
+  for (const t of sharedTxns) {
+    const key = t.date.slice(0,7) + '|' + t.category;
+    byMoCat[key] = (byMoCat[key]||0) + t.amount;
+  }
+  const p1 = {}, p2 = {};
+  for (const [key, amt] of Object.entries(byMoCat)) {
+    const cid = key.slice(key.indexOf('|')+1);
+    const { p1Share, p2Share } = getCatSplitAmts(cid, amt);
+    p1[cid] = (p1[cid]||0) + p1Share;
+    p2[cid] = (p2[cid]||0) + p2Share;
+  }
+  return { p1, p2 };
 }
 function calcSplit() {
   const active = S.transactions.filter(t => t.shared && !t.settled && t.amount>0 && !getCat(t.category).ignored && !t.excluded);
