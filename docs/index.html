@@ -2321,8 +2321,9 @@ function getCatSplitAmts(catId, total) {
     const p1Pct = total > 0 ? Math.round(p1 / total * 100) : 50;
     return { p1Share: p1, p2Share: total - p1, p1Pct };
   }
-  const pct = (mode === 'pct' || mode === 'even') ? (s.p1Pct ?? 50) : 50;
-  return { p1Share: total * pct / 100, p2Share: total * (1 - pct / 100), p1Pct: pct };
+  const pct = (mode === 'pct') ? (s.p1Pct ?? 50) : 50; // 'even' and unknown modes → exact 50/50
+  const p1Share = total * pct / 100;
+  return { p1Share, p2Share: total - p1Share, p1Pct: pct }; // subtract so shares sum to total exactly
 }
 // p1/p2 share of a single shared transaction. Settled transactions are frozen
 // at the split that applied when they were settled (settledSplit = p1 fraction
@@ -2369,41 +2370,46 @@ function sumSplitShares(txns) {
     p2Share: Object.values(p2).reduce((s,v) => s+v, 0),
   };
 }
+// Exact p1 fraction (0..1) to freeze for each 'YYYY-MM|catId' bucket, matching
+// the live per-month split (see splitSharedByCat). Uses the exact share — NOT a
+// rounded percent — so settling never shifts the dollar amounts.
+function settleFracByMoCat(txns) {
+  const totals = {};
+  for (const t of txns) {
+    const key = t.date.slice(0,7) + '|' + t.category;
+    totals[key] = (totals[key] || 0) + t.amount;
+  }
+  const frac = {};
+  for (const [key, total] of Object.entries(totals)) {
+    const cid = key.slice(key.indexOf('|') + 1);
+    frac[key] = total > 0 ? getCatSplitAmts(cid, total).p1Share / total : 0.5;
+  }
+  return frac;
+}
+const moCatKey = t => t.date.slice(0,7) + '|' + t.category;
 // Freeze legacy settled transactions (settled before snapshots existed) at the
 // category's current effective split so future split edits never move them.
 function migrateSettledSplits() {
-  const byCat = {};
-  for (const t of S.transactions) {
-    if (t.shared && t.settled && t.amount > 0 && t.settledSplit == null) {
-      (byCat[t.category] = byCat[t.category] || []).push(t);
-    }
-  }
-  let changed = 0;
-  for (const [cid, ts] of Object.entries(byCat)) {
-    const total = ts.reduce((s, t) => s + t.amount, 0);
-    const frac = (getCatSplitAmts(cid, total).p1Pct ?? 50) / 100;
-    ts.forEach(t => { t.settledSplit = frac; changed++; });
-  }
-  return changed;
+  const legacy = S.transactions.filter(t => t.shared && t.settled && t.amount > 0 && t.settledSplit == null);
+  const frac = settleFracByMoCat(legacy);
+  legacy.forEach(t => { t.settledSplit = frac[moCatKey(t)]; });
+  return legacy.length;
 }
 function calcSplit() {
   const active = S.transactions.filter(t => t.shared && !t.settled && t.amount>0 && !getCat(t.category).ignored && !t.excluded);
-  // Group by category then compute net using catSplits
-  const byCat = {};
-  for (const t of active) {
-    if (!byCat[t.category]) byCat[t.category] = { p1paid:0, p2paid:0 };
-    byCat[t.category][t.person==='p1'?'p1paid':'p2paid'] += t.amount;
-  }
-  let net = 0; // positive = p2 owes p1
-  for (const [catId, {p1paid, p2paid}] of Object.entries(byCat)) {
-    const { p1Share } = getCatSplitAmts(catId, p1paid + p2paid);
-    net += p1paid - p1Share; // p1 overpaid → p2 owes; p1 underpaid → p1 owes
-  }
-  return { net, active };
+  // Net = what p1 actually paid minus p1's fair share. Shares are aggregated
+  // PER MONTH per category (same as splitSharedByCat) so fixed-dollar splits
+  // apply once per month, not once across a multi-month range. Percentage
+  // splits are linear, so per-month equals whole-range for them.
+  let p1paid = 0;
+  for (const t of active) if (t.person === 'p1') p1paid += t.amount;
+  const { p1Share } = sumSplitShares(active);
+  return { net: p1paid - p1Share, active }; // positive = p2 owes p1
 }
 function renderSplit() {
   const {net, active} = calcSplit();
   const pn1 = S.settings.person1, pn2 = S.settings.person2;
+  const shares = splitSharedByCat(active); // per-month aggregated shares, per category
 
   // Group by category
   const byCat = {};
@@ -2417,7 +2423,9 @@ function renderSplit() {
     const total = p1paid + p2paid;
     const sp    = S.catSplits[catId] || {};
     const mode  = sp.mode || 'even';
-    const { p1Share, p2Share, p1Pct } = getCatSplitAmts(catId, total);
+    const p1Share = shares.p1[catId] || 0;
+    const p2Share = shares.p2[catId] || 0;
+    const p1Pct   = total > 0 ? Math.round(p1Share / total * 100) : 50;
     const catNet = p1paid - p1Share; // positive = p2 owes p1
     const netLabel = Math.abs(catNet)<0.005
       ? `<span style="color:var(--green)">Even ✓</span>`
@@ -2938,6 +2946,7 @@ function settleUp() {
   const today = new Date().toISOString().slice(0,10);
 
   // Group by category for breakdown
+  const shares = splitSharedByCat(active); // per-month aggregated shares, per category
   const byCat = {};
   for (const t of active) {
     if (!byCat[t.category]) byCat[t.category] = { p1paid:0, p2paid:0, txns:[] };
@@ -2948,7 +2957,9 @@ function settleUp() {
   const catRows = Object.entries(byCat).map(([catId, {p1paid, p2paid, txns}]) => {
     const cat = getCat(catId);
     const total = p1paid + p2paid;
-    const {p1Share, p2Share, p1Pct} = getCatSplitAmts(catId, total);
+    const p1Share = shares.p1[catId] || 0;
+    const p2Share = shares.p2[catId] || 0;
+    const p1Pct   = total > 0 ? Math.round(p1Share / total * 100) : 50;
     const catNet = p1paid - p1Share;
     const netLabel = Math.abs(catNet)<0.005
       ? '<span style="color:var(--green)">Even</span>'
@@ -2994,14 +3005,11 @@ function confirmSettle() {
   // Snapshot the effective split per category, then freeze it onto each
   // transaction so later split changes never touch what's already settled.
   const batch = S.transactions.filter(t => t.shared && !t.settled && t.amount>0 && !getCat(t.category).ignored && !t.excluded);
-  const totByCat = {};
-  for (const t of batch) totByCat[t.category] = (totByCat[t.category]||0) + t.amount;
-  const fracByCat = {};
-  for (const [cid, total] of Object.entries(totByCat)) fracByCat[cid] = (getCatSplitAmts(cid, total).p1Pct ?? 50) / 100;
+  const frac = settleFracByMoCat(batch);
   batch.forEach(t => {
     t.settled = true;
     t.settledDate = today;
-    t.settledSplit = fracByCat[t.category];
+    t.settledSplit = frac[moCatKey(t)];
   });
   closeModal(); schedSave(); render(); toast('Settled up!');
 }
@@ -3011,17 +3019,24 @@ function settleCategory(catId) {
   const today = new Date().toISOString().slice(0,10);
   const batch = S.transactions.filter(t => t.category===catId && t.shared && !t.settled && t.amount>0 && !getCat(t.category).ignored && !t.excluded);
   if (!batch.length) return;
-  const total = batch.reduce((s,t)=>s+t.amount, 0);
-  const frac = (getCatSplitAmts(catId, total).p1Pct ?? 50) / 100;
-  batch.forEach(t => { t.settled=true; t.settledDate=today; t.settledSplit=frac; });
+  const frac = settleFracByMoCat(batch);
+  batch.forEach(t => { t.settled=true; t.settledDate=today; t.settledSplit=frac[moCatKey(t)]; });
   schedSave(); render(); toast(`Settled ${getCat(catId).label}`);
 }
 function settleOne(id) {
   const t = S.transactions.find(t=>t.id===id);
   if (t) {
+    // Freeze against this transaction's whole month+category total (not the one
+    // amount) so a fixed-dollar split resolves correctly instead of clamping.
+    // Compute BEFORE marking settled so t is still in the unsettled total.
+    const mo = t.date.slice(0,7);
+    const moTotal = S.transactions
+      .filter(x => x.category===t.category && x.shared && x.amount>0 && !x.settled
+                   && !getCat(x.category).ignored && !x.excluded && x.date.slice(0,7)===mo)
+      .reduce((s,x)=>s+x.amount, 0);
     t.settled=true;
     t.settledDate=new Date().toISOString().slice(0,10);
-    t.settledSplit=(getCatSplitAmts(t.category, t.amount).p1Pct ?? 50) / 100; // freeze split at settle time
+    t.settledSplit = moTotal > 0 ? getCatSplitAmts(t.category, moTotal).p1Share / moTotal : 0.5;
     schedSave(); render(); toast('Marked as settled');
   }
 }
