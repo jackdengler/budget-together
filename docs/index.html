@@ -1350,44 +1350,22 @@ function unlinkPerson(person) {
 // ── Build info (injected by deploy workflow) ───────────────
 const BUILD_TIMESTAMP = '__BUILD_TIMESTAMP__';
 
-// ── PIN / Private Mode ──────────────────────────────────────
-// Access: key sequence left-right-left-right-a-b-a-b (like a cheat code)
-const _secretSeq = ['ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','a','b','a','b'];
-let _secretBuf = [];
-document.addEventListener('keydown', e => {
-  _secretBuf.push(e.key);
-  if (_secretBuf.length > _secretSeq.length) _secretBuf.shift();
-  if (_secretBuf.length === _secretSeq.length && _secretBuf.every((k,i) => k === _secretSeq[i])) {
-    _secretBuf = [];
-    showPinModal();
-  }
-});
-let _lpTimer = null;
-let _lpFired = false;
+// ── Betting Mode ────────────────────────────────────────────
+// A private view that reveals the hidden gambling/cash categories and the
+// betting tracker. Only Person 1 (Jack) can turn it on — the toggle lives in
+// Settings and never renders for Person 2. Session-only: it auto-locks when
+// the app loses focus, and nothing about it is ever persisted.
 let _lpInited = false;
 function _initLongPress() {
   if (_lpInited) return;
   _lpInited = true;
   const el = document.getElementById('logo-el');
-  if (!el) return;
-  const start = () => {
-    _lpFired = false;
-    _lpTimer = setTimeout(() => { _lpTimer = null; _lpFired = true; showPinModal(); }, 600);
-  };
-  const cancel = () => { clearTimeout(_lpTimer); _lpTimer = null; };
-  // Desktop only – no touch events so mobile cannot trigger private mode
-  el.addEventListener('mousedown',   start);
-  el.addEventListener('mouseup',     cancel);
-  el.addEventListener('mouseleave',  cancel);
-  el.addEventListener('contextmenu', e => e.preventDefault());
+  if (el) {
+    // Short tap → briefly show deploy info
+    el.addEventListener('click', () => showBuildInfo(el));
+  }
 
-  // Short tap → briefly show deploy info
-  el.addEventListener('click', () => {
-    if (_lpFired) return;            // long-press already handled
-    showBuildInfo(el);
-  });
-
-  // Tap the month label to open gambling tracker (only works when PIN is unlocked)
+  // Tap the month label to open the betting tracker (only when betting mode is on)
   const moEl = document.getElementById('mo-label');
   if (moEl) moEl.addEventListener('click', () => { if (S.pinUnlocked) showGamblingModal(); });
 
@@ -1423,78 +1401,16 @@ function showBuildInfo(el) {
   }, 5000);
 }
 
-function showPinModal() {
-  const hasPin = (S.settings.secretPin || '').trim();
-  if (S.pinUnlocked) {
-    S.pinUnlocked = false;
-    renderIdentityBadge();
-    render();
-    toast('Private mode locked');
-    return;
-  }
-  if (!hasPin) {
-    showModal(`<div class="modal">
-      <h2>🔒 Set Private PIN</h2>
-      <p style="font-size:.84rem;color:var(--text-2);margin-bottom:16px">Set a PIN to unlock your private categories (gambling, cash). These are hidden by default.</p>
-      <div class="form-row"><label>New PIN</label><input id="pin-new" type="password" inputmode="numeric" maxlength="8" class="form-input" placeholder="4–6 digits" autofocus></div>
-      <div class="form-row"><label>Confirm PIN</label><input id="pin-confirm" type="password" inputmode="numeric" maxlength="8" class="form-input" placeholder="Re-enter PIN"></div>
-      <div class="modal-actions">
-        <button class="btn-sec" onclick="closeModal()">Cancel</button>
-        <button class="btn-sec" style="background:var(--primary);color:white;border-color:var(--primary)" onclick="savePinSetup()">Save PIN</button>
-      </div>
-    </div>`);
-  } else {
-    showModal(`<div class="modal">
-      <h2>🔒 Private Mode</h2>
-      <div class="form-row" style="margin-bottom:4px"><label>PIN</label><input id="pin-entry" type="password" inputmode="numeric" maxlength="8" class="form-input" placeholder="Enter PIN" autofocus onkeydown="if(event.key==='Enter')checkPin()"></div>
-      <div class="modal-actions">
-        <button class="btn-sec" onclick="closeModal()">Cancel</button>
-        <button class="btn-sec" style="background:var(--primary);color:white;border-color:var(--primary)" onclick="checkPin()">Unlock</button>
-      </div>
-    </div>`);
-  }
-}
-
-function savePinSetup() {
-  const pin = ($('pin-new').value || '').trim();
-  const confirm = ($('pin-confirm').value || '').trim();
-  if (pin.length < 4) { toast('PIN must be at least 4 digits'); return; }
-  if (pin !== confirm) { toast('PINs do not match'); return; }
-  S.settings.secretPin = pin;
-  S.pinUnlocked = true;
-  schedSave();
-  closeModal();
+// Turn betting mode on/off. Gated to Person 1 (Jack) — the toggle that calls
+// this only renders for p1, and this guard makes sure nobody else can flip it.
+// State lives only in S.pinUnlocked (session memory), never persisted.
+function toggleBettingMode() {
+  if (currentPerson !== 'p1') return;
+  S.pinUnlocked = !S.pinUnlocked;
   renderIdentityBadge();
   render();
-  toast('PIN set! Private mode unlocked 🔓');
-}
-
-function checkPin() {
-  const entered = ($('pin-entry').value || '').trim();
-  if (entered === (S.settings.secretPin || '')) {
-    S.pinUnlocked = true;
-    closeModal();
-    renderIdentityBadge();
-    render();
-    toast('Private mode unlocked 🔓');
-  } else {
-    toast('Wrong PIN');
-    $('pin-entry').value = '';
-    $('pin-entry').focus();
-  }
-}
-
-function changePinFromSettings() {
-  closeModal();
-  showModal(`<div class="modal">
-    <h2>🔒 Change PIN</h2>
-    <div class="form-row"><label>New PIN</label><input id="pin-new" type="password" inputmode="numeric" maxlength="8" class="form-input" placeholder="4–6 digits" autofocus></div>
-    <div class="form-row"><label>Confirm PIN</label><input id="pin-confirm" type="password" inputmode="numeric" maxlength="8" class="form-input" placeholder="Re-enter PIN"></div>
-    <div class="modal-actions">
-      <button class="btn-sec" onclick="showSettings()">Back</button>
-      <button class="btn-sec" style="background:var(--primary);color:white;border-color:var(--primary)" onclick="savePinSetup()">Save PIN</button>
-    </div>
-  </div>`);
+  showSettings();   // refresh the Settings panel so the toggle reflects new state
+  toast(S.pinUnlocked ? 'Betting mode on 🎲' : 'Betting mode off');
 }
 
 // ── Render ─────────────────────────────────────────────────
@@ -3842,10 +3758,10 @@ function showSettings() {
       <p style="font-size:.8rem;color:var(--text-3);margin-bottom:10px">Data is stored in your private GitHub repo. Sign out to clear the access token from this device.</p>
       <button onclick="closeModal();resetToken()" style="font-size:.82rem;padding:6px 14px;border:1px solid var(--border);border-radius:8px;background:white;cursor:pointer">Sign out / change token</button>
     </div>
-    ${S.pinUnlocked ? `<div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
-      <div style="font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:6px">🔒 Private Mode PIN</div>
-      <p style="font-size:.8rem;color:var(--text-3);margin-bottom:10px">PIN protects private categories (gambling, cash).</p>
-      <button onclick="changePinFromSettings()" style="font-size:.82rem;padding:6px 14px;border:1px solid var(--border);border-radius:8px;background:white;cursor:pointer">Change PIN</button>
+    ${currentPerson === 'p1' ? `<div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
+      <div style="font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:6px">🎲 Betting mode</div>
+      <p style="font-size:.8rem;color:var(--text-3);margin-bottom:10px">Reveals the private Gambling category and the betting tracker (tap the month label to open it). Turns off automatically when you leave the app.</p>
+      <button onclick="toggleBettingMode()" style="font-size:.82rem;padding:6px 14px;border:1px solid ${S.pinUnlocked ? 'var(--primary)' : 'var(--border)'};border-radius:8px;background:${S.pinUnlocked ? 'var(--primary)' : 'white'};color:${S.pinUnlocked ? '#fff' : 'var(--text)'};cursor:pointer">${S.pinUnlocked ? '🎲 Betting mode: ON — tap to turn off' : 'Turn on betting mode'}</button>
     </div>` : ''}
     <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
       <div style="font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:6px">💾 Backup &amp; Export</div>
@@ -4359,7 +4275,6 @@ function importSetupXlsx(evt) {
       });
       const parseJson = (v, fallback) => { try { return v ? JSON.parse(v) : fallback; } catch(_) { return fallback; } };
       const settings = { person1: raw.person1 || 'Person 1', person2: raw.person2 || 'Person 2' };
-      if (raw.secretPin) settings.secretPin = String(raw.secretPin);
 
       const d = {
         transactions, budgets, settings,
