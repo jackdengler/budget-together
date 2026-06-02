@@ -677,6 +677,24 @@
     .gs-txn-desc { font-size: calc(13px * var(--z)); font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .gs-txn-amt { font-size: calc(14px * var(--z)); font-weight: 800; align-self: center; grid-row: span 2; }
     .gs-txn-meta { font-size: calc(11px * var(--z)); color: var(--text-3); }
+    /* Native-style PIN pad */
+    .mo-dots { display: flex; justify-content: center; gap: calc(14px * var(--z)); margin: calc(8px * var(--z)) 0 calc(22px * var(--z)); min-height: calc(16px * var(--z)); }
+    .mo-dot { width: calc(13px * var(--z)); height: calc(13px * var(--z)); border-radius: 50%; border: calc(1.5px * var(--z)) solid #c9bdad; box-sizing: border-box; transition: background .12s, transform .12s; }
+    .mo-dot.on { background: var(--primary); border-color: var(--primary); transform: scale(1.08); }
+    .mo-pinpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: calc(16px * var(--z)); max-width: calc(260px * var(--z)); margin: 0 auto; }
+    .mo-key {
+      height: calc(70px * var(--z)); border-radius: 50%;
+      border: none; background: rgba(154,138,120,0.10);
+      font-size: calc(28px * var(--z)); font-weight: 500; color: var(--text);
+      display: flex; align-items: center; justify-content: center;
+      -webkit-tap-highlight-color: transparent; user-select: none; cursor: pointer;
+      transition: background .1s, transform .06s;
+    }
+    .mo-key:active { background: rgba(154,138,120,0.28); transform: scale(0.94); }
+    .mo-key.mo-key-fn { background: transparent; font-size: calc(15px * var(--z)); font-weight: 600; color: #9A8A78; }
+    .mo-key.mo-key-blank { background: transparent; pointer-events: none; }
+    .mo-pin-shake { animation: moShake .4s; }
+    @keyframes moShake { 10%,90%{transform:translateX(-2px)} 20%,80%{transform:translateX(4px)} 30%,50%,70%{transform:translateX(-8px)} 40%,60%{transform:translateX(8px)} }
   </style>
 </head>
 <body>
@@ -1625,34 +1643,75 @@ function moSubmitToken(){
   GH.token=t; moStart();
 }
 
+var moPinValue = '';
+var moPinBusy = false;
+var MO_PIN_MAX = 10;
 function moShowPin(msg){
+  moPinValue = '';
+  moPinBusy = false;
+  var keys = ['1','2','3','4','5','6','7','8','9','','0','del'];
+  var pad = '';
+  for (var i=0;i<keys.length;i++){
+    var k = keys[i];
+    if (k===''){ pad += '<button class="mo-key mo-key-blank" tabindex="-1"></button>'; }
+    else if (k==='del'){ pad += '<button class="mo-key mo-key-fn" onclick="moPinDel()" aria-label="Delete">⌫</button>'; }
+    else { pad += '<button class="mo-key" onclick="moPinPress(\''+k+'\')">'+k+'</button>'; }
+  }
   moStatusHtml(
-    '<div style="text-align:center;max-width:300px;margin:0 auto;padding:24px;width:100%">'
+    '<div style="text-align:center;max-width:320px;margin:0 auto;padding:24px;width:100%">'
     +'<div style="font-size:2.6rem;margin-bottom:6px">💕</div>'
     +'<div style="font-weight:800;font-size:1.2rem;margin-bottom:4px">Budget Together</div>'
-    +'<div style="color:#9A8A78;font-size:.9rem;margin-bottom:18px">Enter your PIN</div>'
-    +'<input id="mo-pin" type="password" inputmode="numeric" maxlength="10" autocomplete="off" placeholder="••••" style="width:100%;padding:13px;font-size:1.25rem;text-align:center;letter-spacing:.3em;border:1.5px solid #e2d9cc;border-radius:12px;outline:none;box-sizing:border-box">'
-    +'<div id="mo-pin-err" style="color:var(--red);font-size:.82rem;min-height:1.1em;margin:9px 0;font-weight:600">'+(msg||'')+'</div>'
-    +'<button id="mo-pin-btn" style="width:100%;padding:13px;background:var(--primary);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700">Unlock</button>'
-    +'<div style="margin-top:12px;font-size:.76rem"><a href="#" onclick="GH.token=\'\';moShowToken(\'\');return false" style="color:#9A8A78">Use a different token</a></div>'
+    +'<div style="color:#9A8A78;font-size:.9rem;margin-bottom:14px">Enter your PIN</div>'
+    +'<div id="mo-dots" class="mo-dots"></div>'
+    +'<div class="mo-pinpad">'+pad+'</div>'
+    +'<div id="mo-pin-err" style="color:var(--red);font-size:.82rem;min-height:1.1em;margin:16px 0 4px;font-weight:600">'+(msg||'')+'</div>'
+    +'<div style="margin-top:6px;font-size:.76rem"><a href="#" onclick="GH.token=\'\';moShowToken(\'\');return false" style="color:#9A8A78">Use a different token</a></div>'
     +'</div>');
-  var inp=document.getElementById('mo-pin'), btn=document.getElementById('mo-pin-btn');
-  btn.addEventListener('click', moSubmitPin);
-  inp.addEventListener('keydown', function(e){ if(e.key==='Enter') moSubmitPin(); });
-  setTimeout(function(){ inp.focus(); }, 60);
+  moPinRenderDots();
 }
-function moSubmitPin(){
-  var inp=document.getElementById('mo-pin'); if(!inp) return;
-  var pin=(inp.value||'').trim();
-  var err=document.getElementById('mo-pin-err');
-  if(pin.length<4){ if(err) err.textContent='Enter your PIN'; return; }
-  var btn=document.getElementById('mo-pin-btn'); if(btn){ btn.disabled=true; btn.textContent='Checking…'; }
-  moHashPin(pin).then(function(h){
+function moPinRenderDots(){
+  var box=document.getElementById('mo-dots'); if(!box) return;
+  var n=Math.max(4, moPinValue.length), h='';
+  for (var i=0;i<n;i++){ h += '<div class="mo-dot'+(i<moPinValue.length?' on':'')+'"></div>'; }
+  box.innerHTML=h;
+}
+function moPinPress(d){
+  if(moPinBusy) return;
+  var err=document.getElementById('mo-pin-err'); if(err) err.textContent='';
+  if(moPinValue.length>=MO_PIN_MAX) return;
+  moPinValue += d;
+  moPinRenderDots();
+  if(moPinValue.length>=4) moPinTryUnlock();
+}
+function moPinDel(){
+  if(moPinBusy) return;
+  var err=document.getElementById('mo-pin-err'); if(err) err.textContent='';
+  moPinValue = moPinValue.slice(0,-1);
+  moPinRenderDots();
+}
+function moPinFail(){
+  moPinBusy=false;
+  var err=document.getElementById('mo-pin-err'); if(err) err.textContent='Incorrect PIN';
+  var box=document.getElementById('mo-dots');
+  if(box){ box.classList.add('mo-pin-shake'); setTimeout(function(){ box.classList.remove('mo-pin-shake'); }, 420); }
+  moPinValue='';
+  moPinRenderDots();
+}
+// Verify as the PIN is typed (no keyboard, like iOS). A match unlocks instantly;
+// reaching the max length without a match counts as a failed attempt.
+function moPinTryUnlock(){
+  var attempt = moPinValue;
+  moHashPin(attempt).then(function(h){
+    if(attempt!==moPinValue) return;            // value changed (delete/new digit) — ignore stale result
     var a=(moPending&&moPending._auth)||{};
     var person=(a.p1&&h===a.p1)?'p1':(a.p2&&h===a.p2)?'p2':'';
-    if(!person){ if(btn){btn.disabled=false;btn.textContent='Unlock';} if(err) err.textContent='Incorrect PIN'; inp.value=''; inp.focus(); return; }
-    try { sessionStorage.setItem('bt_person', person); } catch(e){}
-    moApply(moPending);
+    if(person){
+      moPinBusy=true;
+      try { sessionStorage.setItem('bt_person', person); } catch(e){}
+      moApply(moPending);
+    } else if(moPinValue.length>=MO_PIN_MAX){
+      moPinFail();
+    }
   });
 }
 
