@@ -431,6 +431,33 @@
       min-height: calc(1.2em);
       margin-top: calc(8px * var(--z));
     }
+    .ct-bet {
+      border-top: 1px solid var(--line, rgba(0,0,0,0.08));
+      margin-top: calc(8px * var(--z));
+      padding-top: calc(10px * var(--z));
+    }
+    .ct-bet-title {
+      font-size: calc(13px * var(--z));
+      font-weight: 800;
+      color: var(--text);
+    }
+    .ct-bet-sub {
+      font-size: calc(11px * var(--z));
+      color: var(--text-2);
+      margin: calc(2px * var(--z)) 0 calc(8px * var(--z));
+    }
+    .ct-bet-btn {
+      width: 100%;
+      padding: calc(9px * var(--z));
+      border: 1px solid var(--primary);
+      border-radius: calc(9px * var(--z));
+      background: #fff;
+      color: var(--primary);
+      font-size: calc(12px * var(--z));
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .ct-bet-btn.on { background: var(--primary); color: #fff; }
     /* Data review rows (read-only transaction list) */
     .dt-date {
       font-size: calc(11px * var(--z));
@@ -640,6 +667,7 @@ var CATS = {
   utilities:   {icon:'bi-lightning',        color:'#84cc16', label:'Utilities'},
   travel:      {icon:'bi-airplane',         color:'#0284c7', label:'Travel'},
   skiing:      {icon:'bi-snow',             color:'#38bdf8', label:'Skiing'},
+  annual:      {icon:'bi-calendar-event',   color:'#d946ef', label:'Annual'},
   investing:   {icon:'bi-graph-up-arrow',   color:'#16a34a', label:'Investments'},
   income:      {icon:'bi-wallet2',          color:'#22c55e', label:'Income'},
   insurance:   {icon:'bi-shield',           color:'#0ea5e9', label:'Insurance'},
@@ -668,8 +696,14 @@ function incType(id, desc){
 }
 
 var HIDDEN_CATS = {gambling:1, cash:1};
+// Betting mode (session-only): when on, the hidden gambling/cash categories
+// become visible. Only Person 1 (Jack) can turn it on — see isJack() / the
+// toggle in the category settings sheet. Never persisted; auto-locks on blur.
+var bettingMode = false;
+function isJack(){ try { return sessionStorage.getItem('bt_person') === 'p1'; } catch(e){ return false; } }
+function isHiddenCat(cat){ return !!HIDDEN_CATS[cat] && !bettingMode; }
 function isIgnored(cat){
-  if (HIDDEN_CATS[cat]) return true;
+  if (isHiddenCat(cat)) return true;
   var list = [{id:'insurance',ignored:true},{id:'transfer',ignored:true},{id:'investing',ignored:true}].concat(D.customCategories||[]);
   var f = list.find(function(c){return c.id===cat;});
   return f ? !!f.ignored : false;
@@ -684,11 +718,66 @@ function isFixedCat(cat){
   return catType(cat) === 'fixed';
 }
 
-function getCatSplitAmts(catId, amt) {
-  var splits = D.catSplits || {};
-  var ratio = splits[catId] != null ? parseFloat(splits[catId]) : 0.5;
-  if (isNaN(ratio)) ratio = 0.5;
-  return {p1Share: amt * ratio, p2Share: amt * (1 - ratio)};
+// catSplits values are objects written by the web app: { mode:'pct'|'dollar',
+// p1Pct, p1Amt }. (Older data may store a bare ratio number.) Mirror the web's
+// getCatSplitAmts so mobile honors the configured split instead of always 50/50.
+function getCatSplitAmts(catId, total) {
+  var s = (D.catSplits || {})[catId];
+  // Legacy format: a bare numeric ratio (p1's fraction).
+  if (typeof s === 'number') {
+    var r = isNaN(s) ? 0.5 : s;
+    return { p1Share: total * r, p2Share: total * (1 - r) };
+  }
+  s = s || {};
+  var mode = s.mode || 'pct';
+  if (mode === 'dollar') {
+    var p1 = Math.min(Math.max(s.p1Amt || 0, 0), total);
+    return { p1Share: p1, p2Share: total - p1 };
+  }
+  var pct = (mode === 'pct' || mode === 'even') ? (s.p1Pct != null ? s.p1Pct : 50) : 50;
+  return { p1Share: total * pct / 100, p2Share: total * (1 - pct / 100) };
+}
+// Split shared expenses into each person's share, keyed by category.
+//  • Settled transactions are frozen at their settledSplit (per transaction).
+//  • Unsettled transactions follow the live category split, applied PER MONTH so
+//    fixed-dollar splits apply once per month — not once across a multi-month range.
+function splitSharedByCat(sharedTxns) {
+  var p1 = {}, p2 = {}, liveByMoCat = {};
+  for (var i=0; i<sharedTxns.length; i++) {
+    var t = sharedTxns[i];
+    if (t.settled && t.settledSplit != null) {
+      var s = t.amount * t.settledSplit;
+      p1[t.category] = (p1[t.category]||0) + s;
+      p2[t.category] = (p2[t.category]||0) + (t.amount - s);
+    } else {
+      var key = t.date.slice(0,7) + '|' + t.category;
+      liveByMoCat[key] = (liveByMoCat[key]||0) + t.amount;
+    }
+  }
+  for (var k in liveByMoCat) {
+    var cid = k.slice(k.indexOf('|')+1);
+    var sh = getCatSplitAmts(cid, liveByMoCat[k]);
+    p1[cid] = (p1[cid]||0) + sh.p1Share;
+    p2[cid] = (p2[cid]||0) + sh.p2Share;
+  }
+  return { p1: p1, p2: p2 };
+}
+// p1/p2 share of a single shared transaction. Settled transactions are frozen
+// at the split that applied when they were settled (settledSplit = p1 fraction
+// 0..1); unsettled transactions follow the live category split.
+function txSplitAmts(t) {
+  if (t.settled && t.settledSplit != null) {
+    var p1 = t.amount * t.settledSplit;
+    return {p1Share: p1, p2Share: t.amount - p1};
+  }
+  return getCatSplitAmts(t.category, t.amount);
+}
+// Total p1/p2 shares across a list of shared transactions (see splitSharedByCat).
+function sumSplitShares(txns) {
+  var r = splitSharedByCat(txns), p1 = 0, p2 = 0;
+  for (var c1 in r.p1) p1 += r.p1[c1];
+  for (var c2 in r.p2) p2 += r.p2[c2];
+  return {p1Share: p1, p2Share: p2};
 }
 
 function compute(who, months){
@@ -704,23 +793,26 @@ function compute(who, months){
 
   if (who !== 'all') {
     // For person-specific, include solo + their share of shared
-    var personExp = exp.filter(function(t){ return t.person===who || t.shared; });
     var personInc = inc.filter(function(t){ return t.person===who; });
 
     var spend = 0, fixed = 0, annual = 0;
-    for (var i=0; i<personExp.length; i++){
-      var t = personExp[i];
-      var amt;
-      if (t.shared) {
-        var shares = getCatSplitAmts(t.category, t.amount);
-        amt = who === 'p1' ? shares.p1Share : shares.p2Share;
-      } else {
-        amt = t.amount;
-      }
-      spend += amt;
+    // Solo expenses — 100% to this person
+    for (var i=0; i<exp.length; i++){
+      var t = exp[i];
+      if (t.shared || t.person !== who) continue;
+      spend += t.amount;
       var ty = catType(t.category);
-      if (ty === 'fixed') fixed += amt;
-      else if (ty === 'annual') annual += amt;
+      if (ty === 'fixed') fixed += t.amount;
+      else if (ty === 'annual') annual += t.amount;
+    }
+    // Shared expenses — this person's per-month split share
+    var shareByCat = splitSharedByCat(exp.filter(function(t){ return t.shared; }))[who];
+    for (var cid in shareByCat){
+      var amt = shareByCat[cid];
+      spend += amt;
+      var tyc = catType(cid);
+      if (tyc === 'fixed') fixed += amt;
+      else if (tyc === 'annual') annual += amt;
     }
 
     var totalInc = 0, ret = 0, fam = 0;
@@ -756,7 +848,7 @@ function compute(who, months){
 function ringCard(title, titleColor, d, avg) {
   var normalInc = d.inc - (d.ret||0) - (d.fam||0);
   var saved = d.inc - d.spend;
-  var sRate = normalInc > 0 ? Math.round(saved / normalInc * 100) : 0;
+  var sRate = d.inc > 0 ? Math.round(saved / d.inc * 100) : 0;
   var isLoss = saved < 0;
   var ringColor = isLoss ? 'var(--red)' : 'var(--green)';
   var ringColorRaw = isLoss ? '#A84A2A' : '#3A6A3A';
@@ -816,17 +908,17 @@ function categoryCard(months, div, avg) {
 
   // Per-person breakdown for split bars
   var p1ByCat = {}, p2ByCat = {};
+  // Solo expenses — 100% to the payer
   for (var i=0; i<exp.length; i++){
     var t = exp[i];
-    if (t.shared) {
-      var shares = getCatSplitAmts(t.category, t.amount);
-      p1ByCat[t.category] = (p1ByCat[t.category]||0) + shares.p1Share;
-      p2ByCat[t.category] = (p2ByCat[t.category]||0) + shares.p2Share;
-    } else {
-      if (t.person==='p1') p1ByCat[t.category] = (p1ByCat[t.category]||0) + t.amount;
-      else p2ByCat[t.category] = (p2ByCat[t.category]||0) + t.amount;
-    }
+    if (t.shared) continue;
+    if (t.person==='p1') p1ByCat[t.category] = (p1ByCat[t.category]||0) + t.amount;
+    else p2ByCat[t.category] = (p2ByCat[t.category]||0) + t.amount;
   }
+  // Shared expenses — per-month split shares
+  var sharedShares = splitSharedByCat(exp.filter(function(t){ return t.shared; }));
+  for (var c1 in sharedShares.p1) p1ByCat[c1] = (p1ByCat[c1]||0) + sharedShares.p1[c1];
+  for (var c2 in sharedShares.p2) p2ByCat[c2] = (p2ByCat[c2]||0) + sharedShares.p2[c2];
 
   var MAX_ROWS = 7;
   var visible = catArr.slice(0, MAX_ROWS);
@@ -884,16 +976,10 @@ function spendingHistoryCard(periodMonths) {
         else p2solo += exp[j].amount;
       }
     }
-    var sharedByCat = {};
-    for (var j=0; j<exp.length; j++){
-      if (exp[j].shared) sharedByCat[exp[j].category] = (sharedByCat[exp[j].category]||0) + exp[j].amount;
-    }
-    var p1shared = 0, p2shared = 0;
-    var catKeys = Object.keys(sharedByCat);
-    for (var k=0; k<catKeys.length; k++){
-      var shares = getCatSplitAmts(catKeys[k], sharedByCat[catKeys[k]]);
-      p1shared += shares.p1Share; p2shared += shares.p2Share;
-    }
+    var sharedTxns = [];
+    for (var j=0; j<exp.length; j++){ if (exp[j].shared) sharedTxns.push(exp[j]); }
+    var shr = sumSplitShares(sharedTxns);
+    var p1shared = shr.p1Share, p2shared = shr.p2Share;
     var p1total = p1solo + p1shared;
     var p2total = p2solo + p2shared;
     monthData.push({mo:mo, total:p1total+p2total, p1total:p1total, p2total:p2total});
@@ -1015,7 +1101,7 @@ function spendableCats(){
   for (var i=0;i<ids.length;i++){
     var id = ids[i];
     if (seen[id]) continue; seen[id] = 1;
-    if (id==='income' || HIDDEN_CATS[id] || isIgnored(id)) continue;
+    if (id==='income' || isHiddenCat(id) || isIgnored(id)) continue;
     out.push(id);
   }
   return out;
@@ -1039,13 +1125,35 @@ function refreshCatTypeSheet(note){
     }
     rows += '<div class="ct-row"><span class="ct-name"><i class="bi '+c.icon+'" style="color:'+c.color+'"></i>'+esc(c.label)+'</span><div class="ct-seg">'+seg+'</div></div>';
   }
+  // Betting-mode toggle — only Person 1 (Jack) ever sees this; Person 2 never
+  // knows it exists. Reveals the hidden gambling/cash categories for this session.
+  var betSection = '';
+  if (isJack()){
+    betSection = '<div class="ct-bet">'
+      +'<div class="ct-bet-title">🎲 Betting mode</div>'
+      +'<div class="ct-bet-sub">Reveals the private Gambling category. Turns off when you leave the app.</div>'
+      +'<button class="ct-bet-btn'+(bettingMode?' on':'')+'" onclick="toggleBettingModeMobile()">'
+      +(bettingMode?'Betting mode: ON — tap to turn off':'Turn on betting mode')+'</button>'
+      +'</div>';
+  }
   b.innerHTML='<div class="sheet">'
     +'<div class="sheet-title">Category Types</div>'
     +'<div class="ct-list">'+rows+'</div>'
+    +betSection
     +'<div class="ct-save-note">'+(note||'')+'</div>'
     +'<button class="sheet-done" onclick="closeSheet()">Done</button>'
     +'</div>';
 }
+function toggleBettingModeMobile(){
+  if (!isJack()) return;
+  bettingMode = !bettingMode;
+  render();
+  refreshCatTypeSheet('');
+}
+// Session-only: auto-lock betting mode when the app is backgrounded.
+document.addEventListener('visibilitychange', function(){
+  if (document.hidden && bettingMode){ bettingMode = false; try { render(); } catch(e){} }
+});
 function setCatTypeMobile(catId, type){
   if (CAT_TYPES.indexOf(type) < 0) return;
   if (!D.catTypes) D.catTypes = {};
@@ -1077,7 +1185,7 @@ function renderDataSheet(){
   for (var i=0;i<months.length;i++) msSet[months[i]]=1;
   // Same visibility rules the dashboard uses: drop hidden/ignored cats, but
   // show income and excluded rows here so the data can be fully reviewed.
-  var txns=(D.transactions||[]).filter(function(t){ return t.date && msSet[t.date.slice(0,7)] && !HIDDEN_CATS[t.category]; });
+  var txns=(D.transactions||[]).filter(function(t){ return t.date && msSet[t.date.slice(0,7)] && !isHiddenCat(t.category); });
   txns.sort(function(a,b){ return (b.date||'').localeCompare(a.date||'') || (b.id||'').toString().localeCompare((a.id||'').toString()); });
 
   // Group by date for section headers
@@ -1101,7 +1209,7 @@ function renderDataSheet(){
       var payerLabel=t.person==='p1'?esc(n1):esc(n2), payerColor=t.person==='p1'?'var(--p1)':'var(--p2)';
       var split='';
       if (t.shared && t.amount>0){
-        var sh=getCatSplitAmts(t.category, t.amount);
+        var sh=txSplitAmts(t);
         split=' · <span style="color:var(--p1)">'+fc0(sh.p1Share)+'</span>/<span style="color:var(--p2)">'+fc0(sh.p2Share)+'</span>';
       }
       var meta='<span style="color:'+payerColor+';font-weight:700">'+payerLabel+'</span>'

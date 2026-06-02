@@ -367,6 +367,8 @@
     .scc-mode.active{background:white;color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,0.08)}
     .scc-custom{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;margin-bottom:10px;flex-wrap:wrap}
     .scc-input{width:64px;padding:6px 8px;border:none;border-radius:10px;font-size:14px;font-weight:600;text-align:center;background:rgba(0,0,0,0.04);font-family:var(--font-stack)}
+    .scc-settle{width:100%;margin-top:12px;padding:9px 0;font-size:13px;font-weight:700;border:none;border-radius:10px;background:linear-gradient(135deg,var(--ios-green),#2EC46A);color:white;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:filter 0.2s var(--ease-out);letter-spacing:-0.01em}
+    .scc-settle:hover{filter:brightness(1.05)}
     .split-track{display:flex;border-radius:20px;overflow:hidden;height:32px;width:100%}
     .split-track-seg{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:rgba(255,255,255,.95);transition:width .4s var(--ease-out);overflow:hidden;white-space:nowrap;padding:0 10px;letter-spacing:0.02em}
     .scc-amts{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;margin-top:14px;font-size:14px;font-weight:600}
@@ -843,6 +845,7 @@ const BASE_CATS = [
   {id:'utilities', label:'Utilities',    icon:'bi-lightning',    color:'#84cc16'},
   {id:'travel',    label:'Travel',       icon:'bi-airplane',     color:'#0284c7'},
   {id:'skiing',    label:'Skiing',       icon:'bi-snow',         color:'#38bdf8'},
+  {id:'annual',    label:'Annual',       icon:'bi-calendar-event', color:'#d946ef'},
   {id:'investing', label:'Investments',  icon:'bi-graph-up-arrow', color:'#16a34a', ignored:true},
   {id:'income',    label:'Income',       icon:'bi-wallet2',      color:'#22c55e'},
   {id:'insurance', label:'Insurance',    icon:'bi-shield',       color:'#0ea5e9', ignored:true},
@@ -1350,44 +1353,22 @@ function unlinkPerson(person) {
 // ── Build info (injected by deploy workflow) ───────────────
 const BUILD_TIMESTAMP = '__BUILD_TIMESTAMP__';
 
-// ── PIN / Private Mode ──────────────────────────────────────
-// Access: key sequence left-right-left-right-a-b-a-b (like a cheat code)
-const _secretSeq = ['ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','a','b','a','b'];
-let _secretBuf = [];
-document.addEventListener('keydown', e => {
-  _secretBuf.push(e.key);
-  if (_secretBuf.length > _secretSeq.length) _secretBuf.shift();
-  if (_secretBuf.length === _secretSeq.length && _secretBuf.every((k,i) => k === _secretSeq[i])) {
-    _secretBuf = [];
-    showPinModal();
-  }
-});
-let _lpTimer = null;
-let _lpFired = false;
+// ── Betting Mode ────────────────────────────────────────────
+// A private view that reveals the hidden gambling/cash categories and the
+// betting tracker. Only Person 1 (Jack) can turn it on — the toggle lives in
+// Settings and never renders for Person 2. Session-only: it auto-locks when
+// the app loses focus, and nothing about it is ever persisted.
 let _lpInited = false;
 function _initLongPress() {
   if (_lpInited) return;
   _lpInited = true;
   const el = document.getElementById('logo-el');
-  if (!el) return;
-  const start = () => {
-    _lpFired = false;
-    _lpTimer = setTimeout(() => { _lpTimer = null; _lpFired = true; showPinModal(); }, 600);
-  };
-  const cancel = () => { clearTimeout(_lpTimer); _lpTimer = null; };
-  // Desktop only – no touch events so mobile cannot trigger private mode
-  el.addEventListener('mousedown',   start);
-  el.addEventListener('mouseup',     cancel);
-  el.addEventListener('mouseleave',  cancel);
-  el.addEventListener('contextmenu', e => e.preventDefault());
+  if (el) {
+    // Short tap → briefly show deploy info
+    el.addEventListener('click', () => showBuildInfo(el));
+  }
 
-  // Short tap → briefly show deploy info
-  el.addEventListener('click', () => {
-    if (_lpFired) return;            // long-press already handled
-    showBuildInfo(el);
-  });
-
-  // Tap the month label to open gambling tracker (only works when PIN is unlocked)
+  // Tap the month label to open the betting tracker (only when betting mode is on)
   const moEl = document.getElementById('mo-label');
   if (moEl) moEl.addEventListener('click', () => { if (S.pinUnlocked) showGamblingModal(); });
 
@@ -1423,78 +1404,16 @@ function showBuildInfo(el) {
   }, 5000);
 }
 
-function showPinModal() {
-  const hasPin = (S.settings.secretPin || '').trim();
-  if (S.pinUnlocked) {
-    S.pinUnlocked = false;
-    renderIdentityBadge();
-    render();
-    toast('Private mode locked');
-    return;
-  }
-  if (!hasPin) {
-    showModal(`<div class="modal">
-      <h2>🔒 Set Private PIN</h2>
-      <p style="font-size:.84rem;color:var(--text-2);margin-bottom:16px">Set a PIN to unlock your private categories (gambling, cash). These are hidden by default.</p>
-      <div class="form-row"><label>New PIN</label><input id="pin-new" type="password" inputmode="numeric" maxlength="8" class="form-input" placeholder="4–6 digits" autofocus></div>
-      <div class="form-row"><label>Confirm PIN</label><input id="pin-confirm" type="password" inputmode="numeric" maxlength="8" class="form-input" placeholder="Re-enter PIN"></div>
-      <div class="modal-actions">
-        <button class="btn-sec" onclick="closeModal()">Cancel</button>
-        <button class="btn-sec" style="background:var(--primary);color:white;border-color:var(--primary)" onclick="savePinSetup()">Save PIN</button>
-      </div>
-    </div>`);
-  } else {
-    showModal(`<div class="modal">
-      <h2>🔒 Private Mode</h2>
-      <div class="form-row" style="margin-bottom:4px"><label>PIN</label><input id="pin-entry" type="password" inputmode="numeric" maxlength="8" class="form-input" placeholder="Enter PIN" autofocus onkeydown="if(event.key==='Enter')checkPin()"></div>
-      <div class="modal-actions">
-        <button class="btn-sec" onclick="closeModal()">Cancel</button>
-        <button class="btn-sec" style="background:var(--primary);color:white;border-color:var(--primary)" onclick="checkPin()">Unlock</button>
-      </div>
-    </div>`);
-  }
-}
-
-function savePinSetup() {
-  const pin = ($('pin-new').value || '').trim();
-  const confirm = ($('pin-confirm').value || '').trim();
-  if (pin.length < 4) { toast('PIN must be at least 4 digits'); return; }
-  if (pin !== confirm) { toast('PINs do not match'); return; }
-  S.settings.secretPin = pin;
-  S.pinUnlocked = true;
-  schedSave();
-  closeModal();
+// Turn betting mode on/off. Gated to Person 1 (Jack) — the toggle that calls
+// this only renders for p1, and this guard makes sure nobody else can flip it.
+// State lives only in S.pinUnlocked (session memory), never persisted.
+function toggleBettingMode() {
+  if (currentPerson !== 'p1') return;
+  S.pinUnlocked = !S.pinUnlocked;
   renderIdentityBadge();
   render();
-  toast('PIN set! Private mode unlocked 🔓');
-}
-
-function checkPin() {
-  const entered = ($('pin-entry').value || '').trim();
-  if (entered === (S.settings.secretPin || '')) {
-    S.pinUnlocked = true;
-    closeModal();
-    renderIdentityBadge();
-    render();
-    toast('Private mode unlocked 🔓');
-  } else {
-    toast('Wrong PIN');
-    $('pin-entry').value = '';
-    $('pin-entry').focus();
-  }
-}
-
-function changePinFromSettings() {
-  closeModal();
-  showModal(`<div class="modal">
-    <h2>🔒 Change PIN</h2>
-    <div class="form-row"><label>New PIN</label><input id="pin-new" type="password" inputmode="numeric" maxlength="8" class="form-input" placeholder="4–6 digits" autofocus></div>
-    <div class="form-row"><label>Confirm PIN</label><input id="pin-confirm" type="password" inputmode="numeric" maxlength="8" class="form-input" placeholder="Re-enter PIN"></div>
-    <div class="modal-actions">
-      <button class="btn-sec" onclick="showSettings()">Back</button>
-      <button class="btn-sec" style="background:var(--primary);color:white;border-color:var(--primary)" onclick="savePinSetup()">Save PIN</button>
-    </div>
-  </div>`);
+  showSettings();   // refresh the Settings panel so the toggle reflects new state
+  toast(S.pinUnlocked ? 'Betting mode on 🎲' : 'Betting mode off');
 }
 
 // ── Render ─────────────────────────────────────────────────
@@ -1554,13 +1473,7 @@ function renderSpendingHistory() {
     // Jack solo + Jack's share of shared
     const p1solo = exp.filter(t => t.person==='p1' && !t.shared).reduce((s,t) => s+t.amount, 0);
     const p2solo = exp.filter(t => t.person==='p2' && !t.shared).reduce((s,t) => s+t.amount, 0);
-    const sharedByCat = {};
-    for (const t of exp.filter(t => t.shared)) sharedByCat[t.category] = (sharedByCat[t.category]||0) + t.amount;
-    let p1shared = 0, p2shared = 0;
-    for (const [cid, amt] of Object.entries(sharedByCat)) {
-      const {p1Share, p2Share} = getCatSplitAmts(cid, amt);
-      p1shared += p1Share; p2shared += p2Share;
-    }
+    const { p1Share: p1shared, p2Share: p2shared } = sumSplitShares(exp.filter(t => t.shared));
     const p1total = p1solo + p1shared;
     const p2total = p2solo + p2shared;
     const total = p1total + p2total;
@@ -1603,10 +1516,10 @@ function renderOverview() {
   const p2sp  = exp.filter(t => t.person==='p2' && !t.shared).reduce((s,t) => s+t.amount, 0);
   const sharedTxns = exp.filter(t => t.shared);
   const shared = sharedTxns.reduce((s,t) => s+t.amount, 0);
-  const sharedByCat = {};
-  for (const t of sharedTxns) sharedByCat[t.category] = (sharedByCat[t.category]||0) + t.amount;
-  let sharedP1 = 0, sharedP2 = 0;
-  for (const [catId, amt] of Object.entries(sharedByCat)) { const {p1Share, p2Share} = getCatSplitAmts(catId, amt); sharedP1 += p1Share; sharedP2 += p2Share; }
+  // Per-category, per-month split (settled items frozen) — see splitSharedByCat.
+  const { p1: sharedP1ByCat, p2: sharedP2ByCat } = splitSharedByCat(sharedTxns);
+  const sharedP1 = Object.values(sharedP1ByCat).reduce((s,v) => s+v, 0);
+  const sharedP2 = Object.values(sharedP2ByCat).reduce((s,v) => s+v, 0);
   // income: visible-only so viewer can't back-calculate hidden spending via net savings
   const visInc = txns.filter(t => t.amount < 0 && !getCat(t.category).ignored && !t.excluded && isVisible(t));
   const totalInc = visInc.reduce((s,t) => s + Math.abs(t.amount), 0);
@@ -1636,7 +1549,7 @@ function renderOverview() {
     const spend     = solo + sharedAmt;
     const normalInc = inc - ret - fam;   // post-tax take-home (excludes retirement + family)
     const tSaved    = inc - spend;       // total income minus total expenses
-    const sRate     = normalInc > 0 ? Math.round(tSaved / normalInc * 100) : 0;
+    const sRate     = inc > 0 ? Math.round(tSaved / inc * 100) : 0;
     const isDeficit = tSaved < 0;
     const useRet = ret > 0, useFam = fam > 0;
 
@@ -1724,18 +1637,15 @@ function renderOverview() {
   const noExpMsg = isMulti ? 'No expenses in this range' : 'No expenses this month';
   // Per-person per-category for split bars — post-settle shares
   const p1ByCat = {}, p2ByCat = {};
+  // Solo expenses — 100% to the person who paid
   for (const t of exp) {
-    if (t.shared) {
-      // Use catSplit ratios to determine each person's share
-      const {p1Share, p2Share} = getCatSplitAmts(t.category, t.amount);
-      p1ByCat[t.category] = (p1ByCat[t.category]||0) + p1Share;
-      p2ByCat[t.category] = (p2ByCat[t.category]||0) + p2Share;
-    } else {
-      // Solo expense — 100% to the person who paid
-      if (t.person==='p1') p1ByCat[t.category] = (p1ByCat[t.category]||0) + t.amount;
-      else p2ByCat[t.category] = (p2ByCat[t.category]||0) + t.amount;
-    }
+    if (t.shared) continue;
+    if (t.person==='p1') p1ByCat[t.category] = (p1ByCat[t.category]||0) + t.amount;
+    else p2ByCat[t.category] = (p2ByCat[t.category]||0) + t.amount;
   }
+  // Shared expenses — per-month split shares computed above
+  for (const [cid, amt] of Object.entries(sharedP1ByCat)) p1ByCat[cid] = (p1ByCat[cid]||0) + amt;
+  for (const [cid, amt] of Object.entries(sharedP2ByCat)) p2ByCat[cid] = (p2ByCat[cid]||0) + amt;
   const catTotal = catArr.reduce((s,[,v])=>s+v, 0);
   // Limit to 6 visible rows; combine remainder into "All Other"
   const MAX_CAT_ROWS = 7;
@@ -1890,16 +1800,11 @@ function renderOverview() {
       for (const t of exp) if (t.person===person && !t.shared) b[catType(t.category)] += t.amount;
       return b;
     };
-    // Each person's settled share of shared expenses, by type.
+    // Each person's settled share of shared expenses, by type (per-month split).
     const sharedShareByType = () => {
-      const byCat = {};
-      for (const t of sharedTxns) byCat[t.category] = (byCat[t.category]||0) + t.amount;
       const p1 = { fixed: 0, variable: 0, annual: 0 }, p2 = { fixed: 0, variable: 0, annual: 0 };
-      for (const [cid, amt] of Object.entries(byCat)) {
-        const { p1Share, p2Share } = getCatSplitAmts(cid, amt);
-        const ty = catType(cid);
-        p1[ty] += p1Share; p2[ty] += p2Share;
-      }
+      for (const [cid, amt] of Object.entries(sharedP1ByCat)) p1[catType(cid)] += amt;
+      for (const [cid, amt] of Object.entries(sharedP2ByCat)) p2[catType(cid)] += amt;
       return { p1, p2 };
     };
     const allByType = { fixed: 0, variable: 0, annual: 0 };
@@ -1929,7 +1834,7 @@ function renderOverview() {
       fam = fam || 0;
       const normalInc = inc - (ret||0) - fam;
       const tSaved = inc - spend;
-      const sRate = normalInc > 0 ? Math.round(tSaved / normalInc * 100) : 0;
+      const sRate = inc > 0 ? Math.round(tSaved / inc * 100) : 0;
       const isDeficit = tSaved < 0;
       // Token-based colors (accessible contrast on white)
       const ringColor = isDeficit ? 'var(--color-deficit)' : sRate >= 20 ? 'var(--color-saved-pos)' : 'var(--color-amber)';
@@ -2109,14 +2014,10 @@ ${dots}`;
     for (const t of exp) if (t.person===person && !t.shared) b[catType(t.category)] += t.amount;
     return b;
   };
-  const dSharedByCat = {};
-  for (const t of sharedTxns) dSharedByCat[t.category] = (dSharedByCat[t.category]||0) + t.amount;
+  // Per-category, per-month split shares bucketed by category type.
   const dSharedP1 = { fixed: 0, variable: 0, annual: 0 }, dSharedP2 = { fixed: 0, variable: 0, annual: 0 };
-  for (const [cid, amt] of Object.entries(dSharedByCat)) {
-    const { p1Share, p2Share } = getCatSplitAmts(cid, amt);
-    const ty = catType(cid);
-    dSharedP1[ty] += p1Share; dSharedP2[ty] += p2Share;
-  }
+  for (const [cid, amt] of Object.entries(sharedP1ByCat)) dSharedP1[catType(cid)] += amt;
+  for (const [cid, amt] of Object.entries(sharedP2ByCat)) dSharedP2[catType(cid)] += amt;
   const dAllByType = { fixed: 0, variable: 0, annual: 0 };
   for (const t of exp) dAllByType[catType(t.category)] += t.amount;
   const dFixedTotal = scaleNum(dAllByType.fixed);
@@ -2136,7 +2037,7 @@ ${dots}`;
     fam = fam || 0; ret = ret || 0;
     const normalInc = inc - ret - fam;
     const saved = inc - spend;
-    const sRate = normalInc > 0 ? Math.round(saved / normalInc * 100) : 0;
+    const sRate = inc > 0 ? Math.round(saved / inc * 100) : 0;
     const isLoss = saved < 0;
     const ringColor = isLoss ? 'var(--red)' : 'var(--green)';
     const ringColorRaw = isLoss ? '#A84A2A' : '#3A6A3A'; // SVG needs raw hex
@@ -2260,7 +2161,7 @@ function renderTxns() {
     // Post-split amounts
     let p1Owes = 0, p2Owes = 0;
     if (t.shared) {
-      const {p1Share, p2Share} = getCatSplitAmts(t.category, t.amount);
+      const {p1Share, p2Share} = txSplitAmts(t);
       p1Owes = p1Share; p2Owes = p2Share;
     } else {
       if (t.person === 'p1') p1Owes = t.amount; else p2Owes = t.amount;
@@ -2327,7 +2228,7 @@ function renderTxns() {
         // Post-split amounts for mobile
         let splitInfo = '';
         if (t.shared && t.amount > 0) {
-          const {p1Share, p2Share} = getCatSplitAmts(t.category, t.amount);
+          const {p1Share, p2Share} = txSplitAmts(t);
           splitInfo = `<span style="font-size:.7rem;color:var(--text-3)">· <span style="color:var(--p1)">${fc0(p1Share)}</span>/<span style="color:var(--p2)">${fc0(p2Share)}</span></span>`;
         }
         return `<div class="txn-card ${_ownerCls}${t.excluded?' excluded':''}" style="--i:${_staggerIdx}" onclick="showTxnEditModal('${t.id}')">
@@ -2422,6 +2323,68 @@ function getCatSplitAmts(catId, total) {
   }
   const pct = (mode === 'pct' || mode === 'even') ? (s.p1Pct ?? 50) : 50;
   return { p1Share: total * pct / 100, p2Share: total * (1 - pct / 100), p1Pct: pct };
+}
+// p1/p2 share of a single shared transaction. Settled transactions are frozen
+// at the split that applied when they were settled (settledSplit = p1 fraction
+// 0..1); unsettled transactions follow the live category split.
+function txSplitAmts(t) {
+  if (t.settled && t.settledSplit != null) {
+    const p1 = t.amount * t.settledSplit;
+    return { p1Share: p1, p2Share: t.amount - p1, p1Pct: Math.round(t.settledSplit * 100) };
+  }
+  return getCatSplitAmts(t.category, t.amount);
+}
+// Split a set of shared expenses into each person's share, keyed by category.
+//  • Settled transactions are frozen at their settledSplit (per transaction).
+//  • Unsettled transactions follow the live category split, applied PER MONTH so
+//    fixed-dollar splits ("p1 pays $X of utilities") apply once per month — not
+//    once across a multi-month range. Percentage splits are linear, so per-month
+//    equals aggregate for them. Returns { p1:{catId:amt}, p2:{catId:amt} }.
+function splitSharedByCat(sharedTxns) {
+  const p1 = {}, p2 = {};
+  const liveByMoCat = {}; // 'YYYY-MM|catId' -> summed unsettled amount
+  for (const t of sharedTxns) {
+    if (t.settled && t.settledSplit != null) {
+      const s = t.amount * t.settledSplit;
+      p1[t.category] = (p1[t.category]||0) + s;
+      p2[t.category] = (p2[t.category]||0) + (t.amount - s);
+    } else {
+      const key = t.date.slice(0,7) + '|' + t.category;
+      liveByMoCat[key] = (liveByMoCat[key]||0) + t.amount;
+    }
+  }
+  for (const [key, amt] of Object.entries(liveByMoCat)) {
+    const cid = key.slice(key.indexOf('|')+1);
+    const { p1Share, p2Share } = getCatSplitAmts(cid, amt);
+    p1[cid] = (p1[cid]||0) + p1Share;
+    p2[cid] = (p2[cid]||0) + p2Share;
+  }
+  return { p1, p2 };
+}
+// Total p1/p2 shares across a list of shared transactions (see splitSharedByCat).
+function sumSplitShares(txns) {
+  const { p1, p2 } = splitSharedByCat(txns);
+  return {
+    p1Share: Object.values(p1).reduce((s,v) => s+v, 0),
+    p2Share: Object.values(p2).reduce((s,v) => s+v, 0),
+  };
+}
+// Freeze legacy settled transactions (settled before snapshots existed) at the
+// category's current effective split so future split edits never move them.
+function migrateSettledSplits() {
+  const byCat = {};
+  for (const t of S.transactions) {
+    if (t.shared && t.settled && t.amount > 0 && t.settledSplit == null) {
+      (byCat[t.category] = byCat[t.category] || []).push(t);
+    }
+  }
+  let changed = 0;
+  for (const [cid, ts] of Object.entries(byCat)) {
+    const total = ts.reduce((s, t) => s + t.amount, 0);
+    const frac = (getCatSplitAmts(cid, total).p1Pct ?? 50) / 100;
+    ts.forEach(t => { t.settledSplit = frac; changed++; });
+  }
+  return changed;
 }
 function calcSplit() {
   const active = S.transactions.filter(t => t.shared && !t.settled && t.amount>0 && !getCat(t.category).ignored && !t.excluded);
@@ -2524,6 +2487,7 @@ function renderSplit() {
         </tbody>
       </table>
       <div style="text-align:center;font-size:.82rem;font-weight:600;margin-top:4px">${netLabel}</div>
+      <button class="scc-settle" onclick="settleCategory('${catId}')">Settle ${esc(cat.label)} ✓</button>
     </div>`;
   }).join('');
 
@@ -3027,25 +2991,47 @@ function settleUp() {
 }
 function confirmSettle() {
   const today = new Date().toISOString().slice(0,10);
-  S.transactions.forEach(t => {
-    if (t.shared && !t.settled && t.amount>0 && !getCat(t.category).ignored && !t.excluded) {
-      t.settled = true;
-      t.settledDate = today;
-    }
+  // Snapshot the effective split per category, then freeze it onto each
+  // transaction so later split changes never touch what's already settled.
+  const batch = S.transactions.filter(t => t.shared && !t.settled && t.amount>0 && !getCat(t.category).ignored && !t.excluded);
+  const totByCat = {};
+  for (const t of batch) totByCat[t.category] = (totByCat[t.category]||0) + t.amount;
+  const fracByCat = {};
+  for (const [cid, total] of Object.entries(totByCat)) fracByCat[cid] = (getCatSplitAmts(cid, total).p1Pct ?? 50) / 100;
+  batch.forEach(t => {
+    t.settled = true;
+    t.settledDate = today;
+    t.settledSplit = fracByCat[t.category];
   });
   closeModal(); schedSave(); render(); toast('Settled up!');
 }
+function settleCategory(catId) {
+  // Settle every unsettled shared expense in one category, freezing that
+  // category's current split onto each transaction at settle time.
+  const today = new Date().toISOString().slice(0,10);
+  const batch = S.transactions.filter(t => t.category===catId && t.shared && !t.settled && t.amount>0 && !getCat(t.category).ignored && !t.excluded);
+  if (!batch.length) return;
+  const total = batch.reduce((s,t)=>s+t.amount, 0);
+  const frac = (getCatSplitAmts(catId, total).p1Pct ?? 50) / 100;
+  batch.forEach(t => { t.settled=true; t.settledDate=today; t.settledSplit=frac; });
+  schedSave(); render(); toast(`Settled ${getCat(catId).label}`);
+}
 function settleOne(id) {
   const t = S.transactions.find(t=>t.id===id);
-  if (t) { t.settled=true; t.settledDate=new Date().toISOString().slice(0,10); schedSave(); render(); toast('Marked as settled'); }
+  if (t) {
+    t.settled=true;
+    t.settledDate=new Date().toISOString().slice(0,10);
+    t.settledSplit=(getCatSplitAmts(t.category, t.amount).p1Pct ?? 50) / 100; // freeze split at settle time
+    schedSave(); render(); toast('Marked as settled');
+  }
 }
 function unsettle(id) {
   const t = S.transactions.find(t=>t.id===id);
-  if (t) { t.settled=false; t.settledDate=''; schedSave(); render(); toast('Marked as unsettled'); }
+  if (t) { t.settled=false; t.settledDate=''; t.settledSplit=null; schedSave(); render(); toast('Marked as unsettled'); }
 }
 function unsettleAll() {
   if (!confirm('Unsettle all previously settled shared expenses?')) return;
-  S.transactions.forEach(t => { if(t.shared && t.settled) { t.settled=false; t.settledDate=''; } });
+  S.transactions.forEach(t => { if(t.shared && t.settled) { t.settled=false; t.settledDate=''; t.settledSplit=null; } });
   schedSave(); render(); toast('All unsettled');
 }
 
@@ -3087,15 +3073,23 @@ function materializeRecurring() {
 }
 
 // ── PDF Import (Paystubs + CNB Bank Statements) ─────────────
+let _pdfJsLoad = null;
 async function loadPdfJs() {
   if (window.pdfjsLib) return;
-  await new Promise((res, rej) => {
-    const s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-    s.onload = res; s.onerror = rej;
-    document.head.appendChild(s);
-  });
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  // Cache the in-flight promise so selecting several PDFs at once doesn't inject
+  // the script multiple times (which raced and could leave the load half-done).
+  if (!_pdfJsLoad) {
+    _pdfJsLoad = new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      s.onload = res;
+      s.onerror = () => { _pdfJsLoad = null; rej(new Error('Could not load PDF reader (network blocked?)')); };
+      document.head.appendChild(s);
+    }).then(() => {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    });
+  }
+  await _pdfJsLoad;
 }
 async function extractPdfText(file) {
   await loadPdfJs();
@@ -3254,6 +3248,41 @@ function parseChaseStatement(text, person) {
   }
   return txns;
 }
+// SoFi Bank monthly statement (Checking + Savings). Distinctive: "SoFi Bank" + per-txn "Transaction ID:" lines.
+function isSoFiStatement(text) {
+  return /sofi\s*bank/i.test(text) && /Transaction\s*ID:/i.test(text);
+}
+function parseSoFiStatement(text, person) {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  // Leading word(s) on each row are the transaction TYPE, jammed against the description
+  // by pdf.js (e.g. "Direct DepositCOMPENSIA INC PAYROLL"). Strip the known types.
+  const TYPES = 'Interest Earned|Direct Deposit|Direct Payment|Debit Card|Withdrawal|Overdraft|Deposit|Other|ATM|Check|Transfer|Fee';
+  const typeRe = new RegExp('^(?:' + TYPES + ')', 'i');
+  const txns = [];
+  const seen = new Set();
+  for (const line of lines) {
+    // "Apr 28, 2026Direct DepositCOMPENSIA INC PAYROLL$3,127.37$6,254.11"
+    // groups: date | type+description | amount | running balance (both may be negative)
+    const m = line.match(/^([A-Z][a-z]{2}\s+\d{1,2},\s*\d{4})(.+?)(-?\$[\d,]+\.\d{2})(-?\$[\d,]+\.\d{2})$/);
+    if (!m) continue;
+    const d = new Date(m[1]);
+    if (isNaN(d)) continue;
+    const date = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    let desc = m[2].replace(typeRe, '').replace(/\s+/g, ' ').trim();
+    if (!desc) desc = m[2].replace(/\s+/g, ' ').trim();
+    const amtStr = m[3];
+    const val = parseFloat(amtStr.replace(/[-$,]/g, ''));
+    if (!val) continue;
+    // SoFi shows credits as "$X" and debits as "-$X". Match CNB convention:
+    // credit → negative amount (income), debit → positive amount (expense).
+    const amount = /^-/.test(amtStr) ? val : -val;
+    const key = `${date}|${desc}|${amount}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    txns.push({ id: uid(), date, amount, description: desc, category: categorize(desc), person, shared: false, settled: false, splitRatio: 0.5, note: '', excluded: false });
+  }
+  return txns;
+}
 async function onPdfFile(ev, personHint) {
   const file = ev.target ? ev.target.files[0] : ev;
   if (!file) return;
@@ -3273,6 +3302,13 @@ async function onPdfFile(ev, personHint) {
       toast('Parsing Chase statement…');
       const txns = parseChaseStatement(text, personHint || 'p1');
       if (!txns.length) { toast('No transactions found in Chase statement'); return; }
+      doImportTxns(txns);
+      return;
+    }
+    if (isSoFiStatement(text)) {
+      toast('Parsing SoFi statement…');
+      const txns = parseSoFiStatement(text, personHint || 'p1');
+      if (!txns.length) { toast('No transactions found in SoFi statement'); return; }
       doImportTxns(txns);
       return;
     }
@@ -3463,8 +3499,10 @@ function showPaystubModal(parsed) {
       <label for="psi-${i}" style="flex:1;font-weight:600;font-size:.88rem;cursor:pointer">${esc(e.label)}</label>
       <span style="font-weight:700;color:${e.type==='expense'?'var(--red)':'var(--green)'};flex-shrink:0">${e.type==='expense'?'':'+'}${fc(e.amount)}</span>
     </div>`;
-  const incomeRows  = incomeEntries.map((e,i) => makeRow(e, i)).join('');
-  const expenseRows = expenseEntries.map((e,i) => makeRow(e, incomeEntries.length + i)).join('');
+  // Checkbox id MUST be the entry's index in parsed.entries — importPaystub reads
+  // psi-<i> against parsed.entries[i], so income-first display order can't drive the id.
+  const incomeRows  = incomeEntries.map(e => makeRow(e, parsed.entries.indexOf(e))).join('');
+  const expenseRows = expenseEntries.map(e => makeRow(e, parsed.entries.indexOf(e))).join('');
   const p1Sel = parsed.person === 'p1';
   showModal(`<div class="modal">
     <h2>📄 Import Paystub${pendingPaystubs.length > 1 ? ` <span style="font-size:.75em;font-weight:500;color:var(--text-3)">(${pendingPaystubs.indexOf(parsed)+1} of ${pendingPaystubs.length})</span>` : ''}</h2>
@@ -3842,10 +3880,10 @@ function showSettings() {
       <p style="font-size:.8rem;color:var(--text-3);margin-bottom:10px">Data is stored in your private GitHub repo. Sign out to clear the access token from this device.</p>
       <button onclick="closeModal();resetToken()" style="font-size:.82rem;padding:6px 14px;border:1px solid var(--border);border-radius:8px;background:white;cursor:pointer">Sign out / change token</button>
     </div>
-    ${S.pinUnlocked ? `<div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
-      <div style="font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:6px">🔒 Private Mode PIN</div>
-      <p style="font-size:.8rem;color:var(--text-3);margin-bottom:10px">PIN protects private categories (gambling, cash).</p>
-      <button onclick="changePinFromSettings()" style="font-size:.82rem;padding:6px 14px;border:1px solid var(--border);border-radius:8px;background:white;cursor:pointer">Change PIN</button>
+    ${currentPerson === 'p1' ? `<div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
+      <div style="font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:6px">🎲 Betting mode</div>
+      <p style="font-size:.8rem;color:var(--text-3);margin-bottom:10px">Reveals the private Gambling category and the betting tracker (tap the month label to open it). Turns off automatically when you leave the app.</p>
+      <button onclick="toggleBettingMode()" style="font-size:.82rem;padding:6px 14px;border:1px solid ${S.pinUnlocked ? 'var(--primary)' : 'var(--border)'};border-radius:8px;background:${S.pinUnlocked ? 'var(--primary)' : 'white'};color:${S.pinUnlocked ? '#fff' : 'var(--text)'};cursor:pointer">${S.pinUnlocked ? '🎲 Betting mode: ON — tap to turn off' : 'Turn on betting mode'}</button>
     </div>` : ''}
     <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
       <div style="font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:6px">💾 Backup &amp; Export</div>
@@ -4023,6 +4061,7 @@ function doImportJson(evt) {
           .importDataJson(e.target.result, authToken());
       } else {
         Object.assign(S, { transactions: data.transactions || [], budgets: data.budgets || {}, settings: Object.assign(S.settings, data.settings || {}), rules: data.rules || {}, customCategories: data.customCategories || [], catSplits: data.catSplits || {}, catTypes: data.catTypes || {}, excludedFromAvg: data.excludedFromAvg || [], recurringIncome: data.recurringIncome || [], gamblingData: data.gamblingData || {}, incomeData: data.incomeData || {}, incomeTypeRules: data.incomeTypeRules || {} });
+        migrateSettledSplits();
         schedSave(); closeModal(); render(); toast('Restored!');
       }
     } catch(ex) { toast('Could not read file: ' + ex.message); }
@@ -4346,6 +4385,7 @@ function importSetupXlsx(evt) {
           splitRatio:  parseFloat(row.splitRatio) || 0.5,
           excluded:    truthy(row.excluded),
           settledDate: normDate(row.settledDate),
+          settledSplit: (row.settledSplit != null && row.settledSplit !== '') ? parseFloat(row.settledSplit) : null,
         }));
 
       const budgets = {};
@@ -4359,7 +4399,6 @@ function importSetupXlsx(evt) {
       });
       const parseJson = (v, fallback) => { try { return v ? JSON.parse(v) : fallback; } catch(_) { return fallback; } };
       const settings = { person1: raw.person1 || 'Person 1', person2: raw.person2 || 'Person 2' };
-      if (raw.secretPin) settings.secretPin = String(raw.secretPin);
 
       const d = {
         transactions, budgets, settings,
@@ -4426,6 +4465,7 @@ function applyData(data, person) {
   S.gamblingData    = data.gamblingData    || {};
   S.incomeData      = data.incomeData      || {};
   S.incomeTypeRules = data.incomeTypeRules || {};
+  if (migrateSettledSplits() > 0) schedSave(); // freeze any legacy settled txns
   materializeRecurring();
   const curMoTxns = S.transactions.filter(t => t.date && t.date.startsWith(S.currentMonth));
   if (curMoTxns.length === 0 && S.transactions.length > 0) {
