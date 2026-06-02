@@ -1507,13 +1507,15 @@ function renderOverview() {
   const rangeMonths = getOverviewMonths();
   const isMulti     = rangeMonths.length > 1;
   const txns = S.transactions.filter(t => t.date && rangeMonths.includes(t.date.slice(0,7)));
-  const exp = txns.filter(t => t.amount > 0 && !getCat(t.category).ignored && !t.excluded && isVisible(t));
+  // Gambling is netted separately (see gambling-netting block below), so it
+  // never contributes individual transactions to expenses, income or categories.
+  const exp = txns.filter(t => t.amount > 0 && t.category !== 'gambling' && !getCat(t.category).ignored && !t.excluded && isVisible(t));
   // visExp: transactions the current viewer is allowed to see (already filtered by isVisible)
   const visExp = exp;
-  const total = visExp.reduce((s,t) => s+t.amount, 0);
+  let total = visExp.reduce((s,t) => s+t.amount, 0);
   // per-person solo spending
-  const p1sp  = exp.filter(t => t.person==='p1' && !t.shared).reduce((s,t) => s+t.amount, 0);
-  const p2sp  = exp.filter(t => t.person==='p2' && !t.shared).reduce((s,t) => s+t.amount, 0);
+  let p1sp  = exp.filter(t => t.person==='p1' && !t.shared).reduce((s,t) => s+t.amount, 0);
+  let p2sp  = exp.filter(t => t.person==='p2' && !t.shared).reduce((s,t) => s+t.amount, 0);
   const sharedTxns = exp.filter(t => t.shared);
   const shared = sharedTxns.reduce((s,t) => s+t.amount, 0);
   // Per-category, per-month split (settled items frozen) — see splitSharedByCat.
@@ -1521,10 +1523,33 @@ function renderOverview() {
   const sharedP1 = Object.values(sharedP1ByCat).reduce((s,v) => s+v, 0);
   const sharedP2 = Object.values(sharedP2ByCat).reduce((s,v) => s+v, 0);
   // income: visible-only so viewer can't back-calculate hidden spending via net savings
-  const visInc = txns.filter(t => t.amount < 0 && !getCat(t.category).ignored && !t.excluded && isVisible(t));
-  const totalInc = visInc.reduce((s,t) => s + Math.abs(t.amount), 0);
-  const p1inc = visInc.filter(t => t.person==='p1').reduce((s,t) => s + Math.abs(t.amount), 0);
-  const p2inc = visInc.filter(t => t.person==='p2').reduce((s,t) => s + Math.abs(t.amount), 0);
+  const visInc = txns.filter(t => t.amount < 0 && t.category !== 'gambling' && !getCat(t.category).ignored && !t.excluded && isVisible(t));
+  let totalInc = visInc.reduce((s,t) => s + Math.abs(t.amount), 0);
+  let p1inc = visInc.filter(t => t.person==='p1').reduce((s,t) => s + Math.abs(t.amount), 0);
+  let p2inc = visInc.filter(t => t.person==='p2').reduce((s,t) => s + Math.abs(t.amount), 0);
+  // ── Gambling netting ─────────────────────────────────────────────────────
+  // In gambling mode, gambling never shows up as individual transactions in the
+  // income/spending totals. Instead each person's net result over the range
+  // collapses to one figure: a net win counts as income, a net loss as
+  // (variable) spending. E.g. $10k wagered that returns $11k shows as +$1k
+  // income — not $10k spent and $11k earned.
+  const gamblingNet = { p1: 0, p2: 0 };
+  if (S.pinUnlocked) {
+    for (const t of txns) {
+      if (t.category !== 'gambling' || t.excluded || !isVisible(t)) continue;
+      const cl = S.gamblingData[t.id];
+      const isIn = cl ? cl.dir === 'in' : t.amount > 0; // money sent to the book
+      const amt  = Math.abs(t.amount);
+      gamblingNet[t.person === 'p2' ? 'p2' : 'p1'] += isIn ? -amt : amt;
+    }
+  }
+  const gWinP1  = Math.max(gamblingNet.p1, 0), gLossP1 = Math.max(-gamblingNet.p1, 0);
+  const gWinP2  = Math.max(gamblingNet.p2, 0), gLossP2 = Math.max(-gamblingNet.p2, 0);
+  const gWin    = gWinP1 + gWinP2, gLoss = gLossP1 + gLossP2;
+  const gOverall = gamblingNet.p1 + gamblingNet.p2;
+  // Fold wins into income, losses into solo (variable) spending.
+  p1inc += gWinP1;  p2inc += gWinP2;  totalInc += gWin;
+  p1sp  += gLossP1; p2sp  += gLossP2; total    += gLoss;
   // Retirement breakdown (income category only)
   const incTxns = visInc.filter(t => t.category === 'income');
   const retTot  = incTxns.filter(t => getIncomeType(t.id,t.description)==='retirement').reduce((s,t)=>s+Math.abs(t.amount),0);
@@ -1631,7 +1656,7 @@ function renderOverview() {
   }
   // Net per category: use visible transactions only so categories don't leak private amounts
   const byCat = {};
-  for (const t of txns.filter(t => !getCat(t.category).ignored && !t.excluded && isVisible(t))) byCat[t.category] = (byCat[t.category]||0)+t.amount;
+  for (const t of txns.filter(t => t.category !== 'gambling' && !getCat(t.category).ignored && !t.excluded && isVisible(t))) byCat[t.category] = (byCat[t.category]||0)+t.amount;
   const catArr = Object.entries(byCat).filter(([,v])=>v>0).sort((a,b) => b[1]-a[1]);
   const mx = catArr[0]?.[1]||1;
   const noExpMsg = isMulti ? 'No expenses in this range' : 'No expenses this month';
@@ -1707,7 +1732,7 @@ function renderOverview() {
   const avgByCat = {};
   if (pastMonths.length) {
     for (const mo of pastMonths) {
-      const moExp = S.transactions.filter(t => t.date.startsWith(mo) && !getCat(t.category).ignored && !t.excluded && isVisible(t));
+      const moExp = S.transactions.filter(t => t.date.startsWith(mo) && t.category !== 'gambling' && !getCat(t.category).ignored && !t.excluded && isVisible(t));
       for (const t of moExp) avgByCat[t.category] = (avgByCat[t.category]||0) + t.amount;
     }
     for (const k of Object.keys(avgByCat)) avgByCat[k] /= pastMonths.length;
@@ -1782,6 +1807,14 @@ function renderOverview() {
 
   const viewToggle = '';
 
+  // Gambling summary entry point — only while gambling mode is on. Shows the
+  // running net so it doubles as an at-a-glance result, and opens the tracker.
+  const gamblingBtn = S.pinUnlocked ? `<div style="margin-bottom:14px">
+    <button class="btn-sec" onclick="showGamblingModal()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;border-color:var(--red);color:var(--red);font-weight:700">
+      🎰 Gambling summary${(gWin||gLoss) ? ` · <span style="color:${gOverall>=0?'var(--green)':'var(--red)'}">${gOverall>=0?'+':'−'}${fc(Math.abs(gOverall))}</span>` : ''}
+    </button>
+  </div>` : '';
+
   // Update header label: YTD shows the year, custom/all shows range span, 1M shows month
   requestAnimationFrame(() => {
     const lbl = document.getElementById('mo-label');
@@ -1809,10 +1842,14 @@ function renderOverview() {
     };
     const allByType = { fixed: 0, variable: 0, annual: 0 };
     for (const t of exp) allByType[catType(t.category)] += t.amount;
+    // Gambling losses are folded into income/spending totals as variable spend,
+    // so add them to the variable bucket too — keeps the breakdown reconciling.
+    allByType.variable += gLoss;
     const fixedTotal = scaleNum(allByType.fixed);
     const varTotal = scaleNum(allByType.variable);
     const annualTotal = scaleNum(allByType.annual);
     const p1Solo = soloByType('p1'), p2Solo = soloByType('p2');
+    p1Solo.variable += gLossP1; p2Solo.variable += gLossP2;
     const { p1: sharedP1ByType, p2: sharedP2ByType } = sharedShareByType();
     const p1Fixed = scaleNum(p1Solo.fixed + sharedP1ByType.fixed);
     const p1Var = scaleNum(p1Solo.variable + sharedP1ByType.variable);
@@ -2000,6 +2037,7 @@ function renderOverview() {
     return `
 ${rangeToggleMobile}
 ${viewToggleMobile}
+${gamblingBtn}
 ${recSectionHtml}
 <div class="ov-carousel" id="ov-carousel">
   ${slide1}${slide2}${slide3}${slide4}${slide5}${slide6}
@@ -2020,10 +2058,13 @@ ${dots}`;
   for (const [cid, amt] of Object.entries(sharedP2ByCat)) dSharedP2[catType(cid)] += amt;
   const dAllByType = { fixed: 0, variable: 0, annual: 0 };
   for (const t of exp) dAllByType[catType(t.category)] += t.amount;
+  // Gambling losses fold into spending as variable — mirror that in the buckets.
+  dAllByType.variable += gLoss;
   const dFixedTotal = scaleNum(dAllByType.fixed);
   const dVarTotal = scaleNum(dAllByType.variable);
   const dAnnualTotal = scaleNum(dAllByType.annual);
   const dP1Solo = dSoloByType('p1'), dP2Solo = dSoloByType('p2');
+  dP1Solo.variable += gLossP1; dP2Solo.variable += gLossP2;
   const dP1Fixed = scaleNum(dP1Solo.fixed + dSharedP1.fixed);
   const dP1Var = scaleNum(dP1Solo.variable + dSharedP1.variable);
   const dP1Annual = scaleNum(dP1Solo.annual + dSharedP1.annual);
@@ -2091,6 +2132,7 @@ ${dots}`;
   return `
 ${rangeToggle}
 ${viewToggle}
+${gamblingBtn}
 ${recSectionHtml}
 <div class="rcs-row">${rc1}${rc2}${rc3}</div>
 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px;" id="cat-section-row">
