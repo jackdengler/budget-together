@@ -726,7 +726,8 @@ function getCatSplitAmts(catId, total) {
   // Legacy format: a bare numeric ratio (p1's fraction).
   if (typeof s === 'number') {
     var r = isNaN(s) ? 0.5 : s;
-    return { p1Share: total * r, p2Share: total * (1 - r) };
+    var p1r = total * r;
+    return { p1Share: p1r, p2Share: total - p1r };
   }
   s = s || {};
   var mode = s.mode || 'pct';
@@ -734,8 +735,9 @@ function getCatSplitAmts(catId, total) {
     var p1 = Math.min(Math.max(s.p1Amt || 0, 0), total);
     return { p1Share: p1, p2Share: total - p1 };
   }
-  var pct = (mode === 'pct' || mode === 'even') ? (s.p1Pct != null ? s.p1Pct : 50) : 50;
-  return { p1Share: total * pct / 100, p2Share: total * (1 - pct / 100) };
+  var pct = (mode === 'pct') ? (s.p1Pct != null ? s.p1Pct : 50) : 50; // 'even' → exact 50/50
+  var p1p = total * pct / 100;
+  return { p1Share: p1p, p2Share: total - p1p }; // subtract so shares sum to total exactly
 }
 // Split shared expenses into each person's share, keyed by category.
 //  • Settled transactions are frozen at their settledSplit (per transaction).
