@@ -1666,8 +1666,16 @@ function moShowPin(msg){
     +'<div class="mo-pinpad">'+pad+'</div>'
     +'<div id="mo-pin-err" style="color:var(--red);font-size:.82rem;min-height:1.1em;margin:16px 0 4px;font-weight:600">'+(msg||'')+'</div>'
     +'<div style="margin-top:6px;font-size:.76rem"><a href="#" onclick="GH.token=\'\';moShowToken(\'\');return false" style="color:#9A8A78">Use a different token</a></div>'
+    +'<label aria-hidden="true" style="position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none"><input id="mo-haptic" type="checkbox" switch tabindex="-1"></label>'
     +'</div>');
   moPinRenderDots();
+}
+// Haptic feedback. navigator.vibrate covers Android; toggling a hidden
+// <input switch> is the only way to trigger the Taptic Engine in iOS Safari
+// (17.4+), and only when done inside a user gesture (the key tap handler).
+function moHaptic(strong){
+  try { if (navigator.vibrate) navigator.vibrate(strong ? [25,30,25] : 8); } catch(e){}
+  try { var s=document.getElementById('mo-haptic'); if(s){ s.checked=!s.checked; if(strong){ setTimeout(function(){ s.checked=!s.checked; }, 60); } } } catch(e){}
 }
 function moPinRenderDots(){
   var box=document.getElementById('mo-dots'); if(!box) return;
@@ -1680,17 +1688,20 @@ function moPinPress(d){
   var err=document.getElementById('mo-pin-err'); if(err) err.textContent='';
   if(moPinValue.length>=MO_PIN_MAX) return;
   moPinValue += d;
+  moHaptic(false);
   moPinRenderDots();
   if(moPinValue.length>=4) moPinTryUnlock();
 }
 function moPinDel(){
   if(moPinBusy) return;
   var err=document.getElementById('mo-pin-err'); if(err) err.textContent='';
+  if(moPinValue.length) moHaptic(false);
   moPinValue = moPinValue.slice(0,-1);
   moPinRenderDots();
 }
 function moPinFail(){
   moPinBusy=false;
+  moHaptic(true);
   var err=document.getElementById('mo-pin-err'); if(err) err.textContent='Incorrect PIN';
   var box=document.getElementById('mo-dots');
   if(box){ box.classList.add('mo-pin-shake'); setTimeout(function(){ box.classList.remove('mo-pin-shake'); }, 420); }
