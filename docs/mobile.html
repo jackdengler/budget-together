@@ -695,6 +695,82 @@
     .mo-key.mo-key-blank { background: transparent; pointer-events: none; }
     .mo-pin-shake { animation: moShake .4s; }
     @keyframes moShake { 10%,90%{transform:translateX(-2px)} 20%,80%{transform:translateX(4px)} 30%,50%,70%{transform:translateX(-8px)} 40%,60%{transform:translateX(8px)} }
+    /* Data sheet controls (search / filter / sort) */
+    .dt-controls {
+      display: flex;
+      flex-direction: column;
+      gap: calc(7px * var(--z));
+      margin-bottom: calc(4px * var(--z));
+      flex-shrink: 0;
+    }
+    .dt-search {
+      width: 100%;
+      padding: calc(9px * var(--z)) calc(12px * var(--z));
+      font-size: calc(13px * var(--z));
+      font-family: inherit;
+      border: calc(1.5px * var(--z)) solid var(--surface-border);
+      border-radius: calc(10px * var(--z));
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+    .dt-search:focus { border-color: var(--primary); }
+    .dt-filter-row { display: flex; gap: calc(6px * var(--z)); }
+    .dt-filter-sel {
+      flex: 1;
+      min-width: 0;
+      padding: calc(7px * var(--z)) calc(8px * var(--z));
+      font-size: calc(12px * var(--z));
+      font-weight: 600;
+      font-family: inherit;
+      border: calc(1.5px * var(--z)) solid var(--surface-border);
+      border-radius: calc(10px * var(--z));
+      background: var(--surface);
+      color: var(--text-2);
+    }
+    .dt-sort-row { display: flex; gap: calc(5px * var(--z)); }
+    .dt-sort-pill {
+      flex: 1;
+      padding: calc(6px * var(--z)) 0;
+      font-size: calc(11px * var(--z));
+      font-weight: 700;
+      border: none;
+      border-radius: calc(14px * var(--z));
+      background: rgba(0,0,0,0.05);
+      color: var(--text-sub);
+      white-space: nowrap;
+    }
+    .dt-sort-pill.on { background: var(--primary); color: #fff; }
+    .dt-count {
+      text-align: center;
+      font-size: calc(10.5px * var(--z));
+      color: var(--text-3);
+      padding: calc(6px * var(--z)) 0 calc(2px * var(--z));
+    }
+    /* Lock / log out sheet */
+    .lk-btn {
+      width: 100%;
+      padding: calc(13px * var(--z));
+      border: calc(1.5px * var(--z)) solid var(--surface-border);
+      border-radius: calc(12px * var(--z));
+      background: var(--surface);
+      color: var(--text);
+      font-size: calc(15px * var(--z));
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: calc(8px * var(--z));
+    }
+    .lk-btn.lk-danger { color: var(--red); border-color: rgba(168,74,42,0.35); }
+    .lk-sub {
+      font-size: calc(11px * var(--z));
+      color: var(--text-3);
+      text-align: center;
+      margin: calc(6px * var(--z)) 0 calc(12px * var(--z));
+    }
   </style>
 </head>
 <body>
@@ -1364,6 +1440,38 @@ function setCatTypeMobile(catId, type){
 // ── Data review (read-only transaction list) ───────────────────────────────
 // Mirrors the web app's mobile transaction cards exactly: same fields, same
 // date grouping, same per-person/shared split labels — single source of truth.
+// Search / person / category filters and column sorting mirror the web app's
+// transactions (import) view: S.filters + S.txnSort → dtFilters + dtSort.
+var dtSort = {col:'date', dir:'desc'};
+var dtFilters = {search:'', person:'all', category:'all'};
+function escAttr(s){ return esc(s).replace(/"/g,'&quot;'); }
+function setDtSort(col){
+  // Same toggle rule as the web app's setSortTxn: tap again to flip direction,
+  // new column starts desc for amount/date, asc otherwise.
+  dtSort = dtSort.col===col
+    ? {col:col, dir:dtSort.dir==='asc'?'desc':'asc'}
+    : {col:col, dir:(col==='amount'||col==='date')?'desc':'asc'};
+  renderDataSheet();
+}
+function dtSetFilter(k,v){
+  dtFilters[k]=v;
+  // Typing must not rebuild the search input (the keyboard would dismiss),
+  // so search refreshes only the list; select taps rebuild the whole sheet.
+  if (k==='search') renderDataList(); else renderDataSheet();
+}
+// Category ids offered in the filter — everything the data sheet can show
+// (income and ignored included; hidden cats only in betting mode).
+function dtCatIds(){
+  var ids = Object.keys(CATS).concat((D.customCategories||[]).map(function(c){return c.id;}));
+  var seen={}, out=[];
+  for (var i=0;i<ids.length;i++){
+    var id=ids[i];
+    if (seen[id]) continue; seen[id]=1;
+    if (isHiddenCat(id)) continue;
+    out.push(id);
+  }
+  return out;
+}
 function openDataSheet(){
   if (document.getElementById('sheet-back')) return;
   var b=document.createElement('div');
@@ -1372,60 +1480,159 @@ function openDataSheet(){
   document.body.appendChild(b);
   renderDataSheet();
 }
-function renderDataSheet(){
-  var b=document.getElementById('sheet-back'); if(!b) return;
+function dtRowHtml(t, n1, n2, showDate){
+  var c=getCat(t.category), isInc=t.amount<0;
+  var payerLabel=t.person==='p1'?esc(n1):esc(n2), payerColor=t.person==='p1'?'var(--p1)':'var(--p2)';
+  var split='';
+  if (t.shared && t.amount>0){
+    var sh=txSplitAmts(t);
+    split=' · <span style="color:var(--p1)">'+fc0(sh.p1Share)+'</span>/<span style="color:var(--p2)">'+fc0(sh.p2Share)+'</span>';
+  }
+  var meta=(showDate?esc(t.date||'')+' · ':'')
+    + '<span style="color:'+payerColor+';font-weight:700">'+payerLabel+'</span>'
+    + (t.shared?' paid · <span style="color:var(--green);font-weight:700">Shared</span>':'')
+    + ' · '+esc(c.label) + split
+    + (t.excluded?' · <span style="color:var(--text-3)">excluded</span>':'')
+    + (t.settled?' · <span style="color:#3A6A3A;font-weight:600">Settled</span>':'');
+  return '<div class="dt-row"'+(t.excluded?' style="opacity:.55"':'')+'>'
+    + '<div class="dt-emoji" style="background:'+(c.color?c.color+'1a':'rgba(0,0,0,0.05)')+'"><i class="bi '+c.icon+'" style="color:'+c.color+'"></i></div>'
+    + '<div class="dt-main"><div class="dt-desc">'+esc(t.description||'(no description)')+'</div><div class="dt-meta">'+meta+'</div></div>'
+    + '<div class="dt-amt" style="color:'+(isInc?'var(--green)':'var(--text)')+'">'+(isInc?'+':'')+fc0(t.amount)+'</div>'
+    + '</div>';
+}
+function buildDataListHtml(){
   var n1=(D.settings||{}).person1||'Person 1', n2=(D.settings||{}).person2||'Person 2';
   var months=getPeriodMonths(), msSet={};
   for (var i=0;i<months.length;i++) msSet[months[i]]=1;
-  // Same visibility rules the dashboard uses: drop hidden/ignored cats, but
-  // show income and excluded rows here so the data can be fully reviewed.
+  // Same visibility rules the dashboard uses: drop hidden cats, but show
+  // income, ignored and excluded rows here so the data can be fully reviewed.
   var txns=(D.transactions||[]).filter(function(t){ return t.date && msSet[t.date.slice(0,7)] && !isHiddenCat(t.category); });
-  txns.sort(function(a,b){ return (b.date||'').localeCompare(a.date||'') || (b.id||'').toString().localeCompare((a.id||'').toString()); });
 
-  // Group by date for section headers
-  var groups={}, order=[];
-  for (var j=0;j<txns.length;j++){
-    var dk=txns[j].date||'Unknown';
-    if (!groups[dk]){ groups[dk]=[]; order.push(dk); }
-    groups[dk].push(txns[j]);
+  // Filters — same semantics as the web app's transactions view.
+  var q=(dtFilters.search||'').trim().toLowerCase();
+  if (q) txns=txns.filter(function(t){
+    return (t.description||'').toLowerCase().indexOf(q)>=0 || (t.note||'').toLowerCase().indexOf(q)>=0;
+  });
+  if (dtFilters.person==='shared') txns=txns.filter(function(t){ return t.shared; });
+  else if (dtFilters.person!=='all') txns=txns.filter(function(t){ return t.person===dtFilters.person && !t.shared; });
+  if (dtFilters.category!=='all') txns=txns.filter(function(t){ return t.category===dtFilters.category; });
+
+  // Sort — same comparators as the web app's transactions table.
+  var sCol=dtSort.col, sDir=dtSort.dir;
+  txns.sort(function(a,b){
+    var v=0;
+    if (sCol==='date') v=(a.date||'').localeCompare(b.date||'') || (a.id||'').toString().localeCompare((b.id||'').toString());
+    else if (sCol==='description') v=(a.description||'').localeCompare(b.description||'');
+    else if (sCol==='category') v=(getCat(a.category).label||'').localeCompare(getCat(b.category).label||'');
+    else if (sCol==='amount') v=a.amount-b.amount;
+    return sDir==='asc'?v:-v;
+  });
+
+  var body='<div class="dt-count">'+txns.length+' transaction'+(txns.length!==1?'s':'')+'</div>';
+  if (!txns.length){
+    return body+'<div style="text-align:center;color:var(--text-3);padding:24px;font-size:13px">No matching transactions in this period</div>';
   }
 
-  var body='';
-  for (var g=0;g<order.length;g++){
-    var dk=order[g], day=groups[dk], parts=dk.split('-'), lbl=dk;
-    if (parts.length===3){
-      var dt=new Date(+parts[0],+parts[1]-1,+parts[2]);
-      if (!isNaN(dt.getTime())) lbl=dt.toLocaleDateString('en-US',{weekday:'long', month:'short', day:'numeric'});
+  if (sCol==='date'){
+    // Date sort keeps the grouped day headers.
+    var groups={}, order=[];
+    for (var j=0;j<txns.length;j++){
+      var dk=txns[j].date||'Unknown';
+      if (!groups[dk]){ groups[dk]=[]; order.push(dk); }
+      groups[dk].push(txns[j]);
     }
-    var rows='';
-    for (var k=0;k<day.length;k++){
-      var t=day[k], c=getCat(t.category), isInc=t.amount<0;
-      var payerLabel=t.person==='p1'?esc(n1):esc(n2), payerColor=t.person==='p1'?'var(--p1)':'var(--p2)';
-      var split='';
-      if (t.shared && t.amount>0){
-        var sh=txSplitAmts(t);
-        split=' · <span style="color:var(--p1)">'+fc0(sh.p1Share)+'</span>/<span style="color:var(--p2)">'+fc0(sh.p2Share)+'</span>';
+    for (var g=0;g<order.length;g++){
+      var dk2=order[g], day=groups[dk2], parts=dk2.split('-'), lbl=dk2;
+      if (parts.length===3){
+        var dt=new Date(+parts[0],+parts[1]-1,+parts[2]);
+        if (!isNaN(dt.getTime())) lbl=dt.toLocaleDateString('en-US',{weekday:'long', month:'short', day:'numeric'});
       }
-      var meta='<span style="color:'+payerColor+';font-weight:700">'+payerLabel+'</span>'
-        + (t.shared?' paid · <span style="color:var(--green);font-weight:700">Shared</span>':'')
-        + ' · '+esc(c.label) + split
-        + (t.excluded?' · <span style="color:var(--text-3)">excluded</span>':'')
-        + (t.settled?' · <span style="color:#3A6A3A;font-weight:600">Settled</span>':'');
-      rows+='<div class="dt-row"'+(t.excluded?' style="opacity:.55"':'')+'>'
-        + '<div class="dt-emoji" style="background:'+(c.color?c.color+'1a':'rgba(0,0,0,0.05)')+'"><i class="bi '+c.icon+'" style="color:'+c.color+'"></i></div>'
-        + '<div class="dt-main"><div class="dt-desc">'+esc(t.description||'(no description)')+'</div><div class="dt-meta">'+meta+'</div></div>'
-        + '<div class="dt-amt" style="color:'+(isInc?'var(--green)':'var(--text)')+'">'+(isInc?'+':'')+fc0(t.amount)+'</div>'
-        + '</div>';
+      var rows='';
+      for (var k=0;k<day.length;k++) rows+=dtRowHtml(day[k], n1, n2, false);
+      body+='<div class="dt-date">'+esc(lbl)+'</div>'+rows;
     }
-    body+='<div class="dt-date">'+esc(lbl)+'</div>'+rows;
+  } else {
+    // Other sorts render a flat list with the date inline instead of headers.
+    for (var m=0;m<txns.length;m++) body+=dtRowHtml(txns[m], n1, n2, true);
   }
-  if (!body) body='<div style="text-align:center;color:var(--text-3);padding:24px;font-size:13px">No transactions in this period</div>';
+  return body;
+}
+function renderDataList(){
+  var el=document.getElementById('dt-list');
+  if (el) el.innerHTML=buildDataListHtml();
+}
+function renderDataSheet(){
+  var b=document.getElementById('sheet-back'); if(!b) return;
+  var n1=(D.settings||{}).person1||'Person 1', n2=(D.settings||{}).person2||'Person 2';
+  var months=getPeriodMonths();
+
+  var catOpts='<option value="all">All categories</option>';
+  var cids=dtCatIds();
+  for (var i=0;i<cids.length;i++){
+    catOpts+='<option value="'+cids[i]+'"'+(dtFilters.category===cids[i]?' selected':'')+'>'+esc(getCat(cids[i]).label)+'</option>';
+  }
+  var sortCols=[['date','Date'],['description','Name'],['category','Category'],['amount','Amount']];
+  var pills='';
+  for (var s=0;s<sortCols.length;s++){
+    var on=dtSort.col===sortCols[s][0];
+    pills+='<button class="dt-sort-pill'+(on?' on':'')+'" onclick="setDtSort(\''+sortCols[s][0]+'\')">'
+      +sortCols[s][1]+(on?(dtSort.dir==='asc'?' ▲':' ▼'):'')+'</button>';
+  }
 
   b.innerHTML='<div class="sheet">'
     +'<div class="sheet-title">Data · '+esc(periodLabel(months))+'</div>'
-    +'<div class="ct-list">'+body+'</div>'
+    +'<div class="dt-controls">'
+    +'<input class="dt-search" type="search" placeholder="🔍 Search…" value="'+escAttr(dtFilters.search)+'" oninput="dtSetFilter(\'search\',this.value)">'
+    +'<div class="dt-filter-row">'
+    +'<select class="dt-filter-sel" onchange="dtSetFilter(\'person\',this.value)">'
+    +'<option value="all">Everyone</option>'
+    +'<option value="p1"'+(dtFilters.person==='p1'?' selected':'')+'>'+esc(n1)+'</option>'
+    +'<option value="p2"'+(dtFilters.person==='p2'?' selected':'')+'>'+esc(n2)+'</option>'
+    +'<option value="shared"'+(dtFilters.person==='shared'?' selected':'')+'>⇄ Shared</option>'
+    +'</select>'
+    +'<select class="dt-filter-sel" onchange="dtSetFilter(\'category\',this.value)">'+catOpts+'</select>'
+    +'</div>'
+    +'<div class="dt-sort-row">'+pills+'</div>'
+    +'</div>'
+    +'<div class="ct-list" id="dt-list">'+buildDataListHtml()+'</div>'
     +'<button class="sheet-done" onclick="closeSheet()">Done</button>'
     +'</div>';
+}
+
+// ── Lock / log out ─────────────────────────────────────────────────────────
+// Lock returns to the PIN pad (token stays on the device); log out also
+// forgets the GitHub token so the device is fully disconnected.
+function openLockSheet(){
+  if (document.getElementById('sheet-back')) return;
+  var b=document.createElement('div');
+  b.id='sheet-back'; b.className='sheet-back';
+  b.addEventListener('click', function(e){ if(e.target===b) closeSheet(); });
+  document.body.appendChild(b);
+  b.innerHTML='<div class="sheet">'
+    +'<div class="sheet-title">Lock / Log out</div>'
+    +'<button class="lk-btn" onclick="moLock()"><i class="bi bi-lock-fill"></i>Lock now</button>'
+    +'<div class="lk-sub">Keeps this device connected — just asks for a PIN next time.</div>'
+    +'<button class="lk-btn lk-danger" onclick="moLogout()"><i class="bi bi-box-arrow-right"></i>Log out</button>'
+    +'<div class="lk-sub">Forgets the access token on this device. You’ll need to paste it again.</div>'
+    +'<button class="sheet-done" onclick="closeSheet()">Cancel</button>'
+    +'</div>';
+}
+function moHideApp(){
+  bettingMode=false;
+  try { sessionStorage.removeItem('bt_person'); } catch(e){}
+  closeSheet();
+  var app=document.getElementById('app');
+  app.className=''; app.innerHTML='';
+}
+function moLock(){
+  moHideApp();
+  moShowPin('');
+}
+function moLogout(){
+  moHideApp();
+  GH.token='';
+  moPending=null;
+  moShowToken('');
 }
 function refreshSheet(){
   var b=document.getElementById('sheet-back'); if(!b) return;
@@ -1494,6 +1701,7 @@ function render(){
     + '<button class="mo-arrow" onclick="shiftPeriod(1)" ' + navDis + '>\u203A</button>'
     + '<button class="mo-gear" onclick="openDataSheet()" aria-label="Review data">\u2630</button>'
     + '<button class="mo-gear" onclick="openCatTypeSheet()" aria-label="Category settings">\u2699</button>'
+    + '<button class="mo-gear" onclick="openLockSheet()" aria-label="Lock or log out"><i class="bi bi-lock"></i></button>'
     + (bettingMode ? '<button class="mo-gear" onclick="openGamblingSheet()" aria-label="Gambling summary">\ud83c\udfb0</button>' : '')
     + '</div>'
     + '</div>';
