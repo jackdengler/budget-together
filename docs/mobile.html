@@ -120,8 +120,9 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: calc(12px * var(--z));
-      padding: calc(10px * var(--z)) calc(16px * var(--z));
+      flex-wrap: wrap;
+      gap: calc(4px * var(--z)) calc(6px * var(--z));
+      padding: calc(10px * var(--z)) calc(12px * var(--z));
     }
 
     /* Carousel */
@@ -373,7 +374,6 @@
       font-size: calc(17px * var(--z));
       line-height: 1;
       padding: calc(2px * var(--z)) calc(6px * var(--z));
-      margin-left: calc(2px * var(--z));
     }
     /* Category-type editor rows (inside the bottom sheet) */
     .ct-row {
@@ -520,7 +520,7 @@
       letter-spacing: calc(1.5px * var(--z));
       text-transform: uppercase;
       color: var(--text);
-      min-width: calc(170px * var(--z));
+      min-width: calc(96px * var(--z));
     }
     .mo-label-btn .avg-tag {
       font-size: calc(8px * var(--z));
@@ -811,6 +811,20 @@
       line-height: 1;
     }
     /* Classify (import review) sheet */
+    .cf-search-wrap { margin-bottom: calc(8px * var(--z)); flex-shrink: 0; }
+    .cf-search {
+      width: 100%;
+      padding: calc(9px * var(--z)) calc(12px * var(--z));
+      font-family: inherit;
+      font-size: calc(13px * var(--z));
+      border: calc(1.5px * var(--z)) solid var(--surface-border);
+      border-radius: calc(10px * var(--z));
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      box-sizing: border-box;
+    }
+    .cf-search:focus { border-color: var(--primary); }
     .cf-progress {
       font-size: calc(11px * var(--z));
       font-weight: 700;
@@ -2356,6 +2370,7 @@ var pendingReview = [];
 var reviewGroups = [];
 var groupIdx = 0;
 var rowCatExpandIdx = -1;
+var reviewSearch = '';
 var moMapCtx = null;       // active column-map context
 var _moMapResolve = null;  // resolves the import loop while a column-map sheet is open
 
@@ -2537,22 +2552,53 @@ function buildReviewGroups(){
   }
   return order.map(function(k){ return map[k]; }).sort(function(a,b){ return b.length-a.length; });
 }
-function currentGroup(){ return reviewGroups[groupIdx]; }
+function getFilteredGroups(){
+  if(!reviewSearch.trim()) return reviewGroups;
+  var q=reviewSearch.trim().toLowerCase();
+  return reviewGroups.filter(function(g){
+    var d=g[0].description||'';
+    return d.toLowerCase().indexOf(q)>=0 || normalizeDesc(d).indexOf(q)>=0;
+  });
+}
+function currentGroup(){ return getFilteredGroups()[groupIdx]; }
+function cfSetSearch(q){
+  reviewSearch=q; groupIdx=0; rowCatExpandIdx=-1; renderClassifySheet();
+  // The sheet re-renders on each keystroke, replacing the input node — restore
+  // focus and put the caret at the end so the keyboard stays up while typing.
+  var el=document.querySelector('.cf-search');
+  if(el){ el.focus(); var v=el.value; el.value=''; el.value=v; }
+}
 function openClassifySheet(){
   if(!pendingReview.length){ moToast('Nothing to review'); return; }
   var b=document.getElementById('sheet-back');
   if(!b){ b=document.createElement('div'); b.id='sheet-back'; b.className='sheet-back'; b.addEventListener('click', function(e){ if(e.target===b) closeSheet(); }); document.body.appendChild(b); }
-  groupIdx=0; rowCatExpandIdx=-1;
+  groupIdx=0; rowCatExpandIdx=-1; reviewSearch='';
   renderClassifySheet();
+}
+function cfSearchBar(){
+  return '<div class="cf-search-wrap"><input class="cf-search" type="text" placeholder="🔍 Search merchants…" value="'+escAttr(reviewSearch)+'" oninput="cfSetSearch(this.value)"></div>';
 }
 function renderClassifySheet(){
   var b=document.getElementById('sheet-back'); if(!b) return;
   if(!pendingReview.length){ closeSheet(); render(); return; }
   reviewGroups=buildReviewGroups();
-  if(groupIdx>=reviewGroups.length) groupIdx=Math.max(0, reviewGroups.length-1);
+  var filtered=getFilteredGroups();
+  if(groupIdx>=filtered.length) groupIdx=Math.max(0, filtered.length-1);
+  if(!filtered.length){
+    b.innerHTML='<div class="sheet">'
+      +'<div class="sheet-title">Classify Imports</div>'
+      +cfSearchBar()
+      +'<div style="text-align:center;padding:28px 0;color:var(--text-3);font-size:calc(13px * var(--z))">No matches for “'+esc(reviewSearch)+'”</div>'
+      +'<div class="cf-actions">'
+      +'<button class="cf-btn" onclick="cfSetSearch(\'\')">Clear</button>'
+      +'<button class="cf-btn" onclick="closeSheet()">Close</button>'
+      +'</div>'
+      +'</div>';
+    return;
+  }
   var n1=(D.settings||{}).person1||'Person 1', n2=(D.settings||{}).person2||'Person 2';
-  var group=reviewGroups[groupIdx], firstT=group[0];
-  var total=reviewGroups.length;
+  var group=filtered[groupIdx], firstT=group[0];
+  var total=filtered.length;
   var groupCatId=firstT.category;
   var groupOwnerVal=firstT.shared ? 'shared' : firstT.person;
   var cats=classifyCats();
@@ -2582,8 +2628,11 @@ function renderClassifySheet(){
       +'</div>'+expanded;
   }).join('');
 
-  var seenCount=0; for(var g=0; g<=groupIdx && g<total; g++) seenCount+=reviewGroups[g].length;
+  var seenCount=0; for(var g=0; g<=groupIdx && g<total; g++) seenCount+=filtered[g].length;
   var isLast=groupIdx>=total-1;
+  var progressLabel=reviewSearch.trim()
+    ? total+' match'+(total!==1?'es':'')+' · group '+(groupIdx+1)+'/'+total+' · '+pendingReview.length+' pending'
+    : 'Group '+(groupIdx+1)+' of '+total+' · '+pendingReview.length+' pending';
   function ownerSty(v){
     if(v!==groupOwnerVal) return '';
     if(v==='p1') return 'border-color:var(--p1);color:var(--p1);background:rgba(106,138,170,0.14)';
@@ -2593,7 +2642,8 @@ function renderClassifySheet(){
 
   b.innerHTML='<div class="sheet">'
     +'<div class="sheet-title">Classify Imports</div>'
-    +'<div class="cf-progress">Group '+(groupIdx+1)+' of '+total+' · '+pendingReview.length+' pending</div>'
+    +cfSearchBar()
+    +'<div class="cf-progress">'+progressLabel+'</div>'
     +'<div class="ct-list">'
     +'<div class="cf-group-head"><div class="cf-group-name">'+esc(firstT.description||'(no description)')+'</div><div class="cf-group-count">'+group.length+' txn'+(group.length!==1?'s':'')+'</div></div>'
     +rows
@@ -2621,12 +2671,13 @@ function cfCycleRowOwner(ri){ var g=currentGroup(); if(!g) return; var t=g[ri]; 
 function cfToggleRowCat(ri){ rowCatExpandIdx = rowCatExpandIdx===ri ? -1 : ri; renderClassifySheet(); }
 function cfSetRowCat(ri, cat){ var g=currentGroup(); if(!g) return; var t=g[ri]; if(!t) return; t.category=cat; rowCatExpandIdx=-1; renderClassifySheet(); }
 function cfDeleteRow(ri){ var g=currentGroup(); if(!g) return; var t=g[ri]; if(!t) return; pendingReview=pendingReview.filter(function(x){ return x!==t; }); rowCatExpandIdx=-1; renderClassifySheet(); }
-function cfDeleteGroup(){ var g=currentGroup(); if(!g) return; pendingReview=pendingReview.filter(function(t){ return g.indexOf(t)<0; }); rowCatExpandIdx=-1; reviewGroups=buildReviewGroups(); if(groupIdx>=reviewGroups.length) groupIdx=Math.max(0, reviewGroups.length-1); renderClassifySheet(); }
-function cfNext(){ if(groupIdx<reviewGroups.length-1){ groupIdx++; rowCatExpandIdx=-1; renderClassifySheet(); } else cfConfirmAll(); }
+function cfDeleteGroup(){ var g=currentGroup(); if(!g) return; pendingReview=pendingReview.filter(function(t){ return g.indexOf(t)<0; }); rowCatExpandIdx=-1; reviewGroups=buildReviewGroups(); var f=getFilteredGroups(); if(groupIdx>=f.length) groupIdx=Math.max(0, f.length-1); renderClassifySheet(); }
+function cfNext(){ if(groupIdx<getFilteredGroups().length-1){ groupIdx++; rowCatExpandIdx=-1; renderClassifySheet(); } else cfConfirmAll(); }
 function cfPrev(){ if(groupIdx>0){ groupIdx--; rowCatExpandIdx=-1; renderClassifySheet(); } }
 function cfSaveSoFar(){
+  var filtered=getFilteredGroups();
   var set=[];
-  for(var g=0; g<=groupIdx && g<reviewGroups.length; g++){ set=set.concat(reviewGroups[g]); }
+  for(var g=0; g<=groupIdx && g<filtered.length; g++){ set=set.concat(filtered[g]); }
   if(!set.length){ closeSheet(); return; }
   var remaining=pendingReview.filter(function(t){ return set.indexOf(t)<0; });
   cfCommit(set, remaining);
@@ -2642,7 +2693,7 @@ function cfCommit(toSave, remaining){
   cfSavingOverlay('Saving '+toSave.length+'…', false);
   moWriteData(candidate, function(){
     D=candidate;
-    pendingReview=remaining; groupIdx=0; rowCatExpandIdx=-1;
+    pendingReview=remaining; groupIdx=0; rowCatExpandIdx=-1; reviewSearch='';
     var months=toSave.map(function(t){ return t.date.slice(0,7); }).sort();
     if(months.length) currentMonth=months[months.length-1];
     closeSheet(); render();
