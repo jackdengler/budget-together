@@ -956,6 +956,25 @@
       overflow-x: auto;
       margin-top: calc(8px * var(--z));
     }
+    /* Paystub review sheet */
+    .ps-info {
+      background: rgba(58,106,58,0.08);
+      border: 1px solid rgba(58,106,58,0.2);
+      border-radius: calc(10px * var(--z));
+      padding: calc(10px * var(--z)) calc(12px * var(--z));
+      margin-bottom: calc(4px * var(--z));
+      font-size: calc(12px * var(--z));
+    }
+    .ps-row {
+      display: flex;
+      align-items: center;
+      gap: calc(10px * var(--z));
+      padding: calc(9px * var(--z)) 0;
+      border-bottom: 1px solid var(--surface-border);
+    }
+    .ps-cb { width: calc(18px * var(--z)); height: calc(18px * var(--z)); flex-shrink: 0; accent-color: var(--primary); }
+    .ps-lbl { flex: 1; font-size: calc(13px * var(--z)); font-weight: 600; color: var(--text); }
+    .ps-amt { font-size: calc(13px * var(--z)); font-weight: 800; flex-shrink: 0; font-variant-numeric: tabular-nums; }
   </style>
 </head>
 <body>
@@ -1998,13 +2017,347 @@ function classifyCats(){
   return out;
 }
 
+// ── PDF import (bank statements + paystubs) ────────────────────────────────
+// Verbatim port of the web app's PDF pipeline. pdf.js is loaded on demand from
+// the same CDN the web app uses. Bank statements feed the shared classify flow;
+// paystubs open a dedicated checkbox review sheet.
+var _pdfJsLoad = null;
+function loadPdfJs(){
+  if(window.pdfjsLib) return Promise.resolve();
+  if(!_pdfJsLoad){
+    _pdfJsLoad = new Promise(function(res, rej){
+      var s=document.createElement('script');
+      s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      s.onload=res;
+      s.onerror=function(){ _pdfJsLoad=null; rej(new Error('PDFLIB')); };
+      document.head.appendChild(s);
+    }).then(function(){
+      pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    });
+  }
+  return _pdfJsLoad;
+}
+function extractPdfText(file){
+  return loadPdfJs().then(function(){ return file.arrayBuffer(); }).then(function(ab){
+    return pdfjsLib.getDocument({data:ab}).promise;
+  }).then(function(pdf){
+    var pageChain=Promise.resolve([]);
+    var _p = function(i){
+      return pdf.getPage(i).then(function(page){
+        var vp=page.getViewport({scale:1});
+        return page.getTextContent().then(function(content){
+          var items=[];
+          for(var c=0;c<content.items.length;c++){
+            var item=content.items[c];
+            if(!item.str.trim()) continue;
+            items.push({ x:item.transform[4], y:Math.round(vp.height-item.transform[5]), w:item.width*Math.abs(item.transform[0]), str:item.str });
+          }
+          items.sort(function(a,b){ return a.y!==b.y ? a.y-b.y : a.x-b.x; });
+          var lineMap={};
+          for(var k=0;k<items.length;k++){ var it=items[k]; var bucket=Math.round(it.y/4)*4; if(!lineMap[bucket]) lineMap[bucket]=[]; lineMap[bucket].push(it); }
+          var lines=Object.keys(lineMap).sort(function(a,b){return a-b;}).map(function(key){
+            var row=lineMap[key], line=row[0].str;
+            for(var j=1;j<row.length;j++){ var gap=row[j].x-(row[j-1].x+row[j-1].w); line+=(gap>1?' ':'')+row[j].str; }
+            return line;
+          });
+          return lines.join('\n');
+        });
+      });
+    };
+    var texts=[];
+    for(var i=1;i<=pdf.numPages;i++){
+      (function(n){ pageChain=pageChain.then(function(){ return _p(n).then(function(t){ texts.push(t); }); }); })(i);
+    }
+    return pageChain.then(function(){ return texts.join('\n'); });
+  });
+}
+// Smart year: most recently completed occurrence of a month.
+function cnbYear(month){ var now=new Date(); var curY=now.getFullYear(), curM=now.getMonth()+1; return month<curM ? curY : curY-1; }
+function isCNBStatement(text){ return /city\s*national\s*bank/i.test(text) && /electronic\s*debit/i.test(text); }
+function parseCNBStatement(text, person){
+  var lines=text.split('\n').map(function(l){return l.trim();}).filter(Boolean);
+  var norm=function(line){ return line.replace(/\s/g,'').toUpperCase(); };
+  var stmtMonth=null;
+  for(var i=0;i<lines.length;i++){ var dm=lines[i].match(/^(\d{1,2})-(\d{1,2})/); if(dm){ stmtMonth=parseInt(dm[1]); break; } }
+  var stmtYear=stmtMonth ? cnbYear(stmtMonth) : new Date().getFullYear();
+  var txns=[], currentSection=null;
+  for(var li=0;li<lines.length;li++){
+    var line=lines[li], n=norm(line);
+    if(n==='ELECTRONICCREDITS'){ currentSection={isCredit:true}; continue; }
+    if(n==='OTHERCREDITS'){ currentSection={isCredit:true}; continue; }
+    if(n.indexOf('ELECTRONICDEBITS')===0){ currentSection={isCredit:false}; continue; }
+    if(n==='CHECKSPAID'){ currentSection={isCredit:false, isChecks:true}; continue; }
+    if(n.indexOf('DAILYBALANCE')===0||n.indexOf('OVERDRAFT')===0||n.indexOf('PLEASEEXAMINE')===0||n.indexOf('ACCOUNTSUMMARY')===0){ currentSection=null; continue; }
+    if(/Page\s*\d/i.test(line) && !/TRAN/i.test(line)) continue;
+    if(!currentSection) continue;
+    if(n.indexOf('DATEDESCRIPTION')===0||n.indexOf('NUMBERDATE')===0) continue;
+    if(/Account\s*#/i.test(line) || /^September|^October|^November|^December|^January|^February|^March|^April|^May|^June|^July|^August/i.test(line)) continue;
+    if(currentSection.isChecks){
+      var checkRe=/(\d+?)(\d{1,2})-(\d{1,2})\s*([\d,]+\.\d{2})/g, cm;
+      while((cm=checkRe.exec(line))!==null){
+        var checkNum=cm[1], mo=cm[2].padStart(2,'0'), day=cm[3].padStart(2,'0');
+        txns.push({id:uid(), date:stmtYear+'-'+mo+'-'+day, amount:parseFloat(cm[4].replace(/,/g,'')), description:'Check #'+checkNum, category:categorize('Check'), person:person, shared:false, settled:false, splitRatio:0.5, note:'', excluded:false});
+      }
+    } else {
+      var stripped=line.replace(/\s*TRAN[\s]*D[\s]*A?[\s]*TE[\s]+\d{2}-\d{2}-\d{2}/gi,'');
+      var txnM=stripped.match(/^(\d{1,2})-(\d{1,2})\s*(.+?)\s*([\d,]+\.\d{2})\s*$/);
+      if(txnM){
+        var mo2=txnM[1].padStart(2,'0'), day2=txnM[2].padStart(2,'0');
+        var desc=txnM[3].replace(/\s+/g,' ').trim().replace(/^(Ck\s*Card|Card|Preauthorized\s*Credit|Zelle\s*Credit|Preauthorized\s*Debit|Account\s*Transfer\s*Cr\.?)\s*/i,'').trim();
+        var rawAmt=parseFloat(txnM[4].replace(/,/g,''));
+        var amount=currentSection.isCredit ? -rawAmt : rawAmt;
+        txns.push({id:uid(), date:stmtYear+'-'+mo2+'-'+day2, amount:amount, description:desc, category:categorize(desc), person:person, shared:false, settled:false, splitRatio:0.5, note:'', excluded:false});
+      } else if(txns.length && n.indexOf('DATE')!==0 && n.indexOf('NUMBER')!==0){
+        var contStripped=line.replace(/\s*TRAN[\s]*D[\s]*A?[\s]*TE[\s]+\d{2}-\d{2}-\d{2}/gi,'');
+        var amtM=contStripped.match(/([\d,]+\.\d{2})\s*$/);
+        if(amtM){ var extra=contStripped.replace(/([\d,]+\.\d{2})\s*$/,'').replace(/\s+/g,' ').trim(); if(extra) txns[txns.length-1].description+=' '+extra; }
+        else { txns[txns.length-1].description+=' '+contStripped.replace(/\s+/g,' ').trim(); }
+      }
+    }
+  }
+  return txns;
+}
+function isChaseStatement(text){ var n=text.replace(/\s/g,'').toLowerCase(); return n.indexOf('xxxxxxxxxxxx')>=0 && n.indexOf('merchantname')>=0; }
+function parseChaseStatement(text, person){
+  var lines=text.split('\n').map(function(l){return l.trim();}).filter(Boolean);
+  var stmtMonth=null, sdM=text.match(/(?:Statement Date|Closing Date)[:\s]*(\d{1,2})\/(\d{1,2})\/(\d{2,4})/i);
+  if(sdM) stmtMonth=parseInt(sdM[1]);
+  var stmtYear=stmtMonth ? cnbYear(stmtMonth) : new Date().getFullYear();
+  var txns=[], inTxnSection=false;
+  for(var i=0;i<lines.length;i++){
+    var line=lines[i];
+    if(/^Date of$/i.test(line) || /Transaction\s+Merchant Name/i.test(line)){ inTxnSection=true; continue; }
+    if(/^\d{4}\s+Totals/i.test(line) || /^Total fees/i.test(line) || /^Your Annual/i.test(line) || /^Annual$/i.test(line) || /^Balance Type/i.test(line)){ inTxnSection=false; continue; }
+    if(!inTxnSection) continue;
+    var txnM=line.match(/^(\d{1,2})\/(\d{1,2})\s*(.+?)\s*(-?[\d,]+\.\d{2})\s*$/);
+    if(txnM){
+      var mo=txnM[1].padStart(2,'0'), day=txnM[2].padStart(2,'0');
+      var desc=txnM[3].replace(/\s+/g,' ').trim();
+      if(/payment\s+thank\s+you|automatic\s+payment|returned\s+payment/i.test(desc)) continue;
+      desc=desc.replace(/\s+\d{3}-\d{3}-\d{4}\s+[A-Z]{2}$/,'').replace(/\s+[A-Z]{2}$/,'').trim();
+      var amount=parseFloat(txnM[4].replace(/,/g,''));
+      txns.push({id:uid(), date:stmtYear+'-'+mo+'-'+day, amount:amount, description:desc, category:categorize(desc), person:person, shared:false, settled:false, splitRatio:0.5, note:'', excluded:false});
+    }
+  }
+  return txns;
+}
+function isSoFiStatement(text){ return /sofi\s*bank/i.test(text) && /Transaction\s*ID:/i.test(text); }
+function parseSoFiStatement(text, person){
+  var lines=text.split('\n').map(function(l){return l.trim();}).filter(Boolean);
+  var TYPES='Interest Earned|Direct Deposit|Direct Payment|Debit Card|Withdrawal|Overdraft|Deposit|Other|ATM|Check|Transfer|Fee';
+  var typeRe=new RegExp('^(?:'+TYPES+')','i');
+  var txns=[], seen={};
+  for(var i=0;i<lines.length;i++){
+    var line=lines[i];
+    var m=line.match(/^([A-Z][a-z]{2}\s+\d{1,2},\s*\d{4})(.+?)(-?\$[\d,]+\.\d{2})(-?\$[\d,]+\.\d{2})$/);
+    if(!m) continue;
+    var d=new Date(m[1]); if(isNaN(d.getTime())) continue;
+    var date=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    var desc=m[2].replace(typeRe,'').replace(/\s+/g,' ').trim(); if(!desc) desc=m[2].replace(/\s+/g,' ').trim();
+    var amtStr=m[3], val=parseFloat(amtStr.replace(/[-$,]/g,'')); if(!val) continue;
+    var amount=/^-/.test(amtStr) ? val : -val;
+    var key=date+'|'+desc+'|'+amount; if(seen[key]) continue; seen[key]=1;
+    txns.push({id:uid(), date:date, amount:amount, description:desc, category:categorize(desc), person:person, shared:false, settled:false, splitRatio:0.5, note:'', excluded:false});
+  }
+  return txns;
+}
+// Paystub amount helpers (ADP spaced/compact + standard decimal).
+function stubAmt(s){
+  if(!s) return null;
+  var str=String(s).trim();
+  if(/\d\.\d{2}$/.test(str)) return parseFloat(str.replace(/[$,\s]/g,''))||null;
+  var digits=str.replace(/\s/g,'');
+  if(!/^\d+$/.test(digits) || digits.length<2) return null;
+  return parseFloat(digits.slice(0,-2)+'.'+digits.slice(-2))||null;
+}
+function firstAmt(line){
+  var stdM=line.match(/\$?\s*-?([\d,]+\.\d{2})/);
+  if(stdM){ var v=parseFloat(stdM[1].replace(/,/g,'')); if(v>0) return v; }
+  var adpM=line.match(/\b(\d{1,6}(?:\s\d{3})*\s\d{2})\b/);
+  if(adpM){ var v2=stubAmt(adpM[1]); if(v2&&v2>0) return v2; }
+  var starM=line.match(/-?(\d{2,7})\*/);
+  if(starM){ var v3=stubAmt(starM[1]); if(v3&&v3>0) return v3; }
+  var dolM=line.match(/\$(\d{3,})/);
+  if(dolM){ var d=dolM[1]; for(var n=Math.min(7,d.length);n>=3;n--){ var v4=stubAmt(d.slice(0,n)); if(v4&&v4>0&&v4<50000) return v4; } }
+  var eolM=line.match(/-(\d{3,7})\s*$/);
+  if(eolM){ var v5=stubAmt(eolM[1]); if(v5&&v5>0) return v5; }
+  return null;
+}
+function compactAmt(line, cap){
+  var m=line.match(/[-](\d{3,})/) || line.match(/[A-Za-z](\d{3,})/);
+  if(!m) return null;
+  var d=m[1];
+  for(var n=Math.min(7,d.length);n>=3;n--){ var v=stubAmt(d.slice(0,n)); if(v&&v>0&&v<=cap) return v; }
+  return null;
+}
+function parsePaystubText(text){
+  var result={entries:[]};
+  function toIso(d){ if(!d) return null; var p=d.split('/'); return p[2]+'-'+p[0].padStart(2,'0')+'-'+p[1].padStart(2,'0'); }
+  var flat=text.replace(/\n/g,' ').replace(/\(cid:\d+\)/g,' ').replace(/\s+/g,' ');
+  var lines=text.split('\n').map(function(l){return l.trim();}).filter(Boolean);
+  function parseStubDate(str){
+    if(!str) return null;
+    if(/\d{1,2}\/\d{1,2}\/\d{4}/.test(str)) return str.match(/(\d{1,2}\/\d{1,2}\/\d{4})/)[1];
+    var d=new Date(str); if(!isNaN(d.getTime())) return (d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear();
+    return null;
+  }
+  var pdM=flat.match(/(?:Pay|Check)\s+[Dd]ate[:\s]+(\w[^\d]*\d[\d, /]+\d{4})/);
+  result.payDate=pdM ? parseStubDate(pdM[1].trim()) : null;
+  result.payDateIso=toIso(result.payDate);
+  var pbM=flat.match(/Period Beginning[:\s]+(\d{1,2}\/\d{1,2}\/\d{4})/);
+  var peM=flat.match(/Period Ending[:\s]+(\d{1,2}\/\d{1,2}\/\d{4})/);
+  result.periodStart=toIso(pbM?pbM[1]:null);
+  result.periodEnd=toIso(peM?peM[1]:null);
+  var nameM=flat.match(/Pay\s+[Dd]ate[:\s]+\d{1,2}\/\d{1,2}\/\d{4}\s+([A-Z][A-Z ]+[A-Z])\s+(?:Filing|Social|XXX)/);
+  var nbcNameM=flat.match(/\bName[:\s]+([A-Z][a-zA-Z]+(?: [A-Z][a-zA-Z]+){1,3})/);
+  result.employeeName=nameM ? nameM[1].trim() : (nbcNameM ? nbcNameM[1].trim() : null);
+  var seenLabels={};
+  var addEntry=function(e){ if(!seenLabels[e.label]){ seenLabels[e.label]=1; result.entries.push(e); } };
+  for(var i=0;i<lines.length;i++){
+    var line=lines[i];
+    if(/^Current:/i.test(line) && !result.netPay){
+      var amts=[]; var mm; var re=/([\d,]+\.\d{2})/g;
+      while((mm=re.exec(line))!==null){ amts.push(parseFloat(mm[1].replace(/,/g,''))); }
+      if(amts.length>=2){ result.grossPay=amts[0]; var net=amts[amts.length-1]; result.netPay=net; addEntry({label:'Net Pay (take-home)', amount:net, category:'income', type:'income', checked:true}); }
+      continue;
+    }
+    var amt=firstAmt(line);
+    if(/\bnet\s+pay\b/i.test(line) && !/check/i.test(line)){ var v=amt||compactAmt(line,50000); if(v){ result.netPay=v; addEntry({label:'Net Pay (take-home)',amount:v,category:'income',type:'income',checked:true}); } }
+    else if(/\bgross\s+pay\b/i.test(line)){ var vg=amt||compactAmt(line,50000); if(vg) result.grossPay=vg; }
+    else if(/\broth\b/i.test(line)){ var vr=amt||compactAmt(line,3000); if(vr) addEntry({label:'Roth 401k Contribution',amount:vr,category:'income',type:'income',checked:true}); }
+    else if(/\b401[kK]\b/i.test(line) && !/match/i.test(line) && !/roth/i.test(line)){ var v4=amt||compactAmt(line,3000); if(v4) addEntry({label:'401k Contribution',amount:v4,category:'income',type:'income',checked:true}); }
+    else if(/er\s*401[kK]\s*match/i.test(line)){ var vm=amt||compactAmt(line,1500); if(vm) addEntry({label:'Employer 401k Match',amount:vm,category:'income',type:'income',checked:false}); }
+    else if(/erhsa|er\s+hsa/i.test(line)){ var ve=amt||compactAmt(line,500); if(ve) addEntry({label:'Employer HSA Contribution',amount:ve,category:'income',type:'income',checked:false}); }
+    else if(!amt){ continue; }
+    else if(/\bmedical\b/i.test(line) && !/medicare/i.test(line)){ addEntry({label:'Medical Insurance',amount:amt,category:'insurance',type:'expense',checked:true}); }
+    else if(/\bdental\b/i.test(line)){ addEntry({label:'Dental Insurance',amount:amt,category:'insurance',type:'expense',checked:true}); }
+    else if(/\bvision\b/i.test(line)){ addEntry({label:'Vision Insurance',amount:amt,category:'insurance',type:'expense',checked:true}); }
+    else if(/ltdimp|long.?term\s+dis/i.test(line)){ addEntry({label:'LTD Insurance',amount:amt,category:'insurance',type:'expense',checked:true}); }
+    else if(/\bhsa\b/i.test(line) && !/er\s*hsa|erhsa/i.test(line)){ addEntry({label:'HSA Contribution',amount:amt,category:'income',type:'income',checked:true}); }
+  }
+  var _adpAmt='\\$?\\s*-?\\s*(\\d{1,6}(?:\\s\\d{3})*\\s\\d{2})\\b';
+  var _stdAmt='\\$?\\s*-?\\s*([\\d,]+\\.\\d{2})';
+  var _anyAmt='(?:'+_stdAmt+'|'+_adpAmt+')';
+  var _fbAmt=function(txt, labelRe, cap){
+    var m=txt.match(labelRe); if(!m) return null;
+    var rest=txt.slice(m.index+m[0].length);
+    var sm=rest.match(new RegExp('^\\s*'+_anyAmt));
+    if(sm){ if(sm[1]) return parseFloat(sm[1].replace(/,/g,''))||null; if(sm[2]) return stubAmt(sm[2])||null; }
+    var starM=rest.match(/^\s*[-$]?\s*(\d{2,7})\*/);
+    if(starM){ var v=stubAmt(starM[1]); if(v&&v>0) return v; }
+    if(cap){ var dm=rest.match(/^\s*[-$]?\s*(\d{3,})/); if(dm){ var d=dm[1]; for(var n=Math.min(7,d.length);n>=3;n--){ var v2=stubAmt(d.slice(0,n)); if(v2&&v2>0&&v2<=cap) return v2; } } }
+    return null;
+  };
+  var _fb=function(label, labelRe, cat, type, checked, cap){ if(seenLabels[label]) return; var v=_fbAmt(flat, labelRe, cap); if(v&&v>0) addEntry({label:label,amount:v,category:cat,type:type,checked:checked}); };
+  if(!seenLabels['Net Pay (take-home)']){ var vnp=_fbAmt(flat,/Net\s+Pay/i,50000); if(vnp&&vnp>0){ result.netPay=vnp; addEntry({label:'Net Pay (take-home)',amount:vnp,category:'income',type:'income',checked:true}); } }
+  _fb('Roth 401k Contribution', /\bRoth\b/i, 'income','income',true, 3000);
+  _fb('HSA Contribution', /\bHsa\b(?!\s*(?:Er|Employer))/i, 'income','income',true, 1000);
+  _fb('Employer 401k Match', /Er\s*401[kK]\s*Match/i, 'income','income',false, 1500);
+  _fb('Employer HSA Contribution', /(?:Erhsa|Er\s+Hsa)/i, 'income','income',false, 500);
+  _fb('Dental Insurance', /\bDental\b/i, 'insurance','expense',true, 200);
+  _fb('Medical Insurance', /\bMedical\b(?!.*?medicare)/i, 'insurance','expense',true, 2000);
+  _fb('Vision Insurance', /\bVision\b/i, 'insurance','expense',true, 100);
+  _fb('LTD Insurance', /\bLTDImpInc\b/i, 'insurance','expense',true, 200);
+  if(!result.grossPay){ var vgp=_fbAmt(flat,/Gross\s+Pay/i,50000); if(vgp) result.grossPay=vgp; }
+  if(!result.netPay){
+    var depM=flat.match(/x{4,}\s*\$\s*(\d[\d ]+\d{2})/i) || flat.match(/\$\s*(\d[\d ]+\d{2})\s+x{4,}/i);
+    if(depM){ var vd=stubAmt(depM[1]); if(vd&&vd>0){ result.netPay=vd; addEntry({label:'Net Pay (take-home)',amount:vd,category:'income',type:'income',checked:true}); } }
+  }
+  result.person=(function(){
+    if(!result.employeeName) return 'p1';
+    var name=result.employeeName.toLowerCase();
+    var p1=((D.settings||{}).person1||'').toLowerCase().split(' ');
+    var p2=((D.settings||{}).person2||'').toLowerCase().split(' ');
+    if(p2.some(function(w){return w.length>2 && name.indexOf(w)>=0;})) return 'p2';
+    if(p1.some(function(w){return w.length>2 && name.indexOf(w)>=0;})) return 'p1';
+    return 'p1';
+  })();
+  return result;
+}
+
+// ── Paystub review sheet ───────────────────────────────────────────────────
+var pendingPaystubs = [];
+var _psData = null;
+function showPaystubSheet(parsed){
+  var b=document.getElementById('sheet-back');
+  if(!b){ b=document.createElement('div'); b.id='sheet-back'; b.className='sheet-back'; b.addEventListener('click', function(e){ if(e.target===b) closeSheet(); }); document.body.appendChild(b); }
+  _psData={ parsed:parsed, person:parsed.person||'p1' };
+  renderPaystubSheet();
+}
+function renderPaystubSheet(){
+  var b=document.getElementById('sheet-back'); if(!b||!_psData) return;
+  var parsed=_psData.parsed;
+  var n1=(D.settings||{}).person1||'Person 1', n2=(D.settings||{}).person2||'Person 2';
+  var income=parsed.entries.filter(function(e){return e.type==='income';});
+  var expense=parsed.entries.filter(function(e){return e.type==='expense';});
+  function row(e){
+    var i=parsed.entries.indexOf(e);
+    return '<label class="ps-row"><input type="checkbox" class="ps-cb" data-i="'+i+'"'+(e.checked?' checked':'')+' onchange="psToggle('+i+',this.checked)"><span class="ps-lbl">'+esc(e.label)+'</span><span class="ps-amt" style="color:'+(e.type==='expense'?'var(--red)':'var(--green)')+'">'+(e.type==='expense'?'':'+')+fc0(e.amount)+'</span></label>';
+  }
+  var incomeRows=income.map(row).join(''), expenseRows=expense.map(row).join('');
+  var p1sel=_psData.person==='p1';
+  var multi=pendingPaystubs.length>1 ? ' ('+(pendingPaystubs.indexOf(parsed)+1)+' of '+pendingPaystubs.length+')' : '';
+  b.innerHTML='<div class="sheet">'
+    +'<div class="sheet-title">📄 Import Paystub'+multi+'</div>'
+    +'<div class="ps-info"><div style="font-weight:800">Pay Date: '+esc(parsed.payDate||'—')+'</div>'
+      +(parsed.grossPay?'<div style="color:var(--text-2);margin-top:calc(2px*var(--z))">Gross '+fc0(parsed.grossPay)+' · Take-home '+fc0(parsed.netPay||0)+'</div>':'')
+      +(parsed.employeeName?'<div style="color:var(--text-3);margin-top:calc(2px*var(--z));font-size:calc(11px*var(--z))">'+esc(parsed.employeeName)+'</div>':'')
+    +'</div>'
+    +'<div class="ct-list">'
+      +(incomeRows?'<div class="cf-label" style="color:var(--green)">💰 Income</div>'+incomeRows:'')
+      +(expenseRows?'<div class="cf-label" style="color:var(--red)">🏥 Benefits &amp; Insurance</div>'+expenseRows:'')
+      +(!incomeRows&&!expenseRows?'<div style="text-align:center;color:var(--text-3);padding:20px;font-size:13px">No items detected</div>':'')
+    +'</div>'
+    +'<div class="cf-label">Assign to</div>'
+    +'<div class="cf-owner-row">'
+      +'<button class="cf-owner" onclick="psSetPerson(\'p1\')" style="'+(p1sel?'border-color:var(--p1);color:var(--p1);background:rgba(106,138,170,0.14)':'')+'">'+esc(n1)+'</button>'
+      +'<button class="cf-owner" onclick="psSetPerson(\'p2\')" style="'+(!p1sel?'border-color:var(--p2);color:var(--p2);background:rgba(154,122,42,0.14)':'')+'">'+esc(n2)+'</button>'
+    +'</div>'
+    +'<div class="cf-actions">'
+      +'<button class="cf-btn" onclick="psSkip()">Skip</button>'
+      +'<button class="cf-btn primary" onclick="psImport()">Import →</button>'
+    +'</div>'
+    +'</div>';
+}
+function psToggle(i, val){ if(_psData) _psData.parsed.entries[i].checked=val; }
+function psSetPerson(p){ if(_psData) _psData.person=p; renderPaystubSheet(); }
+function psAfter(){ if(pendingPaystubs.length) showPaystubSheet(pendingPaystubs[0]); else if(pendingReview.length) openClassifySheet(); else closeSheet(); }
+function psSkip(){ pendingPaystubs.shift(); psAfter(); }
+function psImport(){
+  if(!_psData) return;
+  var parsed=_psData.parsed, person=_psData.person;
+  var dateIso=parsed.payDateIso || (currentMonth+'-13');
+  var chosen=parsed.entries.filter(function(e){ return e.checked; });
+  if(!chosen.length){ moToast('Select at least one item'); return; }
+  var newTx=(D.transactions||[]).slice();
+  chosen.forEach(function(e){
+    var amount=e.type==='expense' ? e.amount : -e.amount;
+    var excluded=e.type==='expense';
+    newTx.push({id:uid(), date:dateIso, amount:amount, description:e.label, category:e.category, person:person, note:'paystub', shared:false, settled:false, splitRatio:0.5, excluded:excluded});
+  });
+  var candidate=Object.assign({}, D, {transactions:newTx});
+  cfSavingOverlay('Saving paystub…', false, 'renderPaystubSheet');
+  moWriteData(candidate, function(){
+    D=candidate;
+    currentMonth=dateIso.slice(0,7);
+    var nInc=chosen.filter(function(e){return e.type==='income';}).length;
+    var nExp=chosen.filter(function(e){return e.type==='expense';}).length;
+    pendingPaystubs.shift();
+    render();
+    moToast('✅ Imported '+(nInc?nInc+' income':'')+(nInc&&nExp?' + ':'')+(nExp?nExp+' expense':'')+' item'+(chosen.length!==1?'s':''));
+    psAfter();
+  }, function(err){
+    cfSavingOverlay(err && err.message==='TOKEN' ? 'Save failed — token can’t write' : 'Save failed — check connection', true, 'renderPaystubSheet');
+  });
+}
+
 // ── Import orchestration ───────────────────────────────────────────────────
 var pendingReview = [];
 var reviewGroups = [];
 var groupIdx = 0;
 var rowCatExpandIdx = -1;
-var moFileQueue = [];   // {text, person} awaiting processing
-var moMapCtx = null;    // active column-map context
+var moMapCtx = null;       // active column-map context
+var _moMapResolve = null;  // resolves the import loop while a column-map sheet is open
 
 function moToast(msg){
   var el=document.getElementById('mo-toast');
@@ -2026,18 +2379,18 @@ function openImportSheet(){
       +'<div class="lk-sub">Transactions still waiting to be classified.</div>'
     : '';
   b.innerHTML='<div class="sheet">'
-    +'<div class="sheet-title">Import CSV</div>'
+    +'<div class="sheet-title">Import CSV or PDF</div>'
     +resume
-    +'<button class="lk-btn" onclick="moPickCsv(\'p1\')"><i class="bi bi-upload"></i>'+esc(n1)+'’s CSV</button>'
-    +'<button class="lk-btn" onclick="moPickCsv(\'p2\')" style="margin-top:calc(8px*var(--z))"><i class="bi bi-upload"></i>'+esc(n2)+'’s CSV</button>'
-    +'<div class="lk-sub">Bank export, Venmo, or Coinbase CSV. Pick whose account it’s from — you can still change the owner per transaction while classifying. (PDF/paystub import is on the web app.)</div>'
+    +'<button class="lk-btn" onclick="moPickFile(\'p1\')"><i class="bi bi-upload"></i>'+esc(n1)+'’s file</button>'
+    +'<button class="lk-btn" onclick="moPickFile(\'p2\')" style="margin-top:calc(8px*var(--z))"><i class="bi bi-upload"></i>'+esc(n2)+'’s file</button>'
+    +'<div class="lk-sub">Bank CSV (incl. Venmo / Coinbase), bank-statement PDF (City National, Chase, SoFi), or a paystub PDF (ADP, NBCUniversal). Pick whose account it’s from — you can still change the owner per transaction while classifying.</div>'
     +'<button class="sheet-done" onclick="closeSheet()">Done</button>'
     +'</div>';
 }
-function moPickCsv(person){
+function moPickFile(person){
   var inp=document.createElement('input');
   inp.type='file';
-  inp.accept='.csv,text/csv,text/plain,text/comma-separated-values';
+  inp.accept='.csv,.pdf,text/csv,text/plain,text/comma-separated-values,application/pdf';
   inp.multiple=true;
   inp.style.position='fixed'; inp.style.left='-9999px'; inp.style.top='0';
   document.body.appendChild(inp);
@@ -2046,46 +2399,72 @@ function moPickCsv(person){
     try { document.body.removeChild(inp); } catch(e){}
     if(!files.length) return;
     closeSheet();
-    moReadFiles(files, person);
+    moStartImport(files, person);
   });
   inp.click();
 }
-function moReadFiles(files, person){
-  moFileQueue=[]; moMapCtx=null;
-  var pending=files.length;
-  for(var i=0;i<files.length;i++){
-    (function(){
-      var r=new FileReader();
-      r.onload=function(e){ moFileQueue.push({text:String(e.target.result||''), person:person}); if(--pending===0) moDrainQueue(); };
-      r.onerror=function(){ if(--pending===0) moDrainQueue(); };
-      r.readAsText(files[i]);
-    })();
-  }
+function moReadText(file){
+  return new Promise(function(res, rej){
+    var r=new FileReader();
+    r.onload=function(e){ res(String(e.target.result||'')); };
+    r.onerror=function(){ rej(new Error('read')); };
+    r.readAsText(file);
+  });
 }
-function moDrainQueue(){
-  while(moFileQueue.length){
-    var item=moFileQueue[0];
-    var res=moProcessText(item.text, item.person);
-    if(res==='needmap') return;   // map sheet shown; resumes on apply/skip
-    moFileQueue.shift();
-  }
-  if(pendingReview.length) openClassifySheet();
-  else closeSheet();
+// Process each picked file in order. CSV/statement rows accumulate into the
+// classify queue; paystubs into pendingPaystubs. A column-map sheet pauses the
+// loop (await) until the user applies or skips it. When every file is done we
+// show paystub sheets first, then the classify sheet.
+function moStartImport(files, person){
+  moMapCtx=null; _moMapResolve=null;
+  var hasPdf=files.some(function(f){ return /\.pdf$/i.test(f.name); });
+  if(hasPdf) moToast(files.length>1 ? 'Reading files…' : 'Reading PDF…');
+  var chain=Promise.resolve();
+  files.forEach(function(f){
+    chain=chain.then(function(){
+      if(/\.pdf$/i.test(f.name)){
+        return moProcessPdf(f, person).catch(function(e){
+          moToast(e && e.message==='PDFLIB' ? 'Could not load PDF reader (offline?)' : 'Could not read '+(f.name||'PDF'));
+        });
+      }
+      return moReadText(f).then(function(text){ return moProcessCsvText(text, person); })
+        .catch(function(){ moToast('Could not read '+(f.name||'file')); });
+    });
+  });
+  chain.then(function(){
+    if(pendingPaystubs.length){ showPaystubSheet(pendingPaystubs[0]); return; }
+    if(pendingReview.length){ openClassifySheet(); return; }
+    moToast('Nothing new to import'); closeSheet();
+  });
 }
-function moProcessText(text, person){
-  if(isVenmoCSV(text)){ var vt=parseVenmoToTxns(text, person); if(!vt.length){ moToast('No transactions in Venmo CSV'); return 'ok'; } doImportTxnsMobile(vt); return 'ok'; }
-  if(isCoinbaseCSV(text)){ var ct=parseCoinbaseToTxns(text, person); if(!ct.length){ moToast('No transactions in Coinbase CSV'); return 'ok'; } doImportTxnsMobile(ct); return 'ok'; }
-  var p=parseCSV(text);
-  if(!p.headers.length||!p.rows.length){ moToast('Could not read CSV'); return 'ok'; }
-  var det=detectCols(p.headers);
-  if(det.dateCol && det.descCol && (det.amtCol||det.debitCol||det.creditCol)){
-    var invert=false;
-    if(det.amtCol){ var samp=p.rows.slice(0,15).map(function(r){return parseAmt(r[det.amtCol]);}).filter(function(n){return n!==null;}); invert=samp.some(function(n){return n<0;}); }
-    doImportTxnsMobile(rowsToTxns(p.rows, {dateCol:det.dateCol, descCol:det.descCol, amtCol:det.amtCol, debitCol:det.debitCol, creditCol:det.creditCol, invert:invert}, person));
-    return 'ok';
-  }
-  moShowMapSheet(p.headers, p.rows, det, person);
-  return 'needmap';
+function moProcessPdf(file, person){
+  return extractPdfText(file).then(function(text){
+    if(isCNBStatement(text)){ var t=parseCNBStatement(text, person); if(!t.length) moToast('No transactions in CNB statement'); else doImportTxnsMobile(t); return; }
+    if(isChaseStatement(text)){ var t2=parseChaseStatement(text, person); if(!t2.length) moToast('No transactions in Chase statement'); else doImportTxnsMobile(t2); return; }
+    if(isSoFiStatement(text)){ var t3=parseSoFiStatement(text, person); if(!t3.length) moToast('No transactions in SoFi statement'); else doImportTxnsMobile(t3); return; }
+    var parsed=parsePaystubText(text);
+    if(person && !parsed.employeeName) parsed.person=person;
+    if(!parsed.entries.length && !parsed.payDate){ moToast('Could not recognize PDF format'); return; }
+    pendingPaystubs.push(parsed);
+  });
+}
+function moProcessCsvText(text, person){
+  return new Promise(function(resolve){
+    if(isVenmoCSV(text)){ var vt=parseVenmoToTxns(text, person); if(!vt.length) moToast('No transactions in Venmo CSV'); else doImportTxnsMobile(vt); return resolve(); }
+    if(isCoinbaseCSV(text)){ var ct=parseCoinbaseToTxns(text, person); if(!ct.length) moToast('No transactions in Coinbase CSV'); else doImportTxnsMobile(ct); return resolve(); }
+    var p=parseCSV(text);
+    if(!p.headers.length||!p.rows.length){ moToast('Could not read CSV'); return resolve(); }
+    var det=detectCols(p.headers);
+    if(det.dateCol && det.descCol && (det.amtCol||det.debitCol||det.creditCol)){
+      var invert=false;
+      if(det.amtCol){ var samp=p.rows.slice(0,15).map(function(r){return parseAmt(r[det.amtCol]);}).filter(function(n){return n!==null;}); invert=samp.some(function(n){return n<0;}); }
+      doImportTxnsMobile(rowsToTxns(p.rows, {dateCol:det.dateCol, descCol:det.descCol, amtCol:det.amtCol, debitCol:det.debitCol, creditCol:det.creditCol, invert:invert}, person));
+      return resolve();
+    }
+    // Undetectable — show the column-map sheet and resume when applied/skipped.
+    _moMapResolve=resolve;
+    moShowMapSheet(p.headers, p.rows, det, person);
+  });
 }
 function doImportTxnsMobile(txns){
   var existing={};
@@ -2143,9 +2522,9 @@ function moMapApply(){
   if(invV==='auto' && amtCol){ var samp=rows.slice(0,10).map(function(r){return parseAmt(r[amtCol]);}).filter(function(n){return n!==null;}); invert=samp.some(function(n){return n<0;}); }
   else invert=invV==='1';
   doImportTxnsMobile(rowsToTxns(rows, {dateCol:dateCol, descCol:descCol, amtCol:amtCol, debitCol:debitCol, creditCol:creditCol, invert:invert}, person));
-  moMapCtx=null; moFileQueue.shift(); moDrainQueue();
+  moMapCtx=null; var r=_moMapResolve; _moMapResolve=null; if(r) r();
 }
-function moMapSkip(){ moMapCtx=null; if(moFileQueue.length) moFileQueue.shift(); moDrainQueue(); }
+function moMapSkip(){ moMapCtx=null; var r=_moMapResolve; _moMapResolve=null; if(r) r(); }
 
 // ── Grouped classify sheet ─────────────────────────────────────────────────
 function buildReviewGroups(){
@@ -2273,12 +2652,12 @@ function cfCommit(toSave, remaining){
     cfSavingOverlay(e && e.message==='TOKEN' ? 'Save failed — token can’t write' : 'Save failed — check connection', true);
   });
 }
-function cfSavingOverlay(msg, isErr){
+function cfSavingOverlay(msg, isErr, backFn){
   var b=document.getElementById('sheet-back'); if(!b) return;
   b.innerHTML='<div class="sheet">'
     +'<div class="sheet-title">Import</div>'
     +'<div style="text-align:center;padding:calc(30px*var(--z)) calc(12px*var(--z));font-size:calc(14px*var(--z));font-weight:600;color:'+(isErr?'var(--red)':'var(--text-2)')+'">'+esc(msg)+'</div>'
-    +(isErr ? '<button class="sheet-done" onclick="renderClassifySheet()">Back</button>' : '')
+    +(isErr ? '<button class="sheet-done" onclick="'+(backFn||'renderClassifySheet')+'()">Back</button>' : '')
     +'</div>';
 }
 
