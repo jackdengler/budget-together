@@ -366,6 +366,7 @@
     }
     .mo-arrow:disabled { color: var(--text-3); opacity: .4; }
     .mo-gear {
+      position: relative;
       border: none;
       background: none;
       color: var(--text-sub);
@@ -770,6 +771,190 @@
       color: var(--text-3);
       text-align: center;
       margin: calc(6px * var(--z)) 0 calc(12px * var(--z));
+    }
+    /* Toast */
+    .mo-toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc((72px + env(safe-area-inset-bottom)) * var(--z));
+      transform: translateX(-50%);
+      background: rgba(42,37,32,0.95);
+      color: #fff;
+      font-size: calc(12px * var(--z));
+      font-weight: 600;
+      padding: calc(9px * var(--z)) calc(16px * var(--z));
+      border-radius: calc(20px * var(--z));
+      z-index: 80;
+      max-width: 80%;
+      text-align: center;
+      opacity: 0;
+      transition: opacity .2s;
+      pointer-events: none;
+    }
+    .mo-toast.show { opacity: 1; }
+    /* Review badge on the import button */
+    .cf-badge {
+      position: absolute;
+      top: calc(-3px * var(--z));
+      right: calc(-1px * var(--z));
+      min-width: calc(15px * var(--z));
+      height: calc(15px * var(--z));
+      padding: 0 calc(3px * var(--z));
+      border-radius: calc(8px * var(--z));
+      background: var(--primary);
+      color: #fff;
+      font-size: calc(9px * var(--z));
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+    /* Classify (import review) sheet */
+    .cf-progress {
+      font-size: calc(11px * var(--z));
+      font-weight: 700;
+      color: var(--text-sub);
+      text-align: center;
+      margin-bottom: calc(6px * var(--z));
+    }
+    .cf-group-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: calc(8px * var(--z));
+      margin-bottom: calc(4px * var(--z));
+    }
+    .cf-group-name {
+      font-size: calc(15px * var(--z));
+      font-weight: 800;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .cf-group-count { font-size: calc(11px * var(--z)); font-weight: 700; color: var(--text-3); flex-shrink: 0; }
+    .cf-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto auto;
+      align-items: center;
+      gap: calc(5px * var(--z));
+      padding: calc(6px * var(--z)) 0;
+      border-top: 1px solid var(--surface-border);
+    }
+    .cf-row-main { min-width: 0; }
+    .cf-row-desc {
+      font-size: calc(12px * var(--z));
+      font-weight: 600;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .cf-row-date { font-size: calc(10px * var(--z)); color: var(--text-3); font-variant-numeric: tabular-nums; }
+    .cf-row-amt { font-size: calc(12px * var(--z)); font-weight: 800; font-variant-numeric: tabular-nums; }
+    .cf-row-amt.inc { color: var(--green); }
+    .cf-icon-btn {
+      border: 1px solid transparent;
+      border-radius: calc(8px * var(--z));
+      background: transparent;
+      font-size: calc(13px * var(--z));
+      width: calc(30px * var(--z));
+      height: calc(30px * var(--z));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .cf-owner-pill {
+      border: 1px solid;
+      border-radius: calc(12px * var(--z));
+      font-size: calc(10px * var(--z));
+      font-weight: 800;
+      padding: calc(3px * var(--z)) calc(7px * var(--z));
+      max-width: calc(70px * var(--z));
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .cf-del { border: none; background: transparent; color: var(--text-3); font-size: calc(14px * var(--z)); width: calc(24px * var(--z)); }
+    .cf-label {
+      font-size: calc(10px * var(--z));
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: calc(1px * var(--z));
+      color: var(--text-sub);
+      margin: calc(10px * var(--z)) 0 calc(5px * var(--z));
+    }
+    .cf-cat-grid, .cf-row-cats { display: grid; grid-template-columns: repeat(2, 1fr); gap: calc(5px * var(--z)); }
+    .cf-row-cats { grid-column: 1 / -1; padding: calc(6px * var(--z)) 0; }
+    .cf-cat {
+      display: flex;
+      align-items: center;
+      gap: calc(5px * var(--z));
+      padding: calc(7px * var(--z)) calc(8px * var(--z));
+      border: calc(1.5px * var(--z)) solid var(--surface-border);
+      border-radius: calc(9px * var(--z));
+      background: var(--surface);
+      font-size: calc(12px * var(--z));
+      font-weight: 600;
+      color: var(--text);
+      text-align: left;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .cf-cat i { font-size: calc(13px * var(--z)); flex-shrink: 0; }
+    .cf-cat.sel { font-weight: 800; }
+    .cf-owner-row { display: flex; gap: calc(5px * var(--z)); }
+    .cf-owner {
+      flex: 1;
+      padding: calc(9px * var(--z)) 0;
+      border: calc(1.5px * var(--z)) solid var(--surface-border);
+      border-radius: calc(9px * var(--z));
+      background: var(--surface);
+      font-size: calc(12px * var(--z));
+      font-weight: 700;
+      color: var(--text-2);
+    }
+    .cf-actions { display: flex; flex-wrap: wrap; gap: calc(6px * var(--z)); margin-top: calc(12px * var(--z)); flex-shrink: 0; }
+    .cf-btn {
+      flex: 1;
+      min-width: calc(78px * var(--z));
+      padding: calc(11px * var(--z)) calc(6px * var(--z));
+      border: calc(1.5px * var(--z)) solid var(--surface-border);
+      border-radius: calc(10px * var(--z));
+      background: var(--surface);
+      font-size: calc(12px * var(--z));
+      font-weight: 700;
+      color: var(--text-2);
+    }
+    .cf-btn.primary { background: var(--primary); color: #fff; border-color: var(--primary); flex: 1.4; }
+    .cf-btn.danger { color: var(--red); border-color: rgba(168,74,42,0.4); }
+    /* Column-map sheet */
+    .cf-map-row { display: flex; align-items: center; justify-content: space-between; gap: calc(10px * var(--z)); padding: calc(6px * var(--z)) 0; }
+    .cf-map-row label { font-size: calc(12px * var(--z)); font-weight: 600; color: var(--text-2); }
+    .cf-sel {
+      flex: 1;
+      max-width: 58%;
+      padding: calc(7px * var(--z));
+      font-size: calc(12px * var(--z));
+      font-family: inherit;
+      border: calc(1.5px * var(--z)) solid var(--surface-border);
+      border-radius: calc(9px * var(--z));
+      background: var(--surface);
+      color: var(--text);
+    }
+    .cf-preview {
+      background: rgba(0,0,0,0.04);
+      border-radius: calc(8px * var(--z));
+      padding: calc(8px * var(--z));
+      font-size: calc(10px * var(--z));
+      font-family: monospace;
+      color: var(--text-2);
+      white-space: pre;
+      overflow-x: auto;
+      margin-top: calc(8px * var(--z));
     }
   </style>
 </head>
@@ -1634,6 +1819,469 @@ function moLogout(){
   moPending=null;
   moShowToken('');
 }
+
+// ── CSV import + classify ──────────────────────────────────────────────────
+// Ports the web app's CSV upload + grouped review flow to mobile. Parsing,
+// auto-categorization and rule-learning mirror docs/index.html exactly so both
+// clients produce identical transactions. PDF/paystub import stays web-only
+// (it needs the pdf.js CDN library and much heavier parsers).
+var _uid = 0;
+function uid(){ return Date.now().toString(36) + (++_uid).toString(36) + Math.random().toString(36).slice(2); }
+function fmtDate(d){ if(!d) return ''; var p=String(d).split('-'); if(p.length<3) return d; return p[1]+'/'+p[2]+'/'+p[0].slice(2); }
+function parseAmt(s){ if(s===''||s==null) return null; var v=String(s).replace(/[$,\s]/g,'').replace(/\(([^)]+)\)/,'-$1').replace(/cr$/i,''); var n=parseFloat(v); return isNaN(n)?null:n; }
+function parseDt(s){
+  if(!s) return null; s=String(s).trim();
+  if(/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0,10);
+  var m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+  if(m){ var mo=m[1], d=m[2], y=m[3]; if(y.length===2) y='20'+y; return y+'-'+mo.padStart(2,'0')+'-'+d.padStart(2,'0'); }
+  var dd=new Date(s);
+  if(!isNaN(dd.getTime())){ return dd.getFullYear()+'-'+String(dd.getMonth()+1).padStart(2,'0')+'-'+String(dd.getDate()).padStart(2,'0'); }
+  return null;
+}
+// Keyword → category map — must mirror the web app's KW exactly.
+var KW = {
+  groceries:['whole foods','trader joe','safeway','kroger','publix','aldi','costco','sprouts','heb','grocery','supermarket','food lion','wegmans','market basket','stop & shop'],
+  dining:['restaurant','cafe','mcdonald','starbucks','chipotle','panera','subway','domino','pizza','taco bell','burger king','wendy','doordash','grubhub','ubereats','postmates','grill','kitchen','eatery','sushi','denny','ihop','applebee','olive garden','cheesecake','chick-fil','raising cane'],
+  transport:['uber','lyft','shell','bp ','chevron','exxon','mobil','sunoco','parking','metro','transit','mta','bart','delta air','united air','southwest air','american airline','jetblue','gas station'],
+  entertain:['amc theatre','regal','ticketmaster','stubhub','steam','playstation','xbox','nintendo','twitch'],
+  subs:['netflix','spotify','hulu','disney+','amazon prime','apple tv','youtube premium','apple music','pandora','duolingo','chatgpt','openai','claude','notion','dropbox','icloud','google one','adobe','canva','linkedin premium','nytimes','wsj','patreon','substack','masterclass','calm','headspace','peloton','nordvpn','expressvpn'],
+  shopping:['amazon','ebay','etsy','zara','h&m','gap ','old navy','nordstrom','macy','best buy','apple store','ikea','home depot','lowe\'s','wayfair','chewy','overstock','target','walmart'],
+  health:['cvs','walgreens','rite aid','pharmacy','doctor','dental','dentist','vision','gym','planet fitness','la fitness','equinox','hospital','clinic','medical','urgent care'],
+  housing:['rent','mortgage','landlord','hoa','lease','property management'],
+  utilities:['electric','electricity','water bill','internet','comcast','xfinity','at&t','verizon','t-mobile','sprint','phone bill','insurance','geico','allstate','state farm','progressive'],
+  travel:['hotel','airbnb','vrbo','hilton','marriott','hyatt','westin','expedia','booking.com','kayak','hertz','enterprise car','avis','airport'],
+  income:['payroll','direct deposit','salary','paycheck','venmo','zelle','cashapp','cash app','mobile deposit','refund','reimbursement','interest payment'],
+  transfer:['internal transfer','account transfer','balance transfer','wire transfer','online transfer','funds transfer','between accounts'],
+  gambling:['draftkings','fanduel','coincasino','coin casino','kalshi'],
+  cash:['atm withdrawal','cash withdrawal','atm fee','atm ','cash advance'],
+};
+function categorize(desc){ if(!desc) return 'other'; var d=desc.toLowerCase(); for(var cat in KW){ var kws=KW[cat]; for(var i=0;i<kws.length;i++){ if(d.indexOf(kws[i])>=0) return cat; } } return 'other'; }
+function normalizeDesc(desc){
+  if(!desc) return '';
+  return desc.toLowerCase().replace(/\d+/g,'').replace(/[#*@\/\\,\.&!]/g,'').replace(/\s+/g,' ').trim()
+    .split(' ').filter(function(w){return w.length>0;}).slice(0,3).join(' ');
+}
+function applyRules(desc){ var key=normalizeDesc(desc); return key ? ((D.rules||{})[key]||null) : null; }
+
+// CSV parsing (verbatim port of the web app's helpers).
+function splitCSVLine(line){
+  var res=[], cur='', inQ=false;
+  for(var i=0;i<line.length;i++){
+    var c=line[i];
+    if(c==='"'){ if(inQ && line[i+1]==='"'){ cur+='"'; i++; } else inQ=!inQ; }
+    else if((c===','||c==='\t') && !inQ){ res.push(cur.trim()); cur=''; }
+    else cur+=c;
+  }
+  res.push(cur.trim());
+  return res;
+}
+function parseCSV(text){
+  var lines=text.trim().split(/\r?\n/);
+  if(!lines.length) return {headers:[], rows:[]};
+  var headers=splitCSVLine(lines[0]).map(function(h){return h.replace(/^["']|["']$/g,'');});
+  var rows=lines.slice(1).filter(function(l){return l.trim();}).map(function(l){
+    var vals=splitCSVLine(l), o={};
+    for(var i=0;i<headers.length;i++){ o[headers[i]]=(vals[i]||'').replace(/^["']|["']$/g,''); }
+    return o;
+  });
+  return {headers:headers, rows:rows};
+}
+function detectCols(headers){
+  var lo=headers.map(function(h){return h.toLowerCase().trim();});
+  function find(){ for(var a=0;a<arguments.length;a++){ var p=arguments[a]; for(var i=0;i<lo.length;i++){ if(lo[i].indexOf(p)>=0) return headers[i]; } } return null; }
+  return {
+    dateCol:  find('transaction date','trans. date','trans date','date'),
+    descCol:  find('description','merchant','payee','name','memo','details'),
+    amtCol:   find('amount'),
+    debitCol: find('debit'),
+    creditCol:find('credit'),
+  };
+}
+function rowsToTxns(rows, map, person){
+  var out=[];
+  for(var r=0;r<rows.length;r++){
+    var row=rows[r];
+    var date=parseDt(row[map.dateCol]);
+    var description=(row[map.descCol]||'').trim();
+    if(!date||!description) continue;
+    var amount;
+    if(map.amtCol && row[map.amtCol]!==undefined){
+      var v=parseAmt(row[map.amtCol]); if(v===null) continue;
+      amount=map.invert ? -v : v;
+    } else if(map.debitCol||map.creditCol){
+      var deb=map.debitCol ? parseAmt(row[map.debitCol]) : null;
+      var cred=map.creditCol ? parseAmt(row[map.creditCol]) : null;
+      if(deb && Math.abs(deb)>0) amount=Math.abs(deb);
+      else if(cred && Math.abs(cred)>0) amount=-Math.abs(cred);
+      else continue;
+    } else continue;
+    if(amount===null||isNaN(amount)) continue;
+    out.push({id:uid(), date:date, description:description, amount:amount, category:categorize(description), person:person, shared:false, settled:false, splitRatio:0.5, note:'', excluded:false});
+  }
+  return out;
+}
+// Venmo CSV (non-standard multi-row header).
+function isVenmoCSV(text){ return text.indexOf('Account Statement')>=0 && text.indexOf('Amount (total)')>=0 && text.indexOf('Datetime')>=0; }
+function parseVenmoToTxns(text, person){
+  var lines=text.split(/\r?\n/);
+  var headerIdx=-1;
+  for(var i=0;i<lines.length;i++){ if(lines[i].indexOf('Datetime')>=0 && lines[i].indexOf('Amount (total)')>=0){ headerIdx=i; break; } }
+  if(headerIdx<0) return [];
+  var headers=splitCSVLine(lines[headerIdx]).map(function(h){return h.replace(/^["']|["']$/g,'');});
+  function col(name){ return headers.indexOf(name); }
+  var iDatetime=col('Datetime'), iType=col('Type'), iStatus=col('Status'), iNote=col('Note'), iFrom=col('From'), iTo=col('To'), iAmt=col('Amount (total)');
+  if(iDatetime<0||iAmt<0) return [];
+  var txns=[];
+  for(var j=headerIdx+1;j<lines.length;j++){
+    var cols=splitCSVLine(lines[j]).map(function(c){return c.replace(/^["']|["']$/g,'');});
+    var status=cols[iStatus]||'', type=cols[iType]||'';
+    if(status!=='Complete' && status!=='Issued') continue;
+    var date=parseDt(cols[iDatetime]||''); if(!date) continue;
+    var amtStr=cols[iAmt]||'';
+    var amtMatch=amtStr.replace(/,/g,'').match(/([+\-])\s*\$?([\d.]+)/);
+    if(!amtMatch) continue;
+    var venmoSign=amtMatch[1]==='+' ? 1 : -1;
+    var absVal=parseFloat(amtMatch[2]); if(isNaN(absVal)) continue;
+    var amount=-(venmoSign*absVal);
+    var note=(cols[iNote]||'').trim(), from=(cols[iFrom]||'').trim(), to=(cols[iTo]||'').trim();
+    var description, category;
+    if(type==='Standard Transfer'){ description='Venmo Transfer'; category='transfer'; }
+    else {
+      var counterparty=venmoSign>0 ? from : to;
+      var direction=venmoSign>0 ? 'from' : 'to';
+      var base=note||counterparty||'Venmo Payment';
+      description=counterparty ? (base+' ('+direction+' '+counterparty+')') : base;
+      category=categorize(base);
+    }
+    txns.push({id:uid(), date:date, description:description, amount:amount, category:category, person:person, shared:false, settled:false, splitRatio:0.5, note:'', excluded:false});
+  }
+  return txns;
+}
+// Coinbase CSV.
+function isCoinbaseCSV(text){ return text.indexOf('Transaction Type')>=0 && text.indexOf('Quantity Transacted')>=0 && text.indexOf('Timestamp')>=0; }
+function parseCoinbaseToTxns(text, person){
+  var lines=text.split(/\r?\n/);
+  var headerIdx=-1;
+  for(var i=0;i<lines.length;i++){ if(lines[i].indexOf('Transaction Type')>=0 && lines[i].indexOf('Timestamp')>=0){ headerIdx=i; break; } }
+  if(headerIdx<0) return [];
+  var headers=splitCSVLine(lines[headerIdx]).map(function(h){return h.replace(/^["']|["']$/g,'');});
+  function col(name){ for(var i=0;i<headers.length;i++){ if(headers[i]===name) return i; } return -1; }
+  var iTimestamp=col('Timestamp'), iType=col('Transaction Type'), iAsset=col('Asset');
+  var iTotal=-1; for(var h=0;h<headers.length;h++){ if(headers[h].indexOf('Total')===0){ iTotal=h; break; } }
+  var iNotes=col('Notes');
+  if(iTimestamp<0||iType<0||iTotal<0) return [];
+  var txns=[];
+  for(var j=headerIdx+1;j<lines.length;j++){
+    var line=lines[j].trim(); if(!line) continue;
+    var cols=splitCSVLine(line).map(function(c){return c.replace(/^["']|["']$/g,'');});
+    var date=parseDt(cols[iTimestamp]||''); if(!date) continue;
+    var txnType=(cols[iType]||'').trim(), asset=(cols[iAsset]||'').trim();
+    var notes=iNotes>=0 ? (cols[iNotes]||'').trim() : '';
+    var totalAmt=parseFloat((cols[iTotal]||'').replace(/[$,]/g,''));
+    if(isNaN(totalAmt)||totalAmt===0) continue;
+    var description=notes||(txnType+' '+asset);
+    var amount=txnType==='Buy' ? Math.abs(totalAmt) : -totalAmt;
+    var category;
+    if(txnType==='Staking Income'||txnType==='Receive'||txnType==='Sell') category='income';
+    else category=categorize(description)||'other';
+    txns.push({id:uid(), date:date, description:description, amount:amount, category:category, person:person, shared:false, settled:false, splitRatio:0.5, note:'coinbase', excluded:false});
+  }
+  return txns;
+}
+
+// Category ids offered in the classify UI — insertion order mirrors the web
+// app's BASE_CATS; hidden gambling/cash appear only in betting mode.
+function classifyCats(){
+  var ids=Object.keys(CATS).concat((D.customCategories||[]).map(function(c){return c.id;}));
+  var seen={}, out=[];
+  for(var i=0;i<ids.length;i++){ var id=ids[i]; if(seen[id]) continue; seen[id]=1; if(isHiddenCat(id)) continue; out.push(id); }
+  return out;
+}
+
+// ── Import orchestration ───────────────────────────────────────────────────
+var pendingReview = [];
+var reviewGroups = [];
+var groupIdx = 0;
+var rowCatExpandIdx = -1;
+var moFileQueue = [];   // {text, person} awaiting processing
+var moMapCtx = null;    // active column-map context
+
+function moToast(msg){
+  var el=document.getElementById('mo-toast');
+  if(!el){ el=document.createElement('div'); el.id='mo-toast'; el.className='mo-toast'; document.body.appendChild(el); }
+  el.textContent=msg; el.classList.add('show');
+  if(el._t) clearTimeout(el._t);
+  el._t=setTimeout(function(){ el.classList.remove('show'); }, 2400);
+}
+function curPerson(){ try { return sessionStorage.getItem('bt_person')||'p1'; } catch(e){ return 'p1'; } }
+
+function openImportSheet(){
+  if(document.getElementById('sheet-back')) return;
+  var b=document.createElement('div'); b.id='sheet-back'; b.className='sheet-back';
+  b.addEventListener('click', function(e){ if(e.target===b) closeSheet(); });
+  document.body.appendChild(b);
+  var n1=(D.settings||{}).person1||'Person 1', n2=(D.settings||{}).person2||'Person 2';
+  var resume = pendingReview.length
+    ? '<button class="lk-btn" style="border-color:var(--primary);color:var(--primary)" onclick="openClassifySheet()"><i class="bi bi-list-check"></i>Resume review ('+pendingReview.length+')</button>'
+      +'<div class="lk-sub">Transactions still waiting to be classified.</div>'
+    : '';
+  b.innerHTML='<div class="sheet">'
+    +'<div class="sheet-title">Import CSV</div>'
+    +resume
+    +'<button class="lk-btn" onclick="moPickCsv(\'p1\')"><i class="bi bi-upload"></i>'+esc(n1)+'’s CSV</button>'
+    +'<button class="lk-btn" onclick="moPickCsv(\'p2\')" style="margin-top:calc(8px*var(--z))"><i class="bi bi-upload"></i>'+esc(n2)+'’s CSV</button>'
+    +'<div class="lk-sub">Bank export, Venmo, or Coinbase CSV. Pick whose account it’s from — you can still change the owner per transaction while classifying. (PDF/paystub import is on the web app.)</div>'
+    +'<button class="sheet-done" onclick="closeSheet()">Done</button>'
+    +'</div>';
+}
+function moPickCsv(person){
+  var inp=document.createElement('input');
+  inp.type='file';
+  inp.accept='.csv,text/csv,text/plain,text/comma-separated-values';
+  inp.multiple=true;
+  inp.style.position='fixed'; inp.style.left='-9999px'; inp.style.top='0';
+  document.body.appendChild(inp);
+  inp.addEventListener('change', function(){
+    var files=Array.prototype.slice.call(inp.files||[]);
+    try { document.body.removeChild(inp); } catch(e){}
+    if(!files.length) return;
+    closeSheet();
+    moReadFiles(files, person);
+  });
+  inp.click();
+}
+function moReadFiles(files, person){
+  moFileQueue=[]; moMapCtx=null;
+  var pending=files.length;
+  for(var i=0;i<files.length;i++){
+    (function(){
+      var r=new FileReader();
+      r.onload=function(e){ moFileQueue.push({text:String(e.target.result||''), person:person}); if(--pending===0) moDrainQueue(); };
+      r.onerror=function(){ if(--pending===0) moDrainQueue(); };
+      r.readAsText(files[i]);
+    })();
+  }
+}
+function moDrainQueue(){
+  while(moFileQueue.length){
+    var item=moFileQueue[0];
+    var res=moProcessText(item.text, item.person);
+    if(res==='needmap') return;   // map sheet shown; resumes on apply/skip
+    moFileQueue.shift();
+  }
+  if(pendingReview.length) openClassifySheet();
+  else closeSheet();
+}
+function moProcessText(text, person){
+  if(isVenmoCSV(text)){ var vt=parseVenmoToTxns(text, person); if(!vt.length){ moToast('No transactions in Venmo CSV'); return 'ok'; } doImportTxnsMobile(vt); return 'ok'; }
+  if(isCoinbaseCSV(text)){ var ct=parseCoinbaseToTxns(text, person); if(!ct.length){ moToast('No transactions in Coinbase CSV'); return 'ok'; } doImportTxnsMobile(ct); return 'ok'; }
+  var p=parseCSV(text);
+  if(!p.headers.length||!p.rows.length){ moToast('Could not read CSV'); return 'ok'; }
+  var det=detectCols(p.headers);
+  if(det.dateCol && det.descCol && (det.amtCol||det.debitCol||det.creditCol)){
+    var invert=false;
+    if(det.amtCol){ var samp=p.rows.slice(0,15).map(function(r){return parseAmt(r[det.amtCol]);}).filter(function(n){return n!==null;}); invert=samp.some(function(n){return n<0;}); }
+    doImportTxnsMobile(rowsToTxns(p.rows, {dateCol:det.dateCol, descCol:det.descCol, amtCol:det.amtCol, debitCol:det.debitCol, creditCol:det.creditCol, invert:invert}, person));
+    return 'ok';
+  }
+  moShowMapSheet(p.headers, p.rows, det, person);
+  return 'needmap';
+}
+function doImportTxnsMobile(txns){
+  var existing={};
+  (D.transactions||[]).forEach(function(t){ existing[t.date+'|'+t.description+'|'+t.amount+'|'+t.person]=1; });
+  var fresh=txns.filter(function(t){ return !existing[t.date+'|'+t.description+'|'+t.amount+'|'+t.person]; });
+  if(!fresh.length){ moToast('No new transactions found'); return; }
+  // Pre-fill category/owner from learned rules, but always require review.
+  fresh.forEach(function(t){
+    var rule=applyRules(t.description);
+    if(rule){ t.category=rule.category; if(rule.shared!==undefined) t.shared=rule.shared; if(rule.person) t.person=rule.person; }
+  });
+  pendingReview.push.apply(pendingReview, fresh);
+  moToast('📋 '+fresh.length+' added to review');
+}
+
+// ── Column-map sheet (undetectable CSVs) ───────────────────────────────────
+function moShowMapSheet(headers, rows, det, person){
+  moMapCtx={rows:rows, person:person};
+  var b=document.getElementById('sheet-back');
+  if(!b){ b=document.createElement('div'); b.id='sheet-back'; b.className='sheet-back'; b.addEventListener('click', function(e){ if(e.target===b) moMapSkip(); }); document.body.appendChild(b); }
+  var pn=person==='p1' ? ((D.settings||{}).person1||'Person 1') : ((D.settings||{}).person2||'Person 2');
+  function opts(sel, withNone){
+    var o=withNone ? '<option value="">— none —</option>' : '';
+    for(var i=0;i<headers.length;i++){ o+='<option value="'+escAttr(headers[i])+'"'+(sel===headers[i]?' selected':'')+'>'+esc(headers[i])+'</option>'; }
+    return o;
+  }
+  var prev=rows.slice(0,3).map(function(r){ var vals=[]; for(var k in r){ vals.push(r[k]); } return vals.slice(0,5).join(' | '); }).join('\n');
+  b.innerHTML='<div class="sheet">'
+    +'<div class="sheet-title">Map '+esc(pn)+'’s Columns</div>'
+    +'<div class="sheet-sub">Couldn’t auto-detect this CSV. Match the columns below.</div>'
+    +'<div class="ct-list">'
+    +'<div class="cf-map-row"><label>Date *</label><select class="cf-sel" id="mo-mc-date">'+opts(det.dateCol,false)+'</select></div>'
+    +'<div class="cf-map-row"><label>Description *</label><select class="cf-sel" id="mo-mc-desc">'+opts(det.descCol,false)+'</select></div>'
+    +'<div class="cf-map-row"><label>Amount (one col)</label><select class="cf-sel" id="mo-mc-amt">'+opts(det.amtCol,true)+'</select></div>'
+    +'<div class="cf-map-row"><label>Amount sign</label><select class="cf-sel" id="mo-mc-inv"><option value="auto">Auto-detect</option><option value="1">Negative = expense</option><option value="0">Positive = expense</option></select></div>'
+    +'<div class="cf-map-row"><label>Debit col</label><select class="cf-sel" id="mo-mc-deb">'+opts(det.debitCol,true)+'</select></div>'
+    +'<div class="cf-map-row"><label>Credit col</label><select class="cf-sel" id="mo-mc-cred">'+opts(det.creditCol,true)+'</select></div>'
+    +'<div class="cf-preview">'+esc(prev)+'</div>'
+    +'</div>'
+    +'<div class="cf-actions">'
+    +'<button class="cf-btn" onclick="moMapSkip()">Skip file</button>'
+    +'<button class="cf-btn primary" onclick="moMapApply()">Import →</button>'
+    +'</div>'
+    +'</div>';
+}
+function moMapApply(){
+  if(!moMapCtx) return;
+  var rows=moMapCtx.rows, person=moMapCtx.person;
+  var dateCol=document.getElementById('mo-mc-date').value, descCol=document.getElementById('mo-mc-desc').value;
+  if(!dateCol||!descCol){ moToast('Pick date and description'); return; }
+  var amtCol=document.getElementById('mo-mc-amt').value||null;
+  var debitCol=document.getElementById('mo-mc-deb').value||null;
+  var creditCol=document.getElementById('mo-mc-cred').value||null;
+  var invV=document.getElementById('mo-mc-inv').value, invert;
+  if(invV==='auto' && amtCol){ var samp=rows.slice(0,10).map(function(r){return parseAmt(r[amtCol]);}).filter(function(n){return n!==null;}); invert=samp.some(function(n){return n<0;}); }
+  else invert=invV==='1';
+  doImportTxnsMobile(rowsToTxns(rows, {dateCol:dateCol, descCol:descCol, amtCol:amtCol, debitCol:debitCol, creditCol:creditCol, invert:invert}, person));
+  moMapCtx=null; moFileQueue.shift(); moDrainQueue();
+}
+function moMapSkip(){ moMapCtx=null; if(moFileQueue.length) moFileQueue.shift(); moDrainQueue(); }
+
+// ── Grouped classify sheet ─────────────────────────────────────────────────
+function buildReviewGroups(){
+  var map={}, order=[];
+  for(var i=0;i<pendingReview.length;i++){
+    var t=pendingReview[i];
+    var key=normalizeDesc(t.description) || (t.description||'').slice(0,20);
+    if(!map[key]){ map[key]=[]; order.push(key); }
+    map[key].push(t);
+  }
+  return order.map(function(k){ return map[k]; }).sort(function(a,b){ return b.length-a.length; });
+}
+function currentGroup(){ return reviewGroups[groupIdx]; }
+function openClassifySheet(){
+  if(!pendingReview.length){ moToast('Nothing to review'); return; }
+  var b=document.getElementById('sheet-back');
+  if(!b){ b=document.createElement('div'); b.id='sheet-back'; b.className='sheet-back'; b.addEventListener('click', function(e){ if(e.target===b) closeSheet(); }); document.body.appendChild(b); }
+  groupIdx=0; rowCatExpandIdx=-1;
+  renderClassifySheet();
+}
+function renderClassifySheet(){
+  var b=document.getElementById('sheet-back'); if(!b) return;
+  if(!pendingReview.length){ closeSheet(); render(); return; }
+  reviewGroups=buildReviewGroups();
+  if(groupIdx>=reviewGroups.length) groupIdx=Math.max(0, reviewGroups.length-1);
+  var n1=(D.settings||{}).person1||'Person 1', n2=(D.settings||{}).person2||'Person 2';
+  var group=reviewGroups[groupIdx], firstT=group[0];
+  var total=reviewGroups.length;
+  var groupCatId=firstT.category;
+  var groupOwnerVal=firstT.shared ? 'shared' : firstT.person;
+  var cats=classifyCats();
+
+  var catBtns=cats.map(function(id){
+    var c=getCat(id), sel=groupCatId===id;
+    return '<button class="cf-cat'+(sel?' sel':'')+'" onclick="cfSetGroupCat(\''+id+'\')" style="'+(sel?'border-color:'+c.color+';background:'+c.color+'22':'')+'"><i class="bi '+c.icon+'" style="color:'+c.color+'"></i>'+esc(c.label)+'</button>';
+  }).join('');
+
+  var rows=group.map(function(t, ri){
+    var oColor=t.shared ? 'var(--green)' : (t.person==='p1'?'var(--p1)':'var(--p2)');
+    var oBg=t.shared ? 'rgba(58,106,58,0.12)' : (t.person==='p1'?'rgba(106,138,170,0.14)':'rgba(154,122,42,0.14)');
+    var oLabel=t.shared ? '⇄' : (t.person==='p1'?esc(n1):esc(n2));
+    var rc=getCat(t.category), catDiffers=t.category!==groupCatId;
+    var catBtnStyle=catDiffers
+      ? 'color:'+rc.color+';border-color:'+rc.color+';background:'+rc.color+'15'
+      : 'color:var(--text-3);border-color:transparent;background:transparent';
+    var expanded = rowCatExpandIdx===ri
+      ? '<div class="cf-row-cats">'+cats.map(function(id){ var c=getCat(id); var sel=t.category===id; return '<button class="cf-cat'+(sel?' sel':'')+'" onclick="cfSetRowCat('+ri+',\''+id+'\')" style="'+(sel?'border-color:'+c.color+';background:'+c.color+'22':'')+'"><i class="bi '+c.icon+'" style="color:'+c.color+'"></i>'+esc(c.label)+'</button>'; }).join('')+'</div>'
+      : '';
+    return '<div class="cf-row">'
+      +'<div class="cf-row-main"><div class="cf-row-desc">'+esc(t.description||'(no description)')+'</div><div class="cf-row-date">'+fmtDate(t.date)+'</div></div>'
+      +'<span class="cf-row-amt'+(t.amount<0?' inc':'')+'">'+(t.amount<0?'+':'')+fc0(t.amount)+'</span>'
+      +'<button class="cf-icon-btn" onclick="cfToggleRowCat('+ri+')" title="Override category" style="'+catBtnStyle+'"><i class="bi '+rc.icon+'"></i></button>'
+      +'<button class="cf-owner-pill" onclick="cfCycleRowOwner('+ri+')" style="border-color:'+oColor+';color:'+oColor+';background:'+oBg+'">'+oLabel+'</button>'
+      +'<button class="cf-del" onclick="cfDeleteRow('+ri+')" title="Remove">✕</button>'
+      +'</div>'+expanded;
+  }).join('');
+
+  var seenCount=0; for(var g=0; g<=groupIdx && g<total; g++) seenCount+=reviewGroups[g].length;
+  var isLast=groupIdx>=total-1;
+  function ownerSty(v){
+    if(v!==groupOwnerVal) return '';
+    if(v==='p1') return 'border-color:var(--p1);color:var(--p1);background:rgba(106,138,170,0.14)';
+    if(v==='p2') return 'border-color:var(--p2);color:var(--p2);background:rgba(154,122,42,0.14)';
+    return 'border-color:var(--green);color:var(--green);background:rgba(58,106,58,0.12)';
+  }
+
+  b.innerHTML='<div class="sheet">'
+    +'<div class="sheet-title">Classify Imports</div>'
+    +'<div class="cf-progress">Group '+(groupIdx+1)+' of '+total+' · '+pendingReview.length+' pending</div>'
+    +'<div class="ct-list">'
+    +'<div class="cf-group-head"><div class="cf-group-name">'+esc(firstT.description||'(no description)')+'</div><div class="cf-group-count">'+group.length+' txn'+(group.length!==1?'s':'')+'</div></div>'
+    +rows
+    +'<div class="cf-label">Category for all</div>'
+    +'<div class="cf-cat-grid">'+catBtns+'</div>'
+    +'<div class="cf-label">Who pays (for all)</div>'
+    +'<div class="cf-owner-row">'
+    +'<button class="cf-owner" onclick="cfSetGroupOwner(\'p1\')" style="'+ownerSty('p1')+'">'+esc(n1)+'</button>'
+    +'<button class="cf-owner" onclick="cfSetGroupOwner(\'p2\')" style="'+ownerSty('p2')+'">'+esc(n2)+'</button>'
+    +'<button class="cf-owner" onclick="cfSetGroupOwner(\'shared\')" style="'+ownerSty('shared')+'">⇄ Shared</button>'
+    +'</div>'
+    +'</div>'
+    +'<div class="cf-actions">'
+    +'<button class="cf-btn" onclick="closeSheet()">Close</button>'
+    +(groupIdx>0 ? '<button class="cf-btn" onclick="cfPrev()">← Back</button>' : '')
+    +'<button class="cf-btn danger" onclick="cfDeleteGroup()">🗑 Group</button>'
+    +'<button class="cf-btn" onclick="cfSaveSoFar()">Save '+seenCount+'</button>'
+    +'<button class="cf-btn primary" onclick="'+(isLast?'cfConfirmAll()':'cfNext()')+'">'+(isLast?'✓ Import all':'Next →')+'</button>'
+    +'</div>'
+    +'</div>';
+}
+function cfSetGroupCat(cat){ var g=currentGroup(); if(!g) return; for(var i=0;i<g.length;i++) g[i].category=cat; rowCatExpandIdx=-1; renderClassifySheet(); }
+function cfSetGroupOwner(val){ var g=currentGroup(); if(!g) return; for(var i=0;i<g.length;i++){ if(val==='shared'){ g[i].shared=true; } else { g[i].person=val; g[i].shared=false; } } renderClassifySheet(); }
+function cfCycleRowOwner(ri){ var g=currentGroup(); if(!g) return; var t=g[ri]; if(!t) return; if(!t.shared&&t.person==='p1'){ t.person='p2'; t.shared=false; } else if(!t.shared&&t.person==='p2'){ t.shared=true; } else { t.shared=false; t.person='p1'; } renderClassifySheet(); }
+function cfToggleRowCat(ri){ rowCatExpandIdx = rowCatExpandIdx===ri ? -1 : ri; renderClassifySheet(); }
+function cfSetRowCat(ri, cat){ var g=currentGroup(); if(!g) return; var t=g[ri]; if(!t) return; t.category=cat; rowCatExpandIdx=-1; renderClassifySheet(); }
+function cfDeleteRow(ri){ var g=currentGroup(); if(!g) return; var t=g[ri]; if(!t) return; pendingReview=pendingReview.filter(function(x){ return x!==t; }); rowCatExpandIdx=-1; renderClassifySheet(); }
+function cfDeleteGroup(){ var g=currentGroup(); if(!g) return; pendingReview=pendingReview.filter(function(t){ return g.indexOf(t)<0; }); rowCatExpandIdx=-1; reviewGroups=buildReviewGroups(); if(groupIdx>=reviewGroups.length) groupIdx=Math.max(0, reviewGroups.length-1); renderClassifySheet(); }
+function cfNext(){ if(groupIdx<reviewGroups.length-1){ groupIdx++; rowCatExpandIdx=-1; renderClassifySheet(); } else cfConfirmAll(); }
+function cfPrev(){ if(groupIdx>0){ groupIdx--; rowCatExpandIdx=-1; renderClassifySheet(); } }
+function cfSaveSoFar(){
+  var set=[];
+  for(var g=0; g<=groupIdx && g<reviewGroups.length; g++){ set=set.concat(reviewGroups[g]); }
+  if(!set.length){ closeSheet(); return; }
+  var remaining=pendingReview.filter(function(t){ return set.indexOf(t)<0; });
+  cfCommit(set, remaining);
+}
+function cfConfirmAll(){ if(!pendingReview.length) return; cfCommit(pendingReview.slice(), []); }
+// Only mutate D once the write succeeds — a failed write must not leave phantom
+// transactions on the dashboard or lose the pending queue.
+function cfCommit(toSave, remaining){
+  var newTx=(D.transactions||[]).concat(toSave);
+  var newRules=Object.assign({}, D.rules||{});
+  toSave.forEach(function(t){ var k=normalizeDesc(t.description); if(k) newRules[k]={category:t.category, shared:t.shared, person:t.person}; });
+  var candidate=Object.assign({}, D, {transactions:newTx, rules:newRules});
+  cfSavingOverlay('Saving '+toSave.length+'…', false);
+  moWriteData(candidate, function(){
+    D=candidate;
+    pendingReview=remaining; groupIdx=0; rowCatExpandIdx=-1;
+    var months=toSave.map(function(t){ return t.date.slice(0,7); }).sort();
+    if(months.length) currentMonth=months[months.length-1];
+    closeSheet(); render();
+    moToast('✅ Imported '+toSave.length+(remaining.length?' · '+remaining.length+' pending':''));
+    if(remaining.length) openClassifySheet();
+  }, function(e){
+    cfSavingOverlay(e && e.message==='TOKEN' ? 'Save failed — token can’t write' : 'Save failed — check connection', true);
+  });
+}
+function cfSavingOverlay(msg, isErr){
+  var b=document.getElementById('sheet-back'); if(!b) return;
+  b.innerHTML='<div class="sheet">'
+    +'<div class="sheet-title">Import</div>'
+    +'<div style="text-align:center;padding:calc(30px*var(--z)) calc(12px*var(--z));font-size:calc(14px*var(--z));font-weight:600;color:'+(isErr?'var(--red)':'var(--text-2)')+'">'+esc(msg)+'</div>'
+    +(isErr ? '<button class="sheet-done" onclick="renderClassifySheet()">Back</button>' : '')
+    +'</div>';
+}
+
 function refreshSheet(){
   var b=document.getElementById('sheet-back'); if(!b) return;
   var presets=[['1mo','Month'],['ytd','YTD'],['all','All'],['custom','Custom']];
@@ -1699,6 +2347,7 @@ function render(){
     + '<button class="mo-arrow" onclick="shiftPeriod(-1)" ' + navDis + '>\u2039</button>'
     + '<button class="mo-label-btn" onclick="openPeriodPicker()">' + periodLabel(months) + avgTag + '<span class="caret">\u25BE</span></button>'
     + '<button class="mo-arrow" onclick="shiftPeriod(1)" ' + navDis + '>\u203A</button>'
+    + '<button class="mo-gear" onclick="openImportSheet()" aria-label="Import CSV"><i class="bi bi-upload"></i>' + (pendingReview.length ? '<span class="cf-badge">' + pendingReview.length + '</span>' : '') + '</button>'
     + '<button class="mo-gear" onclick="openDataSheet()" aria-label="Review data">\u2630</button>'
     + '<button class="mo-gear" onclick="openCatTypeSheet()" aria-label="Category settings">\u2699</button>'
     + '<button class="mo-gear" onclick="openLockSheet()" aria-label="Lock or log out"><i class="bi bi-lock"></i></button>'
