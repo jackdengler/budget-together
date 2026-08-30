@@ -848,7 +848,7 @@ const BASE_CATS = [
   {id:'annual',    label:'Annual',       icon:'bi-calendar-event', color:'#d946ef'},
   {id:'investing', label:'Investments',  icon:'bi-graph-up-arrow', color:'#16a34a', ignored:true},
   {id:'income',    label:'Income',       icon:'bi-wallet2',      color:'#22c55e'},
-  {id:'insurance', label:'Insurance',    icon:'bi-shield',       color:'#0ea5e9', ignored:true},
+  {id:'insurance', label:'Insurance',    icon:'bi-shield',       color:'#0ea5e9'},
   {id:'transfer',  label:'Transfer',     icon:'bi-arrow-left-right', color:'#a8b4c0', ignored:true},
   {id:'other',     label:'Other',        icon:'bi-credit-card',  color:'#94a3b8'},
   {id:'gambling',  label:'Gambling',     icon:'bi-dice-5',       color:'#dc2626', hidden:true},
@@ -3571,6 +3571,13 @@ function parsePaystubText(text) {
   // type:'expense' → imported as positive (expense) transaction
   const seenLabels = new Set();
   const addEntry = e => { if (!seenLabels.has(e.label)) { seenLabels.add(e.label); result.entries.push(e); } };
+  // Largest believable per-paycheck amount for each pre-tax deduction. Anything
+  // above it is text from another column that landed on the same line, not a premium.
+  const DEDUCTION_CAP = { 'Medical Insurance':2000, 'Dental Insurance':200, 'Vision Insurance':100, 'LTD Insurance':200 };
+  const addDeduction = (label, amt, cap) => {
+    if (!amt || amt <= 0 || amt > cap) return;   // implausible → let _fb retry from the flat text
+    addEntry({label, amount:amt, category:'insurance', type:'expense', checked:true});
+  };
   for (const line of lines) {
     // NBCUniversal summary row: "Current: 880.00 880.00 165.25 0.00 714.75"
     // Columns: TOTAL GROSS, FED TAXABLE GROSS, TOTAL TAXES, TOTAL DEDUCTIONS, NET PAY
@@ -3593,10 +3600,13 @@ function parsePaystubText(text) {
     else if (/er\s*401[kK]\s*match/i.test(line))                   { const v = amt || compactAmt(line, 1500); if (v) addEntry({label:'Employer 401k Match',amount:v,category:'income',type:'income',checked:false}); }
     else if (/erhsa|er\s+hsa/i.test(line))                         { const v = amt || compactAmt(line, 500); if (v) addEntry({label:'Employer HSA Contribution',amount:v,category:'income',type:'income',checked:false}); }
     else if (!amt) { continue; }
-    else if (/\bmedical\b/i.test(line) && !/medicare/i.test(line)) { addEntry({label:'Medical Insurance',amount:amt,category:'insurance',type:'expense',checked:true}); }
-    else if (/\bdental\b/i.test(line))                             { addEntry({label:'Dental Insurance',amount:amt,category:'insurance',type:'expense',checked:true}); }
-    else if (/\bvision\b/i.test(line))                             { addEntry({label:'Vision Insurance',amount:amt,category:'insurance',type:'expense',checked:true}); }
-    else if (/ltdimp|long.?term\s+dis/i.test(line))               { addEntry({label:'LTD Insurance',amount:amt,category:'insurance',type:'expense',checked:true}); }
+    // Deduction lines carry the same per-label plausibility caps the _fb fallback
+    // below uses. Without them a salary or YTD figure sharing the line wins (a
+    // $6,666.67 "Vision Insurance" against a real premium of $0.75).
+    else if (/\bmedical\b/i.test(line) && !/medicare/i.test(line)) { addDeduction('Medical Insurance', amt, DEDUCTION_CAP['Medical Insurance']); }
+    else if (/\bdental\b/i.test(line))                             { addDeduction('Dental Insurance', amt, DEDUCTION_CAP['Dental Insurance']); }
+    else if (/\bvision\b/i.test(line))                             { addDeduction('Vision Insurance', amt, DEDUCTION_CAP['Vision Insurance']); }
+    else if (/ltdimp|long.?term\s+dis/i.test(line))               { addDeduction('LTD Insurance', amt, DEDUCTION_CAP['LTD Insurance']); }
     else if (/\bhsa\b/i.test(line) && !/er\s*hsa|erhsa/i.test(line)) { addEntry({label:'HSA Contribution',amount:amt,category:'income',type:'income',checked:true}); }
   }
   // Flat-text fallbacks: pdf.js may split labels and amounts onto different lines,
@@ -3612,8 +3622,12 @@ function parsePaystubText(text) {
     // Standard decimal or ADP spaced
     const sm = rest.match(new RegExp('^\\s*' + _anyAmt));
     if (sm) {
-      if (sm[1]) return parseFloat(sm[1].replace(/,/g,'')) || null;
-      if (sm[2]) return stubAmt(sm[2]) || null;
+      const v = sm[1] ? parseFloat(sm[1].replace(/,/g,'')) : (sm[2] ? stubAmt(sm[2]) : null);
+      // Honor the cap here too. A well-formed figure sitting right after the
+      // label can still belong to another column — a monthly salary on the
+      // Vision line — and returning it unchecked is what put $6,666.67
+      // "Vision Insurance" rows in the data. Over the cap, fall through.
+      if (v && v > 0 && (!cap || v <= cap)) return v;
     }
     // ADP compact fallback: digits before * or progressive slice with cap
     const starM = rest.match(/^\s*[-$]?\s*(\d{2,7})\*/);
@@ -3710,19 +3724,44 @@ function importPaystub() {
   const dateIso = parsed.payDateIso || S.currentMonth + '-13';
   const chosen = parsed.entries.filter((e, i) => { const cb = document.getElementById('psi-' + i); return cb && cb.checked; });
   if (!chosen.length) { toast('Select at least one item'); return; }
-  for (const e of chosen) {
-    // income → negative amount; expense → positive amount, excluded (already deducted from net pay)
-    const amount = e.type === 'expense' ? e.amount : -e.amount;
-    const excluded = e.type === 'expense'; // pre-tax deductions don't affect net calc
-    S.transactions.push({ id:uid(), date:dateIso, amount, description:e.label,
-      category:e.category, person, note:'paystub', shared:false, settled:false, splitRatio:0.5, excluded });
+
+  // This path pushes straight to the ledger, so unlike doImportTxns it never had
+  // a duplicate check — re-importing a paystub doubled every line. Same key.
+  const existing = new Set(S.transactions.map(t => `${t.date}|${t.description}|${t.amount}|${t.person}`));
+  const rows = [];
+  const addRow = (description, amount, category) => {
+    const key = `${dateIso}|${description}|${amount}|${person}`;
+    if (existing.has(key)) return false;
+    existing.add(key);
+    rows.push({ id:uid(), date:dateIso, amount, description, category, person,
+      note:'paystub', shared:false, settled:false, splitRatio:0.5, excluded:false });
+    return true;
+  };
+
+  for (const e of chosen) addRow(e.label, e.type === 'expense' ? e.amount : -e.amount, e.category);
+
+  // Pre-tax deductions are compensation that never showed up in take-home, so
+  // they're grossed up: one income line covering the premiums booked as expenses
+  // alongside it. Net effect on what's left over is zero — the cost just becomes
+  // visible, and lands in the fixed bucket like any other recurring bill. (This
+  // is the same treatment 401k/HSA already get, which count as income too.)
+  const deductions = chosen.filter(e => e.type === 'expense').reduce((s,e) => s + e.amount, 0);
+  if (deductions > 0) addRow('Pre-tax Benefits', -(Math.round(deductions * 100) / 100), 'income');
+
+  const skipped = chosen.length - rows.filter(r => r.description !== 'Pre-tax Benefits').length;
+  if (!rows.length) {
+    toast('Already imported — nothing new');
+    closeModal(); pendingPaystubs.shift();
+    if (pendingPaystubs.length) showPaystubModal(pendingPaystubs[0]);
+    return;
   }
+  S.transactions.push(...rows);
   const mo = dateIso.slice(0, 7);
   S.currentMonth = mo;
   schedSave(); closeModal(); render();
   const nInc = chosen.filter(e=>e.type==='income').length;
   const nExp = chosen.filter(e=>e.type==='expense').length;
-  toast(`✅ Imported ${nInc ? nInc+' income' : ''}${nInc&&nExp?' + ':''}${nExp ? nExp+' expense' : ''} item${chosen.length!==1?'s':''}`);
+  toast(`✅ Imported ${nInc ? nInc+' income' : ''}${nInc&&nExp?' + ':''}${nExp ? nExp+' expense' : ''} item${chosen.length!==1?'s':''}${skipped ? ` · ${skipped} already there` : ''}`);
   pendingPaystubs.shift();
   if (pendingPaystubs.length) showPaystubModal(pendingPaystubs[0]);
 }

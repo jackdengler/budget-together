@@ -1078,7 +1078,7 @@ function isJack(){ try { return sessionStorage.getItem('bt_person') === 'p1'; } 
 function isHiddenCat(cat){ return !!HIDDEN_CATS[cat] && !bettingMode; }
 function isIgnored(cat){
   if (isHiddenCat(cat)) return true;
-  var list = [{id:'insurance',ignored:true},{id:'transfer',ignored:true},{id:'investing',ignored:true}].concat(D.customCategories||[]);
+  var list = [{id:'transfer',ignored:true},{id:'investing',ignored:true}].concat(D.customCategories||[]);
   var f = list.find(function(c){return c.id===cat;});
   return f ? !!f.ignored : false;
 }
@@ -2228,6 +2228,13 @@ function parsePaystubText(text){
   result.employeeName=nameM ? nameM[1].trim() : (nbcNameM ? nbcNameM[1].trim() : null);
   var seenLabels={};
   var addEntry=function(e){ if(!seenLabels[e.label]){ seenLabels[e.label]=1; result.entries.push(e); } };
+  // Largest believable per-paycheck amount for each pre-tax deduction. Anything
+  // above it is text from another column that landed on the same line, not a premium.
+  var DEDUCTION_CAP={ 'Medical Insurance':2000, 'Dental Insurance':200, 'Vision Insurance':100, 'LTD Insurance':200 };
+  var addDeduction=function(label, amt, cap){
+    if(!amt || amt<=0 || amt>cap) return;   // implausible → let _fb retry from the flat text
+    addEntry({label:label, amount:amt, category:'insurance', type:'expense', checked:true});
+  };
   for(var i=0;i<lines.length;i++){
     var line=lines[i];
     if(/^Current:/i.test(line) && !result.netPay){
@@ -2244,10 +2251,13 @@ function parsePaystubText(text){
     else if(/er\s*401[kK]\s*match/i.test(line)){ var vm=amt||compactAmt(line,1500); if(vm) addEntry({label:'Employer 401k Match',amount:vm,category:'income',type:'income',checked:false}); }
     else if(/erhsa|er\s+hsa/i.test(line)){ var ve=amt||compactAmt(line,500); if(ve) addEntry({label:'Employer HSA Contribution',amount:ve,category:'income',type:'income',checked:false}); }
     else if(!amt){ continue; }
-    else if(/\bmedical\b/i.test(line) && !/medicare/i.test(line)){ addEntry({label:'Medical Insurance',amount:amt,category:'insurance',type:'expense',checked:true}); }
-    else if(/\bdental\b/i.test(line)){ addEntry({label:'Dental Insurance',amount:amt,category:'insurance',type:'expense',checked:true}); }
-    else if(/\bvision\b/i.test(line)){ addEntry({label:'Vision Insurance',amount:amt,category:'insurance',type:'expense',checked:true}); }
-    else if(/ltdimp|long.?term\s+dis/i.test(line)){ addEntry({label:'LTD Insurance',amount:amt,category:'insurance',type:'expense',checked:true}); }
+    // Deduction lines carry the same per-label plausibility caps the _fb fallback
+    // below uses. Without them a salary or YTD figure sharing the line wins (a
+    // $6,666.67 "Vision Insurance" against a real premium of $0.75).
+    else if(/\bmedical\b/i.test(line) && !/medicare/i.test(line)){ addDeduction('Medical Insurance', amt, DEDUCTION_CAP['Medical Insurance']); }
+    else if(/\bdental\b/i.test(line)){ addDeduction('Dental Insurance', amt, DEDUCTION_CAP['Dental Insurance']); }
+    else if(/\bvision\b/i.test(line)){ addDeduction('Vision Insurance', amt, DEDUCTION_CAP['Vision Insurance']); }
+    else if(/ltdimp|long.?term\s+dis/i.test(line)){ addDeduction('LTD Insurance', amt, DEDUCTION_CAP['LTD Insurance']); }
     else if(/\bhsa\b/i.test(line) && !/er\s*hsa|erhsa/i.test(line)){ addEntry({label:'HSA Contribution',amount:amt,category:'income',type:'income',checked:true}); }
   }
   var _adpAmt='\\$?\\s*-?\\s*(\\d{1,6}(?:\\s\\d{3})*\\s\\d{2})\\b';
@@ -2257,7 +2267,11 @@ function parsePaystubText(text){
     var m=txt.match(labelRe); if(!m) return null;
     var rest=txt.slice(m.index+m[0].length);
     var sm=rest.match(new RegExp('^\\s*'+_anyAmt));
-    if(sm){ if(sm[1]) return parseFloat(sm[1].replace(/,/g,''))||null; if(sm[2]) return stubAmt(sm[2])||null; }
+    // Honor the cap here too. A well-formed figure sitting right after the label
+    // can still belong to another column — a monthly salary on the Vision line —
+    // and returning it unchecked is what put $6,666.67 "Vision Insurance" rows
+    // in the data. Over the cap, fall through to the other strategies.
+    if(sm){ var v0 = sm[1] ? parseFloat(sm[1].replace(/,/g,'')) : (sm[2] ? stubAmt(sm[2]) : null); if(v0 && v0>0 && (!cap || v0<=cap)) return v0; }
     var starM=rest.match(/^\s*[-$]?\s*(\d{2,7})\*/);
     if(starM){ var v=stubAmt(starM[1]); if(v&&v>0) return v; }
     if(cap){ var dm=rest.match(/^\s*[-$]?\s*(\d{3,})/); if(dm){ var d=dm[1]; for(var n=Math.min(7,d.length);n>=3;n--){ var v2=stubAmt(d.slice(0,n)); if(v2&&v2>0&&v2<=cap) return v2; } } }
@@ -2345,11 +2359,31 @@ function psImport(){
   var chosen=parsed.entries.filter(function(e){ return e.checked; });
   if(!chosen.length){ moToast('Select at least one item'); return; }
   var newTx=(D.transactions||[]).slice();
-  chosen.forEach(function(e){
-    var amount=e.type==='expense' ? e.amount : -e.amount;
-    var excluded=e.type==='expense';
-    newTx.push({id:uid(), date:dateIso, amount:amount, description:e.label, category:e.category, person:person, note:'paystub', shared:false, settled:false, splitRatio:0.5, excluded:excluded});
-  });
+  // This path pushes straight to the ledger, so unlike doImportTxnsMobile it
+  // never had a duplicate check — re-importing a paystub doubled every line.
+  var existing={};
+  newTx.forEach(function(t){ existing[t.date+'|'+t.description+'|'+t.amount+'|'+t.person]=1; });
+  var added=0;
+  function addRow(description, amount, category){
+    var key=dateIso+'|'+description+'|'+amount+'|'+person;
+    if(existing[key]) return false;
+    existing[key]=1; added++;
+    newTx.push({id:uid(), date:dateIso, amount:amount, description:description, category:category,
+      person:person, note:'paystub', shared:false, settled:false, splitRatio:0.5, excluded:false});
+    return true;
+  }
+  chosen.forEach(function(e){ addRow(e.label, e.type==='expense' ? e.amount : -e.amount, e.category); });
+  // Pre-tax deductions are compensation that never showed up in take-home, so
+  // they're grossed up: one income line covering the premiums booked as expenses
+  // alongside it. Net effect on what's left over is zero — the cost just becomes
+  // visible. (Same treatment 401k/HSA already get, which count as income too.)
+  var deductions=chosen.filter(function(e){ return e.type==='expense'; }).reduce(function(s,e){ return s+e.amount; }, 0);
+  if(deductions>0) addRow('Pre-tax Benefits', -(Math.round(deductions*100)/100), 'income');
+  if(!added){
+    moToast('Already imported — nothing new');
+    pendingPaystubs.shift(); psAfter();
+    return;
+  }
   var candidate=Object.assign({}, D, {transactions:newTx});
   cfSavingOverlay('Saving paystub…', false, 'renderPaystubSheet');
   moWriteData(candidate, function(written){
