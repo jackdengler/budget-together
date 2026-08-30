@@ -1648,7 +1648,8 @@ function setCatTypeMobile(catId, type){
   D.catTypes[catId] = type;
   render();
   refreshCatTypeSheet('Saving…');
-  moWriteData(D, function(){
+  moWriteData(D, function(written){
+    if (written) { D = written; render(); }   // adopt anything merged in from the desktop
     refreshCatTypeSheet('Saved ✓');
   }, function(e){
     refreshCatTypeSheet(e && e.message==='TOKEN' ? 'Save failed — token can’t write' : 'Save failed');
@@ -2351,8 +2352,8 @@ function psImport(){
   });
   var candidate=Object.assign({}, D, {transactions:newTx});
   cfSavingOverlay('Saving paystub…', false, 'renderPaystubSheet');
-  moWriteData(candidate, function(){
-    D=candidate;
+  moWriteData(candidate, function(written){
+    D=written||candidate;
     currentMonth=dateIso.slice(0,7);
     var nInc=chosen.filter(function(e){return e.type==='income';}).length;
     var nExp=chosen.filter(function(e){return e.type==='expense';}).length;
@@ -2691,8 +2692,8 @@ function cfCommit(toSave, remaining){
   toSave.forEach(function(t){ var k=normalizeDesc(t.description); if(k) newRules[k]={category:t.category, shared:t.shared, person:t.person}; });
   var candidate=Object.assign({}, D, {transactions:newTx, rules:newRules});
   cfSavingOverlay('Saving '+toSave.length+'…', false);
-  moWriteData(candidate, function(){
-    D=candidate;
+  moWriteData(candidate, function(written){
+    D=written||candidate;
     pendingReview=remaining; groupIdx=0; rowCatExpandIdx=-1; reviewSearch='';
     var months=toSave.map(function(t){ return t.date.slice(0,7); }).sort();
     if(months.length) currentMonth=months[months.length-1];
@@ -2853,6 +2854,69 @@ var GH = {
 };
 var moPending = null;
 var _moSha = null; // sha of the last-read file, required for safe writes
+var _moBase = null; // the file exactly as we last saw it on the server — the
+                    // common ancestor for merging a concurrent write
+
+// ── Three-way merge ────────────────────────────────────────────────────────
+// Mirrors the web app's merge (docs/index.html). The phone holds the whole file
+// in memory from load and rewrites the whole file on save, so without a merge a
+// stale phone silently reverts whatever the desktop did in the meantime.
+// One rule, per field: if we changed it since base, ours wins; else theirs does.
+function _clone(o){ return o===undefined ? undefined : JSON.parse(JSON.stringify(o)); }
+function _eq(a,b){ return JSON.stringify(a===undefined?null:a) === JSON.stringify(b===undefined?null:b); }
+
+function _mergeObj(base, local, remote){
+  base=base||{}; local=local||{}; remote=remote||{};
+  var out=_clone(remote), k;
+  for (k in local) if (local.hasOwnProperty(k) && !_eq(local[k], base[k])) out[k]=_clone(local[k]);
+  for (k in base) if (base.hasOwnProperty(k) && !(k in local) && (k in out) && _eq(base[k], remote[k])) delete out[k];
+  return out;
+}
+function _mergeRecord(base, local, remote){
+  var b=base||{}, out=_clone(remote), k;
+  for (k in local) if (local.hasOwnProperty(k) && !_eq(local[k], b[k])) out[k]=_clone(local[k]);
+  for (k in b) if (b.hasOwnProperty(k) && !(k in local) && (k in out) && _eq(b[k], remote[k])) delete out[k];
+  return out;
+}
+function _mergeById(base, local, remote){
+  function idx(a){ var m={}, i; a=a||[]; for(i=0;i<a.length;i++) if(a[i] && a[i].id!=null) m[a[i].id]=a[i]; return m; }
+  var B=idx(base), L=idx(local), R=idx(remote);
+  var order=[], seen={}, out=[], i, id;
+  (remote||[]).forEach(function(x){ if(x&&x.id!=null) order.push(x.id); });
+  (local ||[]).forEach(function(x){ if(x&&x.id!=null) order.push(x.id); });
+  for (i=0;i<order.length;i++){
+    id=order[i];
+    if (seen[id]) continue;
+    seen[id]=1;
+    var b=B[id], l=L[id], r=R[id];
+    if (l && r) out.push(_mergeRecord(b, l, r));
+    else if (l) { if(!b) out.push(_clone(l)); }   // we added it / they deleted it
+    else if (r) { if(!b) out.push(_clone(r)); }   // they added it / we deleted it
+  }
+  return out;
+}
+function _mergeSet(base, local, remote){
+  base=base||[]; local=local||[]; remote=remote||[];
+  var out=remote.slice(), i, v;
+  for (i=0;i<local.length;i++){ v=local[i]; if (base.indexOf(v)<0 && out.indexOf(v)<0) out.push(v); }
+  for (i=0;i<base.length;i++){ v=base[i]; if (local.indexOf(v)<0 && remote.indexOf(v)>=0){ var j=out.indexOf(v); if(j>=0) out.splice(j,1); } }
+  return out;
+}
+var _MERGE_BY_ID=['transactions','customCategories','recurringIncome'];
+var _MERGE_SET=['excludedFromAvg'];
+function mergeData(base, local, remote){
+  base=base||{}; local=local||{}; remote=remote||{};
+  var out=_clone(remote), i, k;
+  for (i=0;i<_MERGE_BY_ID.length;i++){ k=_MERGE_BY_ID[i]; out[k]=_mergeById(base[k], local[k], remote[k]); }
+  for (i=0;i<_MERGE_SET.length;i++){ k=_MERGE_SET[i]; out[k]=_mergeSet(base[k], local[k], remote[k]); }
+  for (k in local){
+    if (!local.hasOwnProperty(k)) continue;
+    if (_MERGE_BY_ID.indexOf(k)>=0 || _MERGE_SET.indexOf(k)>=0) continue;
+    if (local[k] && typeof local[k]==='object' && !Array.isArray(local[k])) out[k]=_mergeObj(base[k], local[k], remote[k]);
+    else if (!_eq(local[k], base[k])) out[k]=_clone(local[k]);
+  }
+  return out;
+}
 
 function _b64decodeUtf8(b64){ return decodeURIComponent(escape(atob(String(b64).replace(/\s/g,'')))); }
 function _b64encodeUtf8(str){ return btoa(unescape(encodeURIComponent(str))); }
@@ -2866,38 +2930,58 @@ function moReadData(cb, errCb){
     if (!r.ok){ errCb(new Error('HTTP '+r.status)); return; }
     r.json().then(function(j){
       _moSha = j.sha;
-      try { cb(JSON.parse(_b64decodeUtf8(j.content))); } catch(e){ errCb(new Error('Bad JSON')); }
+      try {
+        var parsed = JSON.parse(_b64decodeUtf8(j.content));
+        _moBase = _clone(parsed);   // common ancestor for the next merge
+        cb(parsed);
+      } catch(e){ errCb(new Error('Bad JSON')); }
     });
   }).catch(errCb);
 }
 
-// Write the whole data object back. The mobile app only mutates D in memory
-// (category types), so we persist D as-is. Last-write-wins with one retry on a
-// stale-sha conflict. The PUT preserves every field already in D, including
-// _auth, since D is the full object read from the file.
+// Write the whole data object back. The sha makes the PUT a compare-and-swap: a
+// 409/422 means the desktop wrote since we last read. We then merge their file
+// with ours against the common ancestor and write the result, so neither side's
+// work is lost. cb receives the object actually written — callers must adopt it
+// as the new D, or the next save would re-clobber the merged-in changes.
 function moWriteData(obj, cb, errCb){
-  var body = { message:'mobile: '+new Date().toISOString().slice(0,16).replace('T',' '), content:_b64encodeUtf8(JSON.stringify(obj, null, 2)), branch:GH.branch };
-  function put(sha){
-    var b = sha ? Object.assign({}, body, {sha:sha}) : body;
+  var attempts = 0;
+  function put(body, sha){
+    var b = { message:'mobile: '+new Date().toISOString().slice(0,16).replace('T',' '), content:_b64encodeUtf8(JSON.stringify(body, null, 2)), branch:GH.branch };
+    if (sha) b.sha = sha;
     return fetch('https://api.github.com/repos/'+GH.repo+'/contents/'+encodeURIComponent(GH.path), {
       method:'PUT',
       headers:{ 'Authorization':'Bearer '+GH.token, 'Accept':'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28', 'Content-Type':'application/json' },
       body: JSON.stringify(b)
     });
   }
-  put(_moSha).then(function(r){
-    if (r.status===409 || r.status===422){
-      // stale sha — refetch the sha and retry once
-      moReadData(function(){ put(_moSha).then(handle).catch(errCb); }, function(){ put(_moSha).then(handle).catch(errCb); });
+  var written = obj;
+  var base = _moBase;   // the ancestor `written` is a descendant of
+  function attempt(){ put(written, _moSha).then(handle).catch(errCb); }
+  function handle(r){
+    if ((r.status===409 || r.status===422) && attempts < 3){
+      attempts++;
+      // Re-read to get the other device's file plus a fresh sha, then merge.
+      moReadData(function(remote){
+        if (!remote){ attempt(); return; }       // file vanished — write ours as-is
+        // Merge from `written`, not the original: on a second conflict `written`
+        // already carries the first remote's changes, and merging the original
+        // again would read those as deletions and drop them.
+        written = mergeData(base, written, remote);
+        base = remote;
+        attempt();
+      }, function(){ attempt(); });
       return;
     }
-    handle(r);
-  }).catch(errCb);
-  function handle(r){
     if (r.status===401 || r.status===403){ errCb(new Error('TOKEN')); return; }
     if (!r.ok){ errCb(new Error('HTTP '+r.status)); return; }
-    r.json().then(function(j){ _moSha = (j.content && j.content.sha) || _moSha; cb(); }).catch(function(){ cb(); });
+    r.json().then(function(j){
+      _moSha = (j.content && j.content.sha) || _moSha;
+      _moBase = _clone(written);   // what we just wrote is the new common ancestor
+      cb(written);
+    }).catch(function(){ _moBase = _clone(written); cb(written); });
   }
+  attempt();
 }
 
 function moHashPin(pin){

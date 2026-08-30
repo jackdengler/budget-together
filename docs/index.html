@@ -951,6 +951,82 @@ const GH = {
 let currentPerson = null;   // 'p1' | 'p2'
 let pendingData = null;     // data read from GitHub, awaiting PIN identity
 let _ghSha = null;          // sha of the last-read file, required for safe writes
+let _ghBase = null;         // the file exactly as we last saw it on the server —
+                            // the common ancestor for merging a concurrent write
+
+// ── Three-way merge ────────────────────────────────────────
+// The app holds the whole data file in memory from page load, and every save
+// rewrites the whole file. Without a merge, a device sitting on a stale
+// snapshot silently reverts everything the other device did in the meantime.
+//
+// base   = the file as we last saw it on the server (common ancestor)
+// local  = what this device wants to write
+// remote = what's on the server now (the other device got there first)
+//
+// One rule, applied per field: if we changed it since base, our value wins;
+// otherwise the other device's wins. A field neither side touched is carried
+// through untouched, so a stale snapshot can no longer clobber anything.
+function _clone(o){ return o === undefined ? undefined : JSON.parse(JSON.stringify(o)); }
+function _eq(a,b){ return JSON.stringify(a === undefined ? null : a) === JSON.stringify(b === undefined ? null : b); }
+
+// Plain object keyed by id/name (rules, budgets, catSplits, incomeData, …).
+function _mergeObj(base, local, remote) {
+  base = base || {}; local = local || {}; remote = remote || {};
+  const out = _clone(remote);
+  for (const k of Object.keys(local)) if (!_eq(local[k], base[k])) out[k] = _clone(local[k]);
+  // A key we removed and they left alone stays removed.
+  for (const k of Object.keys(base)) if (!(k in local) && (k in out) && _eq(base[k], remote[k])) delete out[k];
+  return out;
+}
+
+// One record, field by field.
+function _mergeRecord(base, local, remote) {
+  const b = base || {}, out = _clone(remote);
+  for (const k of Object.keys(local)) if (!_eq(local[k], b[k])) out[k] = _clone(local[k]);
+  for (const k of Object.keys(b)) if (!(k in local) && (k in out) && _eq(b[k], remote[k])) delete out[k];
+  return out;
+}
+
+// Array of {id, …} records, matched by id. A row only one side has is kept if
+// it's new there, and dropped if the other side deleted it.
+function _mergeById(base, local, remote) {
+  const idx = a => { const m = new Map(); for (const x of (a||[])) if (x && x.id != null) m.set(x.id, x); return m; };
+  const B = idx(base), L = idx(local), R = idx(remote);
+  const out = [], seen = new Set();
+  const order = (remote||[]).map(x => x && x.id).concat((local||[]).map(x => x && x.id));
+  for (const id of order) {
+    if (id == null || seen.has(id)) continue;
+    seen.add(id);
+    const b = B.get(id), l = L.get(id), r = R.get(id);
+    if (l && r) out.push(_mergeRecord(b, l, r));
+    else if (l) { if (!b) out.push(_clone(l)); }   // we added it / they deleted it
+    else if (r) { if (!b) out.push(_clone(r)); }   // they added it / we deleted it
+  }
+  return out;
+}
+
+// Array of scalars treated as a set (excludedFromAvg).
+function _mergeSet(base, local, remote) {
+  const B = new Set(base||[]), L = new Set(local||[]), out = new Set(remote||[]);
+  for (const v of L) if (!B.has(v)) out.add(v);
+  for (const v of B) if (!L.has(v) && out.has(v) && (remote||[]).indexOf(v) >= 0) out.delete(v);
+  return [...out];
+}
+
+const _MERGE_BY_ID = ['transactions','customCategories','recurringIncome'];
+const _MERGE_SET   = ['excludedFromAvg'];
+function mergeData(base, local, remote) {
+  base = base || {}; local = local || {}; remote = remote || {};
+  const out = _clone(remote);
+  for (const k of _MERGE_BY_ID) out[k] = _mergeById(base[k], local[k], remote[k]);
+  for (const k of _MERGE_SET)   out[k] = _mergeSet(base[k], local[k], remote[k]);
+  for (const k of Object.keys(local)) {
+    if (_MERGE_BY_ID.indexOf(k) >= 0 || _MERGE_SET.indexOf(k) >= 0) continue;
+    if (local[k] && typeof local[k] === 'object' && !Array.isArray(local[k])) out[k] = _mergeObj(base[k], local[k], remote[k]);
+    else if (!_eq(local[k], base[k])) out[k] = _clone(local[k]);   // scalar we changed
+  }
+  return out;
+}
 
 // UTF-8 safe base64 (category names etc. can contain emoji)
 function _b64encodeUtf8(str){ return btoa(unescape(encodeURIComponent(str))); }
@@ -980,28 +1056,47 @@ async function ghReadData(){
   if (!r.ok) throw new Error('Could not read data (HTTP ' + r.status + ')');
   const j = await r.json();
   _ghSha = j.sha;
-  try { return JSON.parse(_b64decodeUtf8(j.content)); }
+  try {
+    const parsed = JSON.parse(_b64decodeUtf8(j.content));
+    _ghBase = _clone(parsed);   // common ancestor for the next merge
+    return parsed;
+  }
   catch(e){ throw new Error('Data file is not valid JSON'); }
 }
 
-// Write the data file. Last-write-wins with one automatic retry on a stale-sha
-// conflict (the other person saved in between). Throws Error('TOKEN') on auth.
+// Write the data file. The sha makes the PUT a compare-and-swap: a 409/422 means
+// the other device wrote since we last read. We then merge their file with ours
+// against the common ancestor and write the result, so neither side's work is
+// lost. Returns the object actually written — the caller must adopt it as its
+// new in-memory state, or the next save would re-clobber the merged-in changes.
+// Throws Error('TOKEN') on auth.
 async function ghWriteData(obj){
-  const content = _b64encodeUtf8(JSON.stringify(obj, null, 2));
-  const put = (sha) => ghApi('PUT', '/contents/' + encodeURIComponent(GH.path), Object.assign({
+  const put = (body, sha) => ghApi('PUT', '/contents/' + encodeURIComponent(GH.path), Object.assign({
     message: 'budget: ' + new Date().toISOString().slice(0,16).replace('T',' '),
-    content, branch: GH.branch,
+    content: _b64encodeUtf8(JSON.stringify(body, null, 2)), branch: GH.branch,
   }, sha ? { sha } : {}));
-  let r = await put(_ghSha);
-  if (r.status === 409 || r.status === 422) {       // stale sha — refetch and retry once
-    try { await ghReadData(); } catch(e){}
-    r = await put(_ghSha);
+
+  let written = obj;
+  let base = _ghBase;          // the ancestor `written` is a descendant of
+  let r = await put(written, _ghSha);
+  for (let attempt = 0; (r.status === 409 || r.status === 422) && attempt < 3; attempt++) {
+    let remote = null;
+    try { remote = await ghReadData(); } catch(e){ break; }   // refreshes _ghSha and _ghBase
+    if (!remote) break;                                       // file vanished — write ours as-is
+    // Merge from `written`, not the original: on a second conflict `written`
+    // already carries the first remote's changes, and merging `obj` again would
+    // read those as deletions and drop them.
+    written = mergeData(base, written, remote);
+    base = remote;
+    r = await put(written, _ghSha);
   }
+
   if (r.status === 401 || r.status === 403) throw new Error('TOKEN');
   if (!r.ok) { const t = await r.text().catch(()=> ''); throw new Error('Save failed (HTTP ' + r.status + ') ' + t.slice(0,120)); }
   const j = await r.json();
   _ghSha = (j.content && j.content.sha) || _ghSha;
-  return true;
+  _ghBase = _clone(written);   // what we just wrote is the new common ancestor
+  return written;
 }
 
 // PIN → hash (identity only). The hash is what lives in the data file.
@@ -1019,6 +1114,27 @@ function USE_GAS() {
   catch(e) { return false; }
 }
 
+// Our save collided with the other device's and the two were merged. Pull the
+// merged result into memory so the screen — and the next save — reflect it.
+// Data fields only; view state (month, tab, filters, PIN) is left alone.
+function adoptMerged(m) {
+  S.transactions     = m.transactions     || [];
+  S.budgets          = m.budgets          || {};
+  S.settings         = Object.assign(S.settings, m.settings || {});
+  S.rules            = m.rules            || {};
+  S.customCategories = m.customCategories || [];
+  S.catSplits        = m.catSplits        || {};
+  S.catTypes         = m.catTypes         || {};
+  S.excludedFromAvg  = m.excludedFromAvg  || [];
+  S.recurringIncome  = m.recurringIncome  || [];
+  S.gamblingData     = m.gamblingData     || {};
+  S.incomeData       = m.incomeData       || {};
+  S.incomeTypeRules  = m.incomeTypeRules  || {};
+  if (pendingData && m._auth) pendingData._auth = m._auth;
+  try { render(); updateReviewBadge(); } catch(e){}
+  toast('Merged in changes from the other device');
+}
+
 const DB = {
   // Read the whole data object from GitHub. May call back with null on a
   // brand-new install (no data file yet) — loadData() handles that.
@@ -1033,7 +1149,8 @@ const DB = {
     try {
       const out = Object.assign({}, data);
       if (pendingData && pendingData._auth) out._auth = pendingData._auth;
-      await ghWriteData(out);
+      const written = await ghWriteData(out);
+      if (written !== out) adoptMerged(written);   // the other device's changes came back in
       onOk();
     } catch(e) { onErr(e); }
   },
