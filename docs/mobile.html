@@ -999,6 +999,7 @@
 </div>
 <div id="app"></div>
 
+<script src="bank-sync.js"></script>
 <script>
 // Kill all vertical scrolling/bouncing at document level
 document.addEventListener('touchmove', function(e) {
@@ -2365,6 +2366,118 @@ function psImport(){
   });
 }
 
+// ── Bank sync (Plaid via the budget-api Worker; logic in bank-sync.js) ────
+var moBankBusy=false;
+function moBank(){ return BankSync.defaults(D.plaid); }
+function moAgo(iso){
+  if(!iso) return 'never synced';
+  var m=Math.round((Date.now()-Date.parse(iso))/60000);
+  return m<1?'synced just now':m<60?'synced '+m+'m ago':m<1440?'synced '+Math.round(m/60)+'h ago':'synced '+Math.round(m/1440)+'d ago';
+}
+// Save just the review queue (CSV imports / deletions) so it survives closing the app.
+function moSaveQueue(){
+  var candidate=Object.assign({}, D, {pendingReview:pendingReview.slice()});
+  moWriteData(candidate, function(){ D=candidate; }, function(){ moToast('⚠ Couldn’t save the review queue'); });
+}
+function moSavePlaid(plaid, cb){
+  var candidate=Object.assign({}, D, {plaid:plaid});
+  moWriteData(candidate, function(){ D=candidate; if(cb) cb(); }, function(){ moToast('⚠ Save failed'); });
+}
+function moBankEntryHtml(){
+  var b=moBank();
+  if(!b.items.length){
+    return '<button class="lk-btn" onclick="openBankSheet()"><i class="bi bi-bank"></i>Connect a bank</button>'
+      +'<div class="lk-sub">Pull transactions straight from your bank instead of uploading files.</div>';
+  }
+  var last=b.items.map(function(it){ return it.lastSync||''; }).sort().pop();
+  var warn=b.items.some(function(it){ return it.needsReauth; });
+  return '<button class="lk-btn" style="border-color:var(--primary);color:var(--primary)" onclick="moSyncBanks()"><i class="bi bi-arrow-repeat"></i>Sync banks</button>'
+    +'<div class="lk-sub">'+b.items.map(function(it){ return esc(it.institution)+(it.needsReauth?' ⚠':''); }).join(' · ')+' — '+moAgo(last)
+    +' · <a href="#" onclick="openBankSheet();return false" style="color:var(--primary)">'+(warn?'reconnect needed':'manage')+'</a></div>';
+}
+function openBankSheet(){
+  closeSheet();
+  var b=document.createElement('div'); b.id='sheet-back'; b.className='sheet-back';
+  b.addEventListener('click', function(e){ if(e.target===b) closeSheet(); });
+  document.body.appendChild(b);
+  renderBankSheet();
+}
+function renderBankSheet(){
+  var back=document.getElementById('sheet-back'); if(!back) return;
+  var bk=moBank(), st=D.settings||{};
+  var pn=function(p){ return esc(p==='p2'?(st.person2||'Person 2'):(st.person1||'Person 1')); };
+  var items=bk.items.map(function(it){
+    var id=esc(it.itemId);
+    return '<div style="border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:10px 12px;margin-bottom:8px">'
+      +'<div style="display:flex;align-items:center;gap:8px"><strong style="flex:1">'+esc(it.institution||'Bank')+'</strong>'
+      +(it.needsReauth?'<button class="lk-btn lk-danger" style="width:auto;margin:0;padding:4px 10px" onclick="moConnectBank(\''+id+'\')">Reconnect</button>':'')
+      +'<button class="lk-btn" style="width:auto;margin:0;padding:4px 10px" onclick="moRemoveBank(\''+id+'\')">Remove</button></div>'
+      +'<div class="cf-map-row"><label>Owner</label><select class="cf-sel" onchange="moSetBankItem(\''+id+'\',\'owner\',this.value)">'
+      +'<option value="p1"'+(it.owner==='p1'?' selected':'')+'>'+pn('p1')+'</option><option value="p2"'+(it.owner==='p2'?' selected':'')+'>'+pn('p2')+'</option></select></div>'
+      +'<div class="cf-map-row"><label>Only after</label><input type="date" class="cf-sel" value="'+esc(it.startAfter||'')+'" onchange="moSetBankItem(\''+id+'\',\'startAfter\',this.value)"></div>'
+      +'<div class="lk-sub" style="margin:4px 0 0">'+moAgo(it.lastSync)+'</div></div>';
+  }).join('');
+  back.innerHTML='<div class="sheet">'
+    +'<div class="sheet-title">Bank connections</div>'
+    +'<div class="sheet-sub">New transactions land in the review queue — nothing is saved until you review it.</div>'
+    +'<div class="cf-map-row"><label>Sync server</label><input class="cf-sel" placeholder="https://budget-api.…workers.dev" value="'+esc(bk.apiUrl)+'" onchange="moSetBankSetting(\'apiUrl\',this.value.trim())"></div>'
+    +'<label style="display:flex;gap:8px;align-items:center;font-size:13px;margin:6px 0 12px"><input type="checkbox"'+(bk.skipPayroll?' checked':'')+' onchange="moSetBankSetting(\'skipPayroll\',this.checked)"> Skip payroll deposits (income comes from paystubs)</label>'
+    +items
+    +'<button class="lk-btn" onclick="moConnectBank()"'+(bk.apiUrl?'':' disabled')+'><i class="bi bi-plus-lg"></i>Connect a bank</button>'
+    +(bk.items.length?'<button class="lk-btn" style="margin-top:calc(8px*var(--z))" onclick="moSyncBanks()"><i class="bi bi-arrow-repeat"></i>Sync now</button>':'')
+    +'<button class="sheet-done" onclick="closeSheet()">Done</button>'
+    +'</div>';
+}
+function moSetBankSetting(key, val){ var b=moBank(); b[key]=val; moSavePlaid(b, renderBankSheet); }
+function moSetBankItem(itemId, key, val){
+  var b=moBank();
+  b.items=b.items.map(function(it){ if(it.itemId!==itemId) return it; var c=Object.assign({}, it); c[key]=val; return c; });
+  moSavePlaid(b, renderBankSheet);
+}
+function moBankError(e){ moToast('⚠ '+((e&&e.message)||e)); }
+function moBankLinked(r){
+  var b=moBank();
+  if(r.reauthed){
+    b.items=b.items.map(function(it){ return it.itemId===r.itemId ? Object.assign({}, it, {needsReauth:false}) : it; });
+  } else if(!b.items.some(function(it){ return it.itemId===r.itemId; })){
+    var owner=r.owner||curPerson();
+    b.items.push({itemId:r.itemId, institution:r.institution, owner:owner, startAfter:BankSync.defaultStartAfter(D.transactions, owner), cursor:''});
+  }
+  moSavePlaid(b, function(){
+    renderBankSheet();
+    moToast(r.reauthed?'✅ Reconnected':'✅ Connected '+r.institution+' — first sync can take a few minutes');
+    moSyncBanks();
+  });
+}
+function moConnectBank(itemId){
+  BankSync.connect({apiUrl:moBank().apiUrl, ghToken:GH.token, owner:curPerson(), itemId:itemId, onDone:moBankLinked, onError:moBankError});
+}
+function moResumeBankOAuth(){
+  BankSync.resumeOAuthIfNeeded({apiUrl:moBank().apiUrl, ghToken:GH.token, owner:curPerson(), onDone:moBankLinked, onError:moBankError});
+}
+function moRemoveBank(itemId){
+  var b=moBank(), it=b.items.filter(function(x){ return x.itemId===itemId; })[0];
+  if(!it || !confirm('Disconnect '+it.institution+'? Transactions already imported stay.')) return;
+  var drop=function(){ b.items=b.items.filter(function(x){ return x.itemId!==itemId; }); moSavePlaid(b, function(){ renderBankSheet(); moToast('Disconnected'); }); };
+  BankSync.remove(b.apiUrl, GH.token, itemId).then(drop).catch(function(e){ if(e.code==='ITEM_NOT_FOUND') drop(); else moBankError(e); });
+}
+function moSyncBanks(){
+  if(moBankBusy) return;
+  if(!moBank().items.length){ openBankSheet(); return; }
+  moBankBusy=true; closeSheet(); moToast('🔄 Syncing banks…');
+  BankSync.syncAll(GH.token, {plaid:D.plaid, transactions:D.transactions||[], pendingReview:pendingReview}, {uid:uid, categorize:categorize, applyRules:applyRules})
+    .then(function(out){
+      var candidate=Object.assign({}, D, {plaid:out.plaid, transactions:out.transactions, pendingReview:out.pendingReview});
+      moWriteData(candidate, function(){
+        D=candidate; pendingReview=out.pendingReview.slice();
+        render(); moToast(BankSync.summary(out.totals));
+        if(out.totals.added) openClassifySheet();
+      }, function(){ moToast('⚠ Sync fetched but saving failed — try again'); });
+    })
+    .catch(moBankError)
+    .then(function(){ moBankBusy=false; });
+}
+
 // ── Import orchestration ───────────────────────────────────────────────────
 var pendingReview = [];
 var reviewGroups = [];
@@ -2394,8 +2507,9 @@ function openImportSheet(){
       +'<div class="lk-sub">Transactions still waiting to be classified.</div>'
     : '';
   b.innerHTML='<div class="sheet">'
-    +'<div class="sheet-title">Import CSV or PDF</div>'
+    +'<div class="sheet-title">Import</div>'
     +resume
+    +moBankEntryHtml()
     +'<button class="lk-btn" onclick="moPickFile(\'p1\')"><i class="bi bi-upload"></i>'+esc(n1)+'’s file</button>'
     +'<button class="lk-btn" onclick="moPickFile(\'p2\')" style="margin-top:calc(8px*var(--z))"><i class="bi bi-upload"></i>'+esc(n2)+'’s file</button>'
     +'<div class="lk-sub">Bank CSV (incl. Venmo / Coinbase), bank-statement PDF (City National, Chase, SoFi), or a paystub PDF (ADP, NBCUniversal). Pick whose account it’s from — you can still change the owner per transaction while classifying.</div>'
@@ -2483,7 +2597,7 @@ function moProcessCsvText(text, person){
 }
 function doImportTxnsMobile(txns){
   var existing={};
-  (D.transactions||[]).forEach(function(t){ existing[t.date+'|'+t.description+'|'+t.amount+'|'+t.person]=1; });
+  (D.transactions||[]).concat(pendingReview).forEach(function(t){ existing[t.date+'|'+t.description+'|'+t.amount+'|'+t.person]=1; });
   var fresh=txns.filter(function(t){ return !existing[t.date+'|'+t.description+'|'+t.amount+'|'+t.person]; });
   if(!fresh.length){ moToast('No new transactions found'); return; }
   // Pre-fill category/owner from learned rules, but always require review.
@@ -2492,6 +2606,7 @@ function doImportTxnsMobile(txns){
     if(rule){ t.category=rule.category; if(rule.shared!==undefined) t.shared=rule.shared; if(rule.person) t.person=rule.person; }
   });
   pendingReview.push.apply(pendingReview, fresh);
+  moSaveQueue();
   moToast('📋 '+fresh.length+' added to review');
 }
 
@@ -2670,8 +2785,8 @@ function cfSetGroupOwner(val){ var g=currentGroup(); if(!g) return; for(var i=0;
 function cfCycleRowOwner(ri){ var g=currentGroup(); if(!g) return; var t=g[ri]; if(!t) return; if(!t.shared&&t.person==='p1'){ t.person='p2'; t.shared=false; } else if(!t.shared&&t.person==='p2'){ t.shared=true; } else { t.shared=false; t.person='p1'; } renderClassifySheet(); }
 function cfToggleRowCat(ri){ rowCatExpandIdx = rowCatExpandIdx===ri ? -1 : ri; renderClassifySheet(); }
 function cfSetRowCat(ri, cat){ var g=currentGroup(); if(!g) return; var t=g[ri]; if(!t) return; t.category=cat; rowCatExpandIdx=-1; renderClassifySheet(); }
-function cfDeleteRow(ri){ var g=currentGroup(); if(!g) return; var t=g[ri]; if(!t) return; pendingReview=pendingReview.filter(function(x){ return x!==t; }); rowCatExpandIdx=-1; renderClassifySheet(); }
-function cfDeleteGroup(){ var g=currentGroup(); if(!g) return; pendingReview=pendingReview.filter(function(t){ return g.indexOf(t)<0; }); rowCatExpandIdx=-1; reviewGroups=buildReviewGroups(); var f=getFilteredGroups(); if(groupIdx>=f.length) groupIdx=Math.max(0, f.length-1); renderClassifySheet(); }
+function cfDeleteRow(ri){ var g=currentGroup(); if(!g) return; var t=g[ri]; if(!t) return; pendingReview=pendingReview.filter(function(x){ return x!==t; }); moSaveQueue(); rowCatExpandIdx=-1; renderClassifySheet(); }
+function cfDeleteGroup(){ var g=currentGroup(); if(!g) return; pendingReview=pendingReview.filter(function(t){ return g.indexOf(t)<0; }); moSaveQueue(); rowCatExpandIdx=-1; reviewGroups=buildReviewGroups(); var f=getFilteredGroups(); if(groupIdx>=f.length) groupIdx=Math.max(0, f.length-1); renderClassifySheet(); }
 function cfNext(){ if(groupIdx<getFilteredGroups().length-1){ groupIdx++; rowCatExpandIdx=-1; renderClassifySheet(); } else cfConfirmAll(); }
 function cfPrev(){ if(groupIdx>0){ groupIdx--; rowCatExpandIdx=-1; renderClassifySheet(); } }
 function cfSaveSoFar(){
@@ -2689,7 +2804,7 @@ function cfCommit(toSave, remaining){
   var newTx=(D.transactions||[]).concat(toSave);
   var newRules=Object.assign({}, D.rules||{});
   toSave.forEach(function(t){ var k=normalizeDesc(t.description); if(k) newRules[k]={category:t.category, shared:t.shared, person:t.person}; });
-  var candidate=Object.assign({}, D, {transactions:newTx, rules:newRules});
+  var candidate=Object.assign({}, D, {transactions:newTx, rules:newRules, pendingReview:remaining});
   cfSavingOverlay('Saving '+toSave.length+'…', false);
   moWriteData(candidate, function(){
     D=candidate;
@@ -3015,6 +3130,7 @@ function moPinTryUnlock(){
 
 function moApply(data){
   D = data;
+  pendingReview = Array.isArray(D.pendingReview) ? D.pendingReview : [];
   var curMoTxns = (D.transactions||[]).filter(function(t){ return t.date && t.date.slice(0,7)===currentMonth; });
   if (curMoTxns.length === 0 && (D.transactions||[]).length > 0) {
     var allMo={}; for (var i=0;i<D.transactions.length;i++){ if(D.transactions[i].date) allMo[D.transactions[i].date.slice(0,7)]=true; }
@@ -3023,6 +3139,7 @@ function moApply(data){
   document.getElementById('status').style.display='none';
   document.getElementById('app').className='show';
   try { render(); } catch(e){ document.getElementById('app').innerHTML='<div style="padding:2rem;color:var(--red);font-size:14px;word-break:break-all"><b>Error:</b><br>'+e.message+'</div>'; }
+  moResumeBankOAuth();
 }
 
 function moStart(){

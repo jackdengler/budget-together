@@ -1,6 +1,6 @@
 # Plaid sync + read-only MCP server — plan
 
-Status: **PLAN — waiting on decisions before building** (branch `plaid-mcp`)
+Status: **BUILT on branch `plaid-mcp`: tested with simulated Plaid; waiting for your Plaid/Cloudflare setup** (not merged to `main`)
 
 ## Constraints found in the codebase
 
@@ -77,23 +77,41 @@ Claude ──(OAuth via GitHub login)──► Worker /mcp ──(read-only toke
 4. **Claude:** Settings → Connectors → Add custom connector → `https://<worker>.workers.dev/mcp`.
 
 ## Checklist
-- [ ] Decisions (below) answered
-- [ ] `worker/`: Plaid endpoints, auth check, mapping, KV; unit tests with Plaid mocked
-- [ ] App: persist review queue; `plaid` section in data; Connect / Sync / Remove UI; apply modified/removed
-- [ ] App: dedup by `plaidId`, falling back to the existing date|desc|amount|person key
-- [ ] `worker/` MCP: OAuth, read-only tools, split logic ported and tested against current data
-- [ ] Docs: `worker/README.md` setup, CLAUDE.md/DEPLOYMENT.md (fix the encryption claim)
-- [ ] Verify: run tests; replay Muse's Aug/Sep files through the mapping and check against the app (as in the earlier reconciliation)
-- [ ] You: Plaid sign-up, deploy, first live sync in the app
+- [x] Decisions answered: both pages; keep plaintext; Cloudflare; skip payroll
+- [x] `worker/`: Plaid endpoints, auth check, mapping, KV; unit tests with Plaid mocked
+- [x] App (web and mobile): review queue persisted; `plaid` data section; Connect / Sync / Reconnect / Remove UI; modified/removed applied
+- [x] App: dedup by `plaidId`, falling back to the existing date|desc|amount|person key (CSV imports now also check against the queue)
+- [x] `worker/` MCP: OAuth (GitHub sign-in, allowlist), 6 read-only tools, split logic ported
+- [x] Docs: `worker/README.md` setup; CLAUDE.md and DEPLOYMENT.md (encryption claim corrected)
+- [x] Verify (see Review)
+- [ ] You: Plaid sign-up, Cloudflare deploy, secrets, first live sync, add the connector in Claude
 
-## Open decisions
-1. Should the Connect/Sync UI go on web (`index.html`), mobile (`mobile.html`), or both?
-2. Encryption: keep plaintext in the private repo (as today, simplest for the MCP), or add real encryption first (then the Worker must hold a decryption key)?
-3. Cloudflare Workers for hosting: OK?
-4. Skip Plaid payroll deposits because income comes from paystubs: OK?
 
 ## Limits / risks
 - Plaid Trial approval for personal use isn't guaranteed. Capital One OAuth may take extra registration time.
   Muse CSVs stay as the fallback.
 - I can't reach plaid.com or Cloudflare from this session, so live testing happens after you deploy.
   Before that, everything is tested with mocked Plaid responses.
+
+## Review (2026-11-10)
+- `cd worker && npm test`: **24/24 pass**. Covers Plaid mapping and sync (paging, mutation restart,
+  pending/payroll filtering), token exchange (access token only ever goes to KV), app-token auth, CORS,
+  redirect allowlist, Plaid error codes, the analysis math, a full MCP initialize → tools/list → tools/call,
+  and `docs/bank-sync.js` merge and per-bank failure isolation.
+- `npm run check`: bundles to about 300 KB gzipped (the free plan allows 3 MB).
+- **Connector numbers vs the app, on real `budget.json`:** outstanding balance identical ($4,423.95,
+  "Jordan owes Jack"). Per-person monthly spending matches the app's own functions within $0.005
+  across 14 months.
+- **Local `wrangler dev`:** unauthenticated `/mcp` returns 401 pointing to the discovery documents.
+  Self-registration, the consent page and the redirect to GitHub (with PKCE) all work.
+  Not tested: the real GitHub callback and real Plaid, because neither is reachable from this session.
+- **Browser end-to-end (Playwright, GitHub/Worker/Plaid Link simulated), web and mobile:**
+  connect → exchange → sync → queue. Rules beat Plaid's hint, card payments are tagged Transfer, rows on or
+  before "Only after" are skipped, the queue survives a reload, and `_auth` and `incomeTypeRules` are preserved.
+  No page errors.
+- Fixed along the way: web autosave dropped `incomeTypeRules` (it used its own key list). It now uses
+  `snapshotData()`.
+- Known trade-offs:
+  - a manual edit made during the few seconds a sync is running can be overwritten (last write wins, as today)
+  - the first sync right after connecting may be empty while Plaid pulls your history
+  - Plaid Trial approval for personal use isn't guaranteed

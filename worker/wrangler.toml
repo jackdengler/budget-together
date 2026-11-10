@@ -1,0 +1,33 @@
+# Budget Together API — Plaid sync for the app + read-only MCP connector for Claude.
+# Secrets are NOT here; set them with `wrangler secret put` (see README.md).
+name = "budget-api"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
+
+[vars]
+DATA_REPO = "jackdengler/private-data-storage"
+DATA_PATH = "budget.json"
+DATA_BRANCH = "main"
+# Browser origin allowed to call /plaid/* (GitHub Pages).
+APP_ORIGIN = "https://jackdengler.github.io"
+# "sandbox" for testing with Plaid's fake banks, "production" for real accounts.
+PLAID_ENV = "production"
+# GitHub logins allowed to sign in to the MCP connector (comma-separated).
+ALLOWED_GITHUB_LOGINS = "jackdengler"
+# Which person slot (p1/p2) is the connector's owner. The other person's
+# non-shared transactions are hidden from Claude unless INCLUDE_PARTNER_PRIVATE="true".
+OWNER_PERSON = "p1"
+INCLUDE_PARTNER_PRIVATE = "false"
+# PIN-hidden categories in the app (gambling, cash). Hidden from Claude unless "true".
+INCLUDE_HIDDEN = "false"
+
+# Plaid access tokens (one per connected bank).
+[[kv_namespaces]]
+binding = "PLAID_KV"
+id = "REPLACE_WITH_PLAID_KV_ID"
+
+# OAuth grants/tokens for the MCP connector (stored hashed by the library).
+[[kv_namespaces]]
+binding = "OAUTH_KV"
+id = "REPLACE_WITH_OAUTH_KV_ID"

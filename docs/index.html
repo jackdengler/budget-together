@@ -831,6 +831,7 @@
 <div class="toast" id="toast"></div>
 <div id="modals"></div>
 
+<script src="bank-sync.js"></script>
 <script>
 // ── Constants ──────────────────────────────────────────────
 const BASE_CATS = [
@@ -923,6 +924,7 @@ const S = {
   overviewView: 'total',      // 'total' | 'avg' — only relevant in multi-month mode
   overviewYear: null,         // YYYY string for YTD year; null = current year
   recurringIncome: [], // [{ id, description, amount, person, category, frequency, startDate }]
+  plaid: {},           // bank sync: { apiUrl, skipPayroll, items:[…] } — see bank-sync.js
   pinUnlocked: false, // session only — not persisted
 };
 
@@ -1051,7 +1053,7 @@ function schedSave() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
     DB.save(
-      { transactions: S.transactions, budgets: S.budgets, settings: S.settings, rules: S.rules, customCategories: S.customCategories, catSplits: S.catSplits, catTypes: S.catTypes, excludedFromAvg: S.excludedFromAvg, recurringIncome: S.recurringIncome, gamblingData: S.gamblingData, incomeData: S.incomeData },
+      snapshotData(),
       () => setSaveStatus('saved'),
       () => setSaveStatus('error')
     );
@@ -2317,7 +2319,12 @@ function renderTxns() {
   }
 
   // ── Desktop: table layout ──────────────────────────────
-  return `
+  const bankItems = BankSync.defaults(S.plaid).items;
+  const bankBar = bankItems.length ? `<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:.85rem;color:var(--text-3)">
+  <button onclick="syncBanks()" style="font-size:.85rem;padding:7px 14px;border:1px solid var(--primary);color:var(--primary);border-radius:8px;background:white;cursor:pointer;font-weight:600">🔄 Sync banks</button>
+  <span>${bankItems.map(it => esc(it.institution) + (it.needsReauth ? ' ⚠' : '')).join(' · ')} — ${bankAgo(bankItems.map(it => it.lastSync || '').sort().pop())}</span>
+</div>` : '';
+  return `${bankBar}
 <div class="upload-grid">
   <div class="upload-zone p1-zone" onclick="$('fp1').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="onDrop(event,'p1')">
     <div class="upload-icon">⬆️</div>
@@ -3621,6 +3628,90 @@ function deleteRecurringIncome(id) {
   schedSave(); render(); toast('Recurring income deleted');
 }
 
+// ── Bank sync (Plaid via the budget-api Worker; logic in bank-sync.js) ──
+let bankBusy = false;
+const bankBtn = 'font-size:.82rem;padding:6px 13px;border:1px solid var(--border);border-radius:8px;background:white;cursor:pointer';
+function bankHelpers() { return { uid, categorize, applyRules }; }
+function bankAgo(iso) {
+  if (!iso) return 'never synced';
+  const m = Math.round((Date.now() - Date.parse(iso)) / 60000);
+  return m < 1 ? 'synced just now' : m < 60 ? `synced ${m}m ago` : m < 1440 ? `synced ${Math.round(m/60)}h ago` : `synced ${Math.round(m/1440)}d ago`;
+}
+function renderBankSection() {
+  const b = BankSync.defaults(S.plaid);
+  const pn = p => esc(p === 'p2' ? S.settings.person2 : S.settings.person1);
+  const items = b.items.map(it => `<div style="border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <strong style="flex:1;min-width:120px">${esc(it.institution || 'Bank')}</strong>
+        ${it.needsReauth ? `<button onclick="connectBank('${esc(it.itemId)}')" style="${bankBtn};border-color:var(--red);color:var(--red)">Reconnect</button>` : ''}
+        <button onclick="removeBank('${esc(it.itemId)}')" style="${bankBtn}">Remove</button>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px;font-size:.8rem;color:var(--text-3)">
+        <label>Owner <select class="form-sel" style="width:auto;padding:3px 6px" onchange="setBankItem('${esc(it.itemId)}','owner',this.value)">
+          <option value="p1"${it.owner==='p1'?' selected':''}>${pn('p1')}</option><option value="p2"${it.owner==='p2'?' selected':''}>${pn('p2')}</option></select></label>
+        <label>Only after <input type="date" class="form-input" style="width:auto;padding:3px 6px" value="${esc(it.startAfter || '')}" onchange="setBankItem('${esc(it.itemId)}','startAfter',this.value)"></label>
+        <span>${bankAgo(it.lastSync)}</span>
+      </div>
+    </div>`).join('');
+  return `<div style="font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:6px">🏦 Bank connections</div>
+    <p style="font-size:.8rem;color:var(--text-3);margin-bottom:10px">Pull transactions straight from your banks (Plaid). New ones land in the review queue — nothing is saved until you review it.</p>
+    <div class="form-row"><label>Sync server URL</label><input class="form-input" placeholder="https://budget-api.<you>.workers.dev" value="${esc(b.apiUrl)}" onchange="setBankSetting('apiUrl',this.value.trim())"></div>
+    <label style="display:flex;gap:8px;align-items:center;font-size:.82rem;margin-bottom:10px"><input type="checkbox"${b.skipPayroll?' checked':''} onchange="setBankSetting('skipPayroll',this.checked)"> Skip payroll deposits (income comes from paystubs)</label>
+    ${items}
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button onclick="connectBank()" style="${bankBtn}"${b.apiUrl?'':' disabled title="Set the sync server URL first"'}>＋ Connect a bank</button>
+      ${b.items.length ? `<button onclick="syncBanks()" style="${bankBtn}">🔄 Sync now</button>` : ''}
+    </div>`;
+}
+function refreshBankSection() { const el = $('bank-section'); if (el) el.innerHTML = renderBankSection(); }
+function setBankSetting(key, val) { S.plaid = Object.assign(BankSync.defaults(S.plaid), { [key]: val }); schedSave(); refreshBankSection(); }
+function setBankItem(itemId, key, val) {
+  const b = BankSync.defaults(S.plaid);
+  b.items = b.items.map(it => it.itemId === itemId ? Object.assign({}, it, { [key]: val }) : it);
+  S.plaid = b; schedSave(); refreshBankSection();
+}
+function bankError(e) { toast('⚠ ' + (e && e.message || e)); }
+function bankLinked(r) {
+  const b = BankSync.defaults(S.plaid);
+  if (r.reauthed) {
+    b.items = b.items.map(it => it.itemId === r.itemId ? Object.assign({}, it, { needsReauth: false }) : it);
+  } else if (!b.items.some(it => it.itemId === r.itemId)) {
+    const owner = r.owner || currentPerson || 'p1';
+    b.items.push({ itemId: r.itemId, institution: r.institution, owner, startAfter: BankSync.defaultStartAfter(S.transactions, owner), cursor: '' });
+  }
+  S.plaid = b; schedSave(); refreshBankSection();
+  toast(r.reauthed ? '✅ Reconnected' : `✅ Connected ${r.institution} — the first sync can take a few minutes`);
+  syncBanks();
+}
+function connectBank(itemId) {
+  const b = BankSync.defaults(S.plaid);
+  BankSync.connect({ apiUrl: b.apiUrl, ghToken: GH.token, owner: currentPerson || 'p1', itemId, onDone: bankLinked, onError: bankError });
+}
+function resumeBankOAuth() {
+  const b = BankSync.defaults(S.plaid);
+  BankSync.resumeOAuthIfNeeded({ apiUrl: b.apiUrl, ghToken: GH.token, owner: currentPerson || 'p1', onDone: bankLinked, onError: bankError });
+}
+function removeBank(itemId) {
+  const b = BankSync.defaults(S.plaid);
+  const it = b.items.find(x => x.itemId === itemId);
+  if (!it || !confirm(`Disconnect ${it.institution}? Transactions already imported stay.`)) return;
+  const drop = () => { S.plaid = Object.assign(b, { items: b.items.filter(x => x.itemId !== itemId) }); schedSave(); refreshBankSection(); toast('Disconnected'); };
+  BankSync.remove(b.apiUrl, GH.token, itemId).then(drop).catch(e => { if (e.code === 'ITEM_NOT_FOUND') drop(); else bankError(e); });
+}
+function syncBanks() {
+  if (bankBusy) return;
+  if (!BankSync.defaults(S.plaid).items.length) { showSettings(); return; }
+  bankBusy = true; toast('🔄 Syncing banks…');
+  BankSync.syncAll(GH.token, { plaid: S.plaid, transactions: S.transactions, pendingReview }, bankHelpers())
+    .then(out => {
+      S.plaid = out.plaid; S.transactions = out.transactions; pendingReview = out.pendingReview;
+      schedSave(); updateReviewBadge(); render(); refreshBankSection();
+      toast(BankSync.summary(out.totals));
+    })
+    .catch(bankError)
+    .finally(() => { bankBusy = false; });
+}
+
 // ── File Upload ────────────────────────────────────────────
 let pendingUpload = [];  // queue of {headers,rows,person,det}
 let pendingReview = [];
@@ -3675,7 +3766,7 @@ function doImport(rows, mapping, person) {
   doImportTxns(rowsToTxns(rows, mapping, person));
 }
 function doImportTxns(txns) {
-  const existing = new Set(S.transactions.map(t=>`${t.date}|${t.description}|${t.amount}|${t.person}`));
+  const existing = new Set([...S.transactions, ...pendingReview].map(t=>`${t.date}|${t.description}|${t.amount}|${t.person}`));
   const fresh = txns.filter(t=>!existing.has(`${t.date}|${t.description}|${t.amount}|${t.person}`));
   if (!fresh.length) { toast('No new transactions found'); return; }
 
@@ -3686,6 +3777,7 @@ function doImportTxns(txns) {
   }
 
   pendingReview.push(...fresh);
+  schedSave(); // the review queue is saved, so closing the tab doesn't lose it
   updateReviewBadge();
   toast(`📋 ${fresh.length} transaction${fresh.length!==1?'s':''} added to review queue`);
 }
@@ -3848,13 +3940,13 @@ function setRowCat(ri, cat) {
 function deleteReviewRow(ri) {
   const t = currentGroup()[ri]; if(!t) return;
   pendingReview = pendingReview.filter(x=>x!==t);
-  rowCatExpandIdx=-1; renderGroupReview();
+  schedSave(); rowCatExpandIdx=-1; renderGroupReview();
 }
 function deleteReviewGroup() {
   const g = currentGroup(); if(!g) return;
   const groupSet = new Set(g);
   pendingReview = pendingReview.filter(t=>!groupSet.has(t));
-  rowCatExpandIdx=-1;
+  schedSave(); rowCatExpandIdx=-1;
   // stay at same index (next group slides in), but clamp if at end
   const newFiltered = getFilteredGroups();
   if (groupIdx >= newFiltered.length) groupIdx = Math.max(0, newFiltered.length-1);
@@ -3932,6 +4024,7 @@ function showSettings() {
       <p style="font-size:.8rem;color:var(--text-3);margin-bottom:10px">The PIN you type to unlock the app. Only you can change yours.</p>
       <button onclick="changeLoginPin()" style="font-size:.82rem;padding:6px 14px;border:1px solid var(--border);border-radius:8px;background:white;cursor:pointer">Change my login PIN</button>
     </div>
+    <div id="bank-section" style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">${renderBankSection()}</div>
     <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
       <div style="font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:6px">🔑 Connection</div>
       <p style="font-size:.8rem;color:var(--text-3);margin-bottom:10px">Data is stored in your private GitHub repo. Sign out to clear the access token from this device.</p>
@@ -4031,6 +4124,7 @@ function snapshotData() {
     rules: S.rules, customCategories: S.customCategories, catSplits: S.catSplits, catTypes: S.catTypes,
     excludedFromAvg: S.excludedFromAvg, recurringIncome: S.recurringIncome,
     gamblingData: S.gamblingData, incomeData: S.incomeData, incomeTypeRules: S.incomeTypeRules,
+    plaid: S.plaid, pendingReview,
   };
 }
 
@@ -4082,7 +4176,7 @@ async function saveLoginPin() {
   if (!pendingData._auth) pendingData._auth = {};
   pendingData._auth[currentPerson] = h;   // DB.save folds _auth back into the file
   DB.save(
-    { transactions: S.transactions, budgets: S.budgets, settings: S.settings, rules: S.rules, customCategories: S.customCategories, catSplits: S.catSplits, catTypes: S.catTypes, excludedFromAvg: S.excludedFromAvg, recurringIncome: S.recurringIncome, gamblingData: S.gamblingData, incomeData: S.incomeData, incomeTypeRules: S.incomeTypeRules },
+    snapshotData(),
     () => { closeModal(); toast('Login PIN updated 🔓'); },
     (e) => toast('Error: ' + (e.message || e))
   );
@@ -4522,6 +4616,8 @@ function applyData(data, person) {
   S.gamblingData    = data.gamblingData    || {};
   S.incomeData      = data.incomeData      || {};
   S.incomeTypeRules = data.incomeTypeRules || {};
+  S.plaid = data.plaid || {};
+  pendingReview = Array.isArray(data.pendingReview) ? data.pendingReview : [];
   if (migrateSettledSplits() > 0) schedSave(); // freeze any legacy settled txns
   materializeRecurring();
   const curMoTxns = S.transactions.filter(t => t.date && t.date.startsWith(S.currentMonth));
@@ -4535,6 +4631,7 @@ function applyData(data, person) {
   render();
   updateReviewBadge();
   renderIdentityBadge();
+  resumeBankOAuth();
 }
 
 // Entry point for the auth flow: token? → read data → first-run? → PIN → app.

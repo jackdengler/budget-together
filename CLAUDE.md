@@ -15,6 +15,12 @@ server and no Google Apps Script.
   stored only in `localStorage`, never in source.
 - **Identity:** an app PIN tells the app which of the two people you are (`p1`/`p2`).
   PIN hashes live inside `budget.json` (`_auth`), never the PINs themselves.
+- **Not encrypted:** `budget.json` is plain JSON (the private repo is the protection).
+- **Bank sync (optional):** `docs/bank-sync.js` (shared by both pages) talks to the
+  Cloudflare Worker in `worker/` (Plaid + a read-only MCP server for Claude). Synced
+  transactions carry `plaidId`; settings live in `budget.json` → `plaid`, and the review
+  queue is persisted in `budget.json` → `pendingReview`. See `worker/README.md`.
+  Worker tests: `cd worker && npm test`.
 
 ## Deploy workflow
 
@@ -26,6 +32,9 @@ Deploys are just git:
 
 That's it — no clasp, no Google. GitHub Pages rebuilds within a minute of the
 push to `main`.
+
+The Worker (`worker/`) is deployed separately with `npx wrangler deploy` — pushing to
+`main` does not deploy it.
 
 ## Web vs Mobile
 
